@@ -1,7 +1,14 @@
 import React, { useEffect, useState } from 'react';
+import { Card } from '../components/Card';
+import { Button } from '../components/Button';
+import { StyleSelector } from '../components/StyleSelector';
+import { LoadingSpinner } from '../components/LoadingSpinner';
+import { CorrectionStyle } from '../types';
 
 const SidePanel: React.FC = () => {
   const [text, setText] = useState('');
+  const [selectedStyle, setSelectedStyle] = useState<CorrectionStyle>(CorrectionStyle.FORMAL);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     // Check for pending text from background script
@@ -37,16 +44,53 @@ const SidePanel: React.FC = () => {
       <main className='flex-1 overflow-y-auto p-4'>
         {text ? (
           <div className='space-y-4'>
-            <div className='bg-white dark:bg-gray-800 rounded-lg p-4 shadow'>
-              <h3 className='text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2'>Selected Text</h3>
-              <p className='text-gray-900 dark:text-gray-100'>{text}</p>
-            </div>
+            {/* Original Text */}
+            <Card title='Original Text'>
+              <p className='text-gray-900 dark:text-gray-100 whitespace-pre-wrap'>{text}</p>
+            </Card>
 
-            <div className='bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4'>
-              <p className='text-sm text-blue-800 dark:text-blue-300'>
-                ✨ AI correction will appear here once we integrate the AI provider
-              </p>
-            </div>
+            {/* Style Selector */}
+            <Card>
+              <StyleSelector
+                selected={selectedStyle}
+                onChange={setSelectedStyle}
+                onRecheck={() => {
+                  setIsLoading(true);
+                  // TODO: Trigger AI correction
+                  setTimeout(() => setIsLoading(false), 1000);
+                }}
+                disabled={isLoading}
+              />
+            </Card>
+
+            {/* Loading State */}
+            {isLoading && (
+              <Card>
+                <div className='flex items-center justify-center py-8'>
+                  <LoadingSpinner size='lg' />
+                  <span className='ml-3 text-gray-600 dark:text-gray-400'>Analyzing your text...</span>
+                </div>
+              </Card>
+            )}
+
+            {/* Placeholder for corrections */}
+            {!isLoading && (
+              <Card title='Corrected Text'>
+                <div className='bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4'>
+                  <p className='text-sm text-blue-800 dark:text-blue-300'>
+                    ✨ AI correction will appear here once we integrate the AI provider
+                  </p>
+                </div>
+                <div className='mt-4 flex gap-2'>
+                  <Button variant='primary' disabled>
+                    Replace Text
+                  </Button>
+                  <Button variant='secondary' disabled>
+                    Copy
+                  </Button>
+                </div>
+              </Card>
+            )}
           </div>
         ) : (
           <div className='flex items-center justify-center h-full'>
