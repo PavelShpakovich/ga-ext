@@ -1,8 +1,10 @@
-console.log('Grammar Assistant: Background service worker started');
+import { Logger } from './services/Logger';
+
+Logger.info('Background', 'Service worker started');
 
 // Initialize on install
 chrome.runtime.onInstalled.addListener(() => {
-  console.log('Grammar Assistant: Extension installed');
+  Logger.info('Background', 'Extension installed');
 
   // Create context menu
   chrome.contextMenus.create({
@@ -16,7 +18,7 @@ chrome.runtime.onInstalled.addListener(() => {
 chrome.contextMenus.onClicked.addListener((info, tab) => {
   if (info.menuItemId === 'grammar-assistant-correct' && tab?.id) {
     const selectedText = info.selectionText || '';
-    console.log('Grammar Assistant: Context menu clicked', { selectedText });
+    Logger.debug('Background', 'Context menu clicked', { length: selectedText.length });
 
     // Open side panel
     chrome.sidePanel.open({ tabId: tab.id });
@@ -29,7 +31,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 // Handle keyboard shortcut
 chrome.commands.onCommand.addListener((command, tab) => {
   if (command === 'correct-text' && tab?.id) {
-    console.log('Grammar Assistant: Keyboard shortcut triggered');
+    Logger.debug('Background', 'Keyboard shortcut triggered');
 
     // Request selected text from content script
     chrome.tabs.sendMessage(tab.id, { action: 'getSelectedText' }, (response) => {
@@ -42,8 +44,8 @@ chrome.commands.onCommand.addListener((command, tab) => {
 });
 
 // Handle messages from content script and side panel
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  console.log('Grammar Assistant: Message received', { message, sender });
+chrome.runtime.onMessage.addListener((message, sender, _sendResponse) => {
+  Logger.debug('Background', 'Message received', { action: message.action });
 
   if (message.action === 'openSidePanel') {
     if (sender.tab?.id) {

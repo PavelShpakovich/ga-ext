@@ -209,6 +209,9 @@ src/sidepanel/ (SidePanel.tsx, index.tsx, sidepanel.html)
 - [x] Create LoadingSpinner component
 - [x] Create Button component
 - [x] Create basic layout with Tailwind CSS 4
+- [x] Add model download progress visualization
+- [x] Add stop download button during model loading
+- [x] Add cache management UI (clear cached models)
 
 **Success Criteria:**
 
@@ -216,6 +219,9 @@ src/sidepanel/ (SidePanel.tsx, index.tsx, sidepanel.html)
 - ✅ Styling matches design intent
 - ✅ Components are reusable
 - ✅ Dark mode support ready
+- ✅ Download progress shows visual progress bar
+- ✅ Users can stop downloads in progress
+- ✅ Users can clear IndexedDB cache to free space
 
 **Test:**
 
@@ -223,163 +229,187 @@ src/sidepanel/ (SidePanel.tsx, index.tsx, sidepanel.html)
 2. ✅ Mock data should display in cards
 3. ✅ Style selector shows all options (3 styles with icons)
 4. ✅ UI is responsive
+5. ✅ Download progress shows with percentage and stop button
+6. ✅ Clear cache button removes all cached models
 
-**Completed:** ✅ January 23, 2026
+**Completed:** ✅ January 24, 2026
 
 ---
 
-### Step 7: Message Passing Architecture ⬜
+### Step 7: Message Passing Architecture ✅
 
 **Goal:** Set up communication between content script, background, and side panel
 
 **Tasks:**
 
-- [ ] Define message types (TypeScript interfaces)
-- [ ] Implement message handler in background.ts
-- [ ] Implement message sender in content-script.ts
-- [ ] Implement message listener in SidePanel.tsx
-- [ ] Add error handling for failed messages
-- [ ] Test bidirectional communication
+- [x] Define message types (TypeScript interfaces)
+- [x] Implement message handler in background.ts
+- [x] Implement message sender in content-script.ts
+- [x] Implement message listener in SidePanel.tsx
+- [x] Add error handling for failed messages
+- [x] Test bidirectional communication
 
 **Success Criteria:**
 
-- Content script can send text to background
-- Background can open side panel
-- Side panel receives selected text
-- Side panel can send replacement text back
+- ✅ Content script can send text to background
+- ✅ Background can open side panel
+- ✅ Side panel receives selected text
+- ✅ Side panel can send replacement text back
 
 **Test:**
 
-1. Select text → Trigger correction
-2. Side panel opens with selected text displayed
-3. Click "Replace" → Text updates in original field
-4. No console errors
+1. ✅ Select text → Trigger correction
+2. ✅ Side panel opens with selected text displayed
+3. ✅ Click "Replace" → Text updates in original field
+4. ✅ No console errors
+
+**Note:** Already implemented in Steps 1-5. Message passing works via Chrome Storage API and runtime messaging.
+
+**Completed:** ✅ January 23, 2026
 
 ---
 
-## Phase 3: Cloud AI Integration (MVP)
+## Phase 3: Browser-Based AI Integration with WebLLM
 
-### Step 8: AI Provider Interface ⬜
+### Step 8: AI Provider Interface ✅
 
-**Goal:** Create abstract AI provider system for future flexibility
+**Goal:** Create abstract AI provider system for WebLLM
 
 **Tasks:**
 
-- [ ] Create providers/AIProvider.ts interface
-- [ ] Define CorrectionResult type
-- [ ] Define CorrectionStyle enum
-- [ ] Create provider factory pattern
-- [ ] Add error handling types
+- [x] Create providers/AIProvider.ts abstract class
+- [x] Define CorrectionResult type in types.ts
+- [x] Define CorrectionStyle enum
+- [x] Create provider factory pattern
+- [x] Add error handling types
+- [x] Implement buildPrompt() and getSystemPrompt() methods
 
 **Success Criteria:**
 
-- Clean interface for AI providers
-- Type-safe correction results
-- Easy to add new providers
+- ✅ Clean interface for AI providers
+- ✅ Type-safe correction results
+- ✅ Extensible architecture
 
-**Files:**
+**Files Created:**
 
-```typescript
-// providers/AIProvider.ts
-interface CorrectionResult {
-  original: string;
-  corrected: string;
-  style: CorrectionStyle;
-  changes: Change[];
-  confidence: number;
-}
+```
+src/providers/AIProvider.ts (abstract base class)
+src/providers/index.ts (factory pattern)
+src/types.ts (CorrectionResult, CorrectionStyle, Change interfaces)
 ```
 
+**Completed:** ✅ January 23, 2026
+
 ---
 
-### Step 9: OpenAI Provider Implementation ⬜
+### Step 9: WebLLM Provider Implementation ✅
 
-**Goal:** Implement cloud-based correction using OpenAI API (for testing)
+**Goal:** Implement in-browser AI correction using WebLLM and WebGPU
 
 **Tasks:**
 
-- [ ] Create providers/OpenAIProvider.ts
-- [ ] Implement correct() method
-- [ ] Build grammar correction prompt
-- [ ] Handle API responses
-- [ ] Parse JSON responses
-- [ ] Add error handling (rate limits, network errors)
-- [ ] Add API key management in settings
+- [x] Install @mlc-ai/web-llm package
+- [x] Create providers/WebLLMProvider.ts
+- [x] Implement correct() method with WebLLM
+- [x] Add WebGPU detection (isWebGPUAvailable())
+- [x] Build grammar correction prompts
+- [x] Handle model initialization and caching
+- [x] Parse JSON responses from local models
+- [x] Add error handling for WebGPU unavailability
+- [x] Create model selection with 4 pre-optimized models
+- [x] Add progress callback for model downloads
 
 **Success Criteria:**
 
-- Can correct text using OpenAI API
-- Returns structured correction results
-- Error handling works
-- API key is stored securely
+- ✅ Can correct text using in-browser AI (WebLLM)
+- ✅ Returns structured correction results
+- ✅ WebGPU detection works
+- ✅ Model downloads and caches in IndexedDB
+- ✅ Works completely offline after initial download
+
+**Models Available:**
+
+- Llama 3.2 1B (~600MB) - Recommended for speed
+- Llama 3.2 3B (~1.5GB) - Better quality
+- Phi-3.5 Mini (~2.1GB) - High quality
+- Gemma 2 2B (~1.4GB) - Balanced
 
 **Test:**
 
-1. Add OpenAI API key in settings
-2. Select text → Trigger correction
-3. Wait 2-3 seconds
-4. Side panel shows corrected text
-5. Changes are highlighted
+1. ✅ Open settings → Select model
+2. ✅ Save settings
+3. ✅ Select text → Trigger correction
+4. ✅ Model downloads on first use (5-15 min)
+5. ✅ Side panel shows corrected text
+6. ✅ Works offline after model is cached
+
+**Completed:** ✅ January 23, 2026
 
 ---
 
-### Step 10: Display Corrections in Side Panel ⬜
+### Step 10: Display Corrections in Side Panel ✅
 
 **Goal:** Show correction results with before/after comparison
 
+**Note:** This step will use the WebLLM provider for all corrections
+
 **Tasks:**
 
-- [ ] Display original text
-- [ ] Display corrected text
-- [ ] Show style used
-- [ ] Display list of changes with explanations
-- [ ] Add "Replace" button
-- [ ] Add "Copy" button
-- [ ] Implement loading state during API call
+- [x] Display original text
+- [x] Display corrected text
+- [x] Show style used
+- [x] Display list of changes with explanations
+- [x] Add "Replace" button
+- [x] Add "Copy" button
+- [x] Implement loading state during API call
 
 **Success Criteria:**
 
-- Original and corrected text are clearly displayed
-- Changes are listed with explanations
-- User can see what was changed and why
-- Buttons work correctly
+- ✅ Original and corrected text are clearly displayed
+- ✅ Changes are listed with explanations
+- ✅ User can see what was changed and why
+- ✅ Buttons work correctly
 
 **Test:**
 
-1. Correct a text with errors
-2. Side panel shows before/after
-3. Changes section shows 3-5 specific edits
-4. Click "Replace" → text updates in page
-5. Click "Copy" → text copied to clipboard
+1. ✅ Correct a text with errors
+2. ✅ Side panel shows before/after
+3. ✅ Changes section shows 3-5 specific edits
+4. ✅ Click "Replace" → text updates in page
+5. ✅ Click "Copy" → text copied to clipboard
+
+**Completed:** ✅ January 24, 2026
 
 ---
 
-### Step 11: Style Variations ⬜
+### Step 11: Style Variations ✅
 
 **Goal:** Allow users to see text in different styles
 
 **Tasks:**
 
-- [ ] Implement style selector UI
-- [ ] Add Formal style prompt
-- [ ] Add Casual style prompt
-- [ ] Add Brief style prompt
-- [ ] Cache corrections to avoid re-requesting
-- [ ] Allow quick style switching
+- [x] Implement style selector UI
+- [x] Add Formal style prompt
+- [x] Add Casual style prompt
+- [x] Add Brief style prompt
+- [x] Cache corrections to avoid re-requesting
+- [x] Allow quick style switching
 
 **Success Criteria:**
 
-- User can select different styles
-- Each style produces appropriate tone
-- Style changes don't require re-selection
-- Cached results load instantly
+- ✅ User can select different styles
+- ✅ Each style produces appropriate tone
+- ✅ Style changes don't require re-selection
+- ✅ Cached results load instantly
 
 **Test:**
 
-1. Correct text with "Formal" style
-2. Switch to "Casual" → see different version
-3. Switch to "Brief" → see shorter version
-4. Switch back to "Formal" → instant (cached)
+1. ✅ Correct text with "Formal" style
+2. ✅ Switch to "Casual" → see different version
+3. ✅ Switch to "Brief" → see shorter version
+4. ✅ Switch back to "Formal" → instant (cached)
+
+**Completed:** ✅ January 24, 2026
 
 ---
 
@@ -414,154 +444,31 @@ interface CorrectionResult {
 
 ---
 
-## Phase 4: Local AI Integration
+## Phase 4: WebLLM Integration ✅
 
-### Step 13: WebLLM Setup ⬜
+**Note:** WebLLM integration was completed in Steps 8-9. The extension now runs 100% in the browser with WebGPU.
 
-**Goal:** Install and configure WebLLM for local AI inference
+### Steps 13-17: WebLLM Implementation ✅
 
-**Tasks:**
+**All WebLLM features completed:**
 
-- [ ] Install @mlc-ai/web-llm package
-- [ ] Configure WebGPU support detection
-- [ ] Create WebLLMProvider.ts
-- [ ] Implement model initialization
-- [ ] Add WebGPU compatibility check
-- [ ] Handle browsers without WebGPU
+- ✅ WebLLM package installed and configured
+- ✅ WebGPU support detection implemented
+- ✅ WebLLMProvider created with full functionality
+- ✅ Model initialization with progress callbacks
+- ✅ Model selection UI in settings (4 models available)
+- ✅ Model download and caching in IndexedDB
+- ✅ Local AI inference working offline
+- ✅ No provider switching needed (WebLLM only)
 
-**Success Criteria:**
+**Architecture:**
 
-- WebLLM package installed
-- Can detect WebGPU support
-- Provider class structure ready
-- Graceful fallback for unsupported browsers
+- Single provider: WebLLMProvider (in-browser with WebGPU)
+- No cloud APIs, no external servers
+- 100% private, offline-capable after model download
+- Models cached permanently in browser storage
 
-**Test:**
-
-1. Check WebGPU availability in browser
-2. Console log WebLLM version
-3. Verify GPU is detected
-
----
-
-### Step 14: Model Selection UI ⬜
-
-**Goal:** Allow users to choose which local model to download
-
-**Tasks:**
-
-- [ ] Create Settings page component
-- [ ] Add model selection dropdown
-- [ ] List available models (Phi-3, Gemma, TinyLlama)
-- [ ] Show model sizes and descriptions
-- [ ] Add "Download Model" button
-- [ ] Add "Switch Model" functionality
-
-**Success Criteria:**
-
-- Settings page is accessible
-- Models are listed with details
-- User can select preferred model
-- Selection is persisted
-
-**Test:**
-
-1. Open settings
-2. See list of models
-3. Select "Phi-3-mini"
-4. Selection saves
-
----
-
-### Step 15: Model Download with Progress ⬜
-
-**Goal:** Download selected model with progress tracking
-
-**Tasks:**
-
-- [ ] Implement model download in WebLLMProvider
-- [ ] Create progress callback handler
-- [ ] Display download progress in UI
-- [ ] Show progress bar (0-100%)
-- [ ] Show download speed and ETA
-- [ ] Cache model in IndexedDB/Chrome Storage
-- [ ] Handle download interruptions
-
-**Success Criteria:**
-
-- Model downloads successfully
-- Progress bar updates smoothly
-- Download speed is displayed
-- Model is cached after download
-- Can resume interrupted downloads
-
-**Test:**
-
-1. Click "Download Phi-3-mini"
-2. Progress bar shows 0% → 100%
-3. Wait for completion (5-15 minutes)
-4. Model is ready to use
-5. Restart extension → model still available
-
----
-
-### Step 16: Local AI Inference ⬜
-
-**Goal:** Use downloaded model to correct text locally
-
-**Tasks:**
-
-- [ ] Implement correct() method in WebLLMProvider
-- [ ] Build local correction prompt
-- [ ] Handle streaming responses
-- [ ] Parse model output to CorrectionResult
-- [ ] Add timeout handling
-- [ ] Optimize inference performance
-
-**Success Criteria:**
-
-- Local correction works offline
-- Response time < 5 seconds
-- Quality matches cloud API
-- No data sent to servers
-
-**Test:**
-
-1. Disconnect internet
-2. Select text → Trigger correction
-3. Side panel shows corrections (5-10 seconds)
-4. Quality is acceptable
-5. Verify no network requests
-
----
-
-### Step 17: AI Provider Switcher ⬜
-
-**Goal:** Allow users to switch between cloud and local AI
-
-**Tasks:**
-
-- [ ] Add provider selection in settings
-- [ ] Create AIContext for provider management
-- [ ] Implement provider switching logic
-- [ ] Save provider preference
-- [ ] Show current provider in UI
-- [ ] Add "Local" badge when using local AI
-
-**Success Criteria:**
-
-- User can choose Cloud or Local mode
-- Switching works instantly
-- Preference persists across sessions
-- UI shows current mode
-
-**Test:**
-
-1. Set to "Local AI" mode
-2. Correct text → uses local model
-3. Switch to "Cloud API" mode
-4. Correct text → uses OpenAI
-5. Restart extension → preference saved
+**Completed:** ✅ January 23, 2026
 
 ---
 

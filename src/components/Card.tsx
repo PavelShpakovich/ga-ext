@@ -5,9 +5,10 @@ interface CardProps {
   children: React.ReactNode;
   className?: string;
   title?: string;
+  badge?: React.ReactNode;
 }
 
-export const Card: React.FC<CardProps> = ({ children, className, title }) => {
+export const Card: React.FC<CardProps> = ({ children, className, title, badge }) => {
   return (
     <div
       className={clsx(
@@ -15,7 +16,10 @@ export const Card: React.FC<CardProps> = ({ children, className, title }) => {
         className,
       )}
     >
-      {title && <h3 className='text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2'>{title}</h3>}
+      <div className='flex justify-between items-center mb-2'>
+        {title && <h3 className='text-sm font-semibold text-gray-700 dark:text-gray-300'>{title}</h3>}
+        {badge && <div>{badge}</div>}
+      </div>
       {children}
     </div>
   );

@@ -7,12 +7,8 @@ export enum CorrectionStyle {
 }
 
 export interface Change {
-  type: 'grammar' | 'spelling' | 'style' | 'tone';
-  original: string;
-  corrected: string;
+  type: 'grammar' | 'spelling' | 'punctuation' | 'style' | 'clarity' | 'error';
   explanation: string;
-  position?: { start: number; end: number };
-  importance?: 'high' | 'medium' | 'low';
 }
 
 export interface CorrectionResult {
@@ -24,15 +20,8 @@ export interface CorrectionResult {
   summary?: string;
 }
 
-export interface Message {
-  action: string;
-  [key: string]: any;
-}
-
 export interface Settings {
   theme: 'light' | 'dark' | 'system';
   defaultStyle: CorrectionStyle;
-  aiProvider: 'cloud' | 'local';
-  selectedModel?: string;
-  apiKey?: string;
+  selectedModel: string;
 }

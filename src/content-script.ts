@@ -35,8 +35,6 @@ function replaceSelectedText(newText: string): void {
   if (!selection || selection.rangeCount === 0) return;
 
   const range = selection.getRangeAt(0);
-  const container = range.commonAncestorContainer;
-
   // Handle different input types
   const activeElement = document.activeElement as HTMLElement;
 
