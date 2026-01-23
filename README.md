@@ -5,21 +5,25 @@ Privacy-first AI-powered grammar correction Chrome extension.
 ## Development
 
 ### Install Dependencies
+
 ```bash
 npm install
 ```
 
 ### Build for Development
+
 ```bash
 npm run dev
 ```
 
 ### Build for Production
+
 ```bash
 npm run build
 ```
 
 ### Load in Chrome
+
 1. Open Chrome and go to `chrome://extensions/`
 2. Enable "Developer mode"
 3. Click "Load unpacked"
