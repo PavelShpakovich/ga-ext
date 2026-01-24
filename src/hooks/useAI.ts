@@ -5,12 +5,6 @@ import { ProviderFactory, WebLLMProvider } from '../providers';
 import { CorrectionResult, CorrectionStyle } from '../types';
 import { Storage, Logger } from '../services';
 
-declare global {
-  interface Window {
-    __webllmProvider: unknown;
-  }
-}
-
 export const useAI = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -28,13 +22,10 @@ export const useAI = () => {
 
       Logger.debug('useAI', 'Starting correction', { style, model: userSettings.selectedModel });
 
-      // Create AI provider
+      // Create AI provider via ProviderFactory (singleton pattern)
+      // This ensures the same instance is used for stopDownload operations
       const aiProvider = ProviderFactory.createProvider(userSettings.selectedModel);
       setProvider(aiProvider);
-
-      // Store provider globally BEFORE initialization so stopDownload works during download
-      // TODO: Move to a proper singleton service management
-      window.__webllmProvider = aiProvider;
 
       // Check availability (includes WebGPU check and model initialization)
       const isAvailable = await aiProvider.isAvailable();

@@ -6,17 +6,11 @@ export enum CorrectionStyle {
   BRIEF = 'brief',
 }
 
-export interface Change {
-  type: 'grammar' | 'spelling' | 'punctuation' | 'style' | 'clarity' | 'error';
-  explanation: string;
-}
-
 export interface CorrectionResult {
   original: string;
   corrected: string;
   style: CorrectionStyle;
-  changes: Change[];
-  confidence: number;
+  explanation?: string;
   summary?: string;
 }
 

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '../Button';
 import { CorrectionResult } from '../../types';
 import { Check, Copy, RefreshCw } from 'lucide-react';
+import { Logger } from '../../services/Logger';
 
 interface CorrectionActionsProps {
   correctionResult: CorrectionResult;
@@ -26,7 +27,7 @@ export const CorrectionActions: React.FC<CorrectionActionsProps> = ({ correction
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error('Failed to copy to clipboard', err);
+      Logger.error('CorrectionActions', 'Failed to copy to clipboard', err);
     }
   };
 
@@ -36,7 +37,7 @@ export const CorrectionActions: React.FC<CorrectionActionsProps> = ({ correction
         <RefreshCw className='w-4 h-4' />
         Replace Text
       </Button>
-      <Button variant='secondary' onClick={handleCopy} className='flex items-center justify-center gap-2 min-w-[100px]'>
+      <Button variant='secondary' onClick={handleCopy} className='flex items-center justify-center gap-2 min-w-25'>
         {copied ? <Check className='w-4 h-4 text-green-500' /> : <Copy className='w-4 h-4' />}
         {copied ? 'Copied' : 'Copy'}
       </Button>

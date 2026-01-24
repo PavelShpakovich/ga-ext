@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Settings, FileText, ExternalLink, ChevronRight } from 'lucide-react';
 import { Alert, IconButton, Divider, Kbd, Badge } from '../components/ui';
-import { ModelSelector } from '../components/settings/ModelSelector';
+import { ModelManager } from '../components/settings/ModelManager';
 import { StorageManagement } from '../components/settings/StorageManagement';
 import { FeaturesList } from '../components/settings/FeaturesList';
 import { Button } from '../components/Button';
@@ -37,8 +37,8 @@ const Popup: React.FC = () => {
   const selectedModelInfo = getModelInfo(settings.selectedModel);
 
   return (
-    <div className='w-80 min-h-[400px] flex flex-col bg-gray-50 dark:bg-gray-900 font-sans text-gray-900'>
-      <header className='flex items-center justify-between p-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm z-10'>
+    <div className='w-80 h-[600px] flex flex-col bg-gray-50 dark:bg-gray-900 font-sans text-gray-900'>
+      <header className='flex items-center justify-between p-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm z-10 shrink-0'>
         <div className='flex items-center gap-2'>
           <div className='p-1.5 bg-blue-50 dark:bg-blue-900/30 rounded-lg'>
             <FileText className='w-5 h-5 text-blue-600 dark:text-blue-400' />
@@ -80,12 +80,10 @@ const Popup: React.FC = () => {
               </Button>
             </div>
 
-            <ModelSelector
+            <ModelManager
               selectedModel={settings.selectedModel}
-              selectGroups={selectGroups}
-              modelInfo={selectedModelInfo}
-              modelsCount={allModels.length}
               onModelChange={handleModelChange}
+              onSettingsClose={() => setShowSettings(false)}
             />
 
             <StorageManagement
@@ -118,7 +116,7 @@ const Popup: React.FC = () => {
             <div className='bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm'>
               <div className='flex justify-between items-center text-xs text-gray-500 dark:text-gray-400'>
                 <span>Active Model:</span>
-                <span className='font-medium text-blue-600 dark:text-blue-400 truncate max-w-[150px]'>
+                <span className='font-medium text-blue-600 dark:text-blue-400 truncate max-w-37.5'>
                   {selectedModelInfo?.name || settings.selectedModel}
                 </span>
               </div>
@@ -127,7 +125,7 @@ const Popup: React.FC = () => {
         )}
       </main>
 
-      <footer className='p-3 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-200 dark:border-gray-700'>
+      <footer className='shrink-0 p-3 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-200 dark:border-gray-700'>
         <div className='flex items-center justify-between text-xs text-gray-500 dark:text-gray-400'>
           <div className='flex items-center gap-1.5'>
             <Kbd>Cmd</Kbd> + <Kbd>Shift</Kbd> + <Kbd>E</Kbd>

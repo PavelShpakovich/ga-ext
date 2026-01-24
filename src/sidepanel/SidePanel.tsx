@@ -13,7 +13,6 @@ import { DownloadStatus } from '../components/correction/DownloadStatus';
 import { ProcessingStatus } from '../components/correction/ProcessingStatus';
 import { ErrorDisplay } from '../components/correction/ErrorDisplay';
 import { CorrectionActions } from '../components/correction/CorrectionActions';
-import { ChangesList } from '../components/correction/ChangesList';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { Logger } from '../services';
 
@@ -138,8 +137,6 @@ const SidePanelContent: React.FC = () => {
                     <p className='text-sm text-gray-700 dark:text-gray-300'>{correctionResult.summary}</p>
                   </Card>
                 )}
-
-                <ChangesList changes={correctionResult.changes} />
               </div>
             )}
           </div>

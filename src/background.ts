@@ -45,14 +45,25 @@ chrome.commands.onCommand.addListener((command, tab) => {
 
 // Handle messages from content script and side panel
 chrome.runtime.onMessage.addListener((message, sender, _sendResponse) => {
-  Logger.debug('Background', 'Message received', { action: message.action });
+  Logger.debug('Background', 'Message received', { action: message.action, fromTab: !!sender.tab });
 
   if (message.action === 'openSidePanel') {
+    // If message comes from a tab (content script), use that tab ID
     if (sender.tab?.id) {
       chrome.sidePanel.open({ tabId: sender.tab.id });
       if (message.text) {
         chrome.storage.local.set({ pendingText: message.text });
       }
+    } else {
+      // If message comes from popup, query the active tab
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs[0]?.id) {
+          chrome.sidePanel.open({ tabId: tabs[0].id });
+          if (message.text) {
+            chrome.storage.local.set({ pendingText: message.text });
+          }
+        }
+      });
     }
   }
 

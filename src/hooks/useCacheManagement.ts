@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { WebLLMProvider } from '../providers/WebLLMProvider';
+import { Logger } from '../services/Logger';
 
 export const useCacheManagement = () => {
   const [cacheSize, setCacheSize] = useState<string>('');
@@ -39,7 +40,7 @@ export const useCacheManagement = () => {
       setTimeout(() => setClearSuccess(false), 3000);
       return true;
     } catch (error) {
-      console.error('Failed to clear cache:', error);
+      Logger.error('CacheManagement', 'Failed to clear cache', error);
       alert('Failed to clear cache. Please try again.');
       return false;
     } finally {

@@ -1,4 +1,6 @@
-console.log('Grammar Assistant: Content script loaded');
+import { Logger } from './services/Logger';
+
+Logger.info('ContentScript', 'Content script loaded');
 
 // Listen for text selection
 let selectedText = '';
@@ -7,13 +9,13 @@ document.addEventListener('mouseup', () => {
   const selection = window.getSelection();
   if (selection && selection.toString().trim().length > 0) {
     selectedText = selection.toString().trim();
-    console.log('Grammar Assistant: Text selected', { length: selectedText.length });
+    Logger.debug('ContentScript', 'Text selected', { length: selectedText.length });
   }
 });
 
 // Listen for messages from background script
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  console.log('Grammar Assistant: Content script received message', message);
+  Logger.debug('ContentScript', 'Received message', { action: message.action });
 
   if (message.action === 'getSelectedText') {
     const selection = window.getSelection();
@@ -70,5 +72,5 @@ function replaceSelectedText(newText: string): void {
     range.insertNode(document.createTextNode(newText));
   }
 
-  console.log('Grammar Assistant: Text replaced');
+  Logger.info('ContentScript', 'Text replaced', { length: newText.length });
 }

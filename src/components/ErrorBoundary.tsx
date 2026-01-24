@@ -24,7 +24,6 @@ export class ErrorBoundary extends Component<Props, State> {
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     Logger.error('ErrorBoundary', 'Uncaught error:', { error, errorInfo });
-    console.error('Uncaught error:', error, errorInfo);
 
     if (this.props.onError) {
       this.props.onError(error, errorInfo);
@@ -38,7 +37,7 @@ export class ErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <div className='flex flex-col items-center justify-center p-6 text-center h-full min-h-[200px]'>
+        <div className='flex flex-col items-center justify-center p-6 text-center h-full min-h-50'>
           <div className='text-red-500 mb-4'>
             <svg
               xmlns='http://www.w3.org/2000/svg'

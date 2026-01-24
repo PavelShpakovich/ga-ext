@@ -77,7 +77,7 @@ class StorageService {
   }
 
   /**
-   * Clear specific keys or valid storage
+   * Clear all storage
    */
   public async clear(): Promise<void> {
     try {

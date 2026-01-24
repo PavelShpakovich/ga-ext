@@ -53,60 +53,61 @@ export abstract class AIProvider {
   protected buildPrompt(text: string, style: CorrectionStyle): string {
     const styleInstructions = {
       formal:
-        'Elevate the tone to be professional, precise, and academic. Use sophisticated vocabulary but DO NOT alter technical terms, proper nouns, or specific data. Avoid contractions, slang, and ambiguity. Ensure a respectful, objective tone while strictly preserving the original meaning.',
+        "Professional tone for business/academic writing. Use complete words (don't→do not). Avoid contractions and casual language.",
       casual:
-        'Rewrite for a friendly, social context (like a message to a colleague or friend). Use natural, conversational phrasing and contractions. The tone should be warm, authentic, and approachable, but remain clear and coherent.',
-      brief:
-        'Condense the text to its absolute essentials. Ruthlessly remove fluff, filler words, redundancy, and unnecessary formatting. Use active voice/imperative mood where appropriate. The result should be punchy, direct, and shorter than the original.',
+        'Friendly, conversational tone for social/informal contexts. Contractions welcome. Keep it natural and warm.',
+      brief: 'Concise and direct. Remove filler words. Use active voice. Keep only essential information.',
     };
 
-    return `Task: Acting as an expert editor, correct and improve the user's text.
-
-Target Style: ${style.toUpperCase()}
-Style Goal: ${styleInstructions[style]}
-
-Input Text:
+    return `Improve this text:
 "${text}"
 
-Execution Steps:
-1. Fix all grammatical, spelling, and punctuation errors primarily.
-2. Apply the requested style transformations (vocabulary, tone, sentence structure).
-3. Verify that the core meaning and specific entities (names, dates, technical terms) remain UNCHANGED.
+Style: ${style.toUpperCase()}
+${styleInstructions[style]}
 
-Output Requirements:
-1. Return ONLY valid JSON.
-2. If no corrections are needed, return an empty "changes" array.
-3. "confidence" must be 0-1.
+IMPORTANT - Never change:
+- Names, emails, @mentions
+- URLs, numbers, dates
+- Technical terms, company names
 
-JSON Response Format:
-{
-  "corrected": "The polished text",
-  "changes": [
-    {
-      "type": "grammar" | "spelling" | "punctuation" | "style" | "clarity",
-      "explanation": "Concise reason for the change"
-    }
-  ],
-  "confidence": 0.95,
-  "summary": "Brief summary of improvements"
-}
+Provide:
+- Corrected text
+- Brief explanation of improvements made
 
-Analyze text:`;
+Output JSON only:
+{"corrected":"improved text","explanation":"brief reason"}`;
   }
 
   /**
    * Get system prompt for the AI model
    */
   protected getSystemPrompt(): string {
-    return `You are Grammar Assistant, an expert AI writing editor.
-Your mission is to polish user text to perfection based on their selected style (Formal, Casual, Brief).
+    return `You are Grammar Assistant, helping non-native English speakers write better.
 
-Core Principles:
-1. ACCURACY: Fix all objective errors (grammar, spelling) first.
-2. MEANING: Never alter the underlying meaning, facts, or technical terminology.
-3. STYLE: Adapt the tone precisely to the requested style guide.
-4. FORMAT: Always output strict, valid JSON.
+Your mission:
+- Fix grammar, spelling, and punctuation errors
+- Improve clarity and readability
+- Adjust tone to match the requested style
+- Preserve the original meaning completely
+- Help users learn from corrections
 
-You are running locally on the user's device. Be efficient, precise, and helpful.`;
+CRITICAL - NEVER change:
+- Email addresses (user@domain.com)
+- @mentions (@username)
+- People's names (John, Maria, etc.)
+- URLs and links
+- Code snippets
+- Technical terms
+- Numbers and dates
+- Company/product names
+
+Output format (valid JSON only):
+{"corrected":"fixed text","explanation":"why changed"}
+
+Rules:
+- Start with { and end with }
+- No reasoning or thinking
+- No markdown formatting
+- Keep explanations under 10 words`;
   }
 }

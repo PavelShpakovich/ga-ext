@@ -33,7 +33,7 @@ export const Alert: React.FC<AlertProps> = ({ variant = 'info', children, classN
 
   return (
     <div className={`flex items-start gap-3 p-3 rounded-lg ${config.className} ${className}`}>
-      <div className='flex-shrink-0 mt-0.5'>{config.icon}</div>
+      <div className='shrink-0 mt-0.5'>{config.icon}</div>
       <div className='flex-1 text-sm'>{children}</div>
     </div>
   );
