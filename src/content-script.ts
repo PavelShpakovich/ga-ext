@@ -3,16 +3,33 @@ import { Logger } from './services/Logger';
 Logger.info('ContentScript', 'Content script loaded');
 
 // Listen for text selection
-let selectedText = '';
+let lastActiveElement: HTMLInputElement | HTMLTextAreaElement | null = null;
+let lastSelectionRange: Range | null = null;
+let lastInteractedElement: HTMLElement | null = null;
+
+const getDeepActiveElement = (root: Document | ShadowRoot = document): Element | null => {
+  const activeEl = root.activeElement;
+  if (!activeEl) return null;
+  if (activeEl.shadowRoot) {
+    return getDeepActiveElement(activeEl.shadowRoot) || activeEl;
+  }
+  return activeEl;
+};
 
 const getActiveSelectionText = (): string => {
   const selection = window.getSelection();
   const selectionText = selection?.toString().trim() || '';
+
   if (selectionText) {
+    // If we have a selection, update the range tracker
+    if (selection && selection.rangeCount > 0) {
+      lastSelectionRange = selection.getRangeAt(0).cloneRange();
+      lastActiveElement = null;
+    }
     return selectionText;
   }
 
-  const activeElement = document.activeElement as HTMLElement | null;
+  const activeElement = (getDeepActiveElement() as HTMLElement) || lastInteractedElement;
   if (!activeElement) return '';
 
   if (activeElement.tagName === 'TEXTAREA' || activeElement.tagName === 'INPUT') {
@@ -20,24 +37,52 @@ const getActiveSelectionText = (): string => {
     const start = input.selectionStart ?? 0;
     const end = input.selectionEnd ?? 0;
     if (start !== end) {
+      lastActiveElement = input;
+      lastSelectionRange = null;
       return input.value.substring(start, end).trim();
     }
+  }
+
+  // Handle contenteditable if no text is explicitly selected but element is focused
+  if (activeElement.isContentEditable) {
+    lastInteractedElement = activeElement;
+    return activeElement.innerText.trim();
   }
 
   return '';
 };
 
 const updateSelectedText = () => {
-  const nextText = getActiveSelectionText();
-  if (nextText && nextText !== selectedText) {
-    selectedText = nextText;
-    Logger.debug('ContentScript', 'Text selected', { length: selectedText.length });
+  const selection = window.getSelection();
+  const activeElement = getDeepActiveElement() as HTMLElement;
+
+  if (activeElement && activeElement !== document.body) {
+    lastInteractedElement = activeElement;
+  }
+
+  // Track standard inputs
+  if (activeElement && (activeElement.tagName === 'TEXTAREA' || activeElement.tagName === 'INPUT')) {
+    const input = activeElement as HTMLInputElement | HTMLTextAreaElement;
+    if (input.selectionStart !== input.selectionEnd) {
+      lastActiveElement = input;
+      lastSelectionRange = null;
+    }
+  } else if (selection && selection.rangeCount > 0 && selection.toString().trim()) {
+    // Track DOM selection (including contenteditable)
+    lastSelectionRange = selection.getRangeAt(0).cloneRange();
+    lastActiveElement = null;
   }
 };
 
 document.addEventListener('selectionchange', updateSelectedText);
 document.addEventListener('mouseup', updateSelectedText);
 document.addEventListener('keyup', updateSelectedText);
+document.addEventListener('focusin', (e) => {
+  const target = e.target as HTMLElement;
+  if (target && target !== document.body) {
+    lastInteractedElement = target;
+  }
+});
 
 // Listen for messages from background script
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -48,67 +93,5 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     sendResponse({ text });
   }
 
-  if (message.action === 'replaceText') {
-    replaceSelectedText(message.text);
-    sendResponse({ success: true });
-  }
-
   return true;
 });
-
-// Replace selected text in DOM
-function replaceSelectedText(newText: string): void {
-  // Handle different input types
-  const activeElement = document.activeElement as HTMLElement | null;
-
-  if (activeElement && (activeElement.tagName === 'TEXTAREA' || activeElement.tagName === 'INPUT')) {
-    // Standard input/textarea
-    const input = activeElement as HTMLInputElement | HTMLTextAreaElement;
-    const start = input.selectionStart ?? input.value.length;
-    const end = input.selectionEnd ?? input.value.length;
-    const value = input.value;
-
-    input.value = value.substring(0, start) + newText + value.substring(end);
-    input.selectionStart = input.selectionEnd = start + newText.length;
-
-    // Trigger input event for React/Vue
-    input.dispatchEvent(new Event('input', { bubbles: true }));
-    input.dispatchEvent(new Event('change', { bubbles: true }));
-    Logger.info('ContentScript', 'Text replaced', { length: newText.length, target: activeElement.tagName });
-    return;
-  }
-
-  const selection = window.getSelection();
-  if (!selection || selection.rangeCount === 0) {
-    if (activeElement && activeElement.isContentEditable) {
-      const existing = activeElement.textContent || '';
-      activeElement.textContent = `${existing}${newText}`;
-      activeElement.dispatchEvent(new Event('input', { bubbles: true }));
-      Logger.info('ContentScript', 'Text replaced (contenteditable append)', { length: newText.length });
-    }
-    return;
-  }
-
-  const range = selection.getRangeAt(0);
-
-  if (activeElement && activeElement.isContentEditable) {
-    // ContentEditable elements
-    range.deleteContents();
-    range.insertNode(document.createTextNode(newText));
-
-    // Move cursor to end of inserted text
-    range.setStart(range.endContainer, range.endOffset);
-    range.collapse(true);
-    selection.removeAllRanges();
-    selection.addRange(range);
-
-    // Trigger input event
-    activeElement.dispatchEvent(new Event('input', { bubbles: true }));
-  } else {
-    // Fallback: just replace text in range
-    range.deleteContents();
-    range.insertNode(document.createTextNode(newText));
-  }
-
-  Logger.info('ContentScript', 'Text replaced', { length: newText.length });
-}

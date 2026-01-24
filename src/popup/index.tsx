@@ -1,6 +1,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import '../styles/global.css';
+import '../i18n';
 import Popup from './Popup';
 
 const container = document.getElementById('root');

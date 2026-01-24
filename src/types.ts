@@ -4,6 +4,10 @@
 // which leaves room for future tone tweaks without widening the surface area elsewhere.
 export enum CorrectionStyle {
   FORMAL = 'formal',
+  STANDARD = 'standard',
+  SIMPLE = 'simple',
+  ACADEMIC = 'academic',
+  CASUAL = 'casual',
 }
 
 export interface CorrectionResult {
@@ -34,4 +38,6 @@ export interface ModelOption {
 
 export interface Settings {
   selectedModel: string;
+  selectedStyle: CorrectionStyle;
+  language: 'en' | 'ru';
 }

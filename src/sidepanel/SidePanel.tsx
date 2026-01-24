@@ -8,22 +8,16 @@ import { useSettings } from '../hooks/useSettings';
 import { useModelSelection } from '../hooks/useModelSelection';
 import { generateCacheKey } from '../utils/helpers';
 import { SidebarHeader, ModelSection, TextSection, ResultSection } from './components';
+import { useTranslation } from 'react-i18next';
+import { Modal } from '../components/ui';
+import { StyleSelector } from '../components/StyleSelector';
+import { CorrectionStyle } from '../types';
 
 // --- Constants ---
-const UI_STRINGS = {
-  TITLE: 'Grammar Assistant',
-  SUBTITLE: 'Local WebGPU Session',
-  MODEL_SECTION: 'AI Model',
-  TEXT_SECTION: 'Source Text',
-  RESULT_SECTION: 'Corrected Result',
-  TEXT_PLACEHOLDER: 'Start typing or paste content...',
-  EMPTY_TEXT_HINT: 'Select text on any webpage or type directly here to begin.',
-  REASONING_LABEL: 'Improvements & Reasoning',
-} as const;
-
 const AUTO_HIDE_DELAY = 3500;
 
 const SidePanelContent: React.FC = () => {
+  const { t } = useTranslation();
   const [text, setText] = useState('');
   const [localMessage, setLocalMessage] = useState<string | null>(null);
   const [isPrefetching, setIsPrefetching] = useState(false);
@@ -31,6 +25,19 @@ const SidePanelContent: React.FC = () => {
   const [isRemovingModel, setIsRemovingModel] = useState(false);
   const [showDebug, setShowDebug] = useState(false);
   const [isModelCached, setIsModelCached] = useState(false);
+
+  const [modalConfig, setModalConfig] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    variant?: 'danger' | 'info';
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  });
 
   const lastAutoRunKey = useRef<string | null>(null);
   const shouldAutoRunRef = useRef<boolean>(false);
@@ -68,11 +75,25 @@ const SidePanelContent: React.FC = () => {
     [updateSettings],
   );
 
+  const handleStyleChange = useCallback(
+    (style: CorrectionStyle) => {
+      updateSettings({ selectedStyle: style });
+      lastAutoRunKey.current = null;
+      shouldAutoRunRef.current = true;
+    },
+    [updateSettings],
+  );
+  const handleLanguageChange = useCallback(
+    (lang: 'en' | 'ru') => {
+      updateSettings({ language: lang });
+    },
+    [updateSettings],
+  );
   const handleCorrect = useCallback(async () => {
     const trimmed = text.trim();
     if (!trimmed || isBusy) return;
     try {
-      await runCorrection(trimmed, selectedModel);
+      await runCorrection(trimmed, selectedModel, settings.selectedStyle);
       lastAutoRunKey.current = generateCacheKey(selectedModel, trimmed);
       shouldAutoRunRef.current = false;
       const cached = await WebLLMProvider.isModelCached(selectedModel);
@@ -80,7 +101,7 @@ const SidePanelContent: React.FC = () => {
     } catch {
       // Error handled by useAI
     }
-  }, [text, selectedModel, isBusy, runCorrection]);
+  }, [text, selectedModel, isBusy, runCorrection, settings.selectedStyle]);
 
   const handlePrefetch = useCallback(async () => {
     setIsPrefetching(true);
@@ -88,66 +109,70 @@ const SidePanelContent: React.FC = () => {
     try {
       const provider = ProviderFactory.createProvider(selectedModel);
       await provider.ensureReady();
-      setLocalMessage('Model synchronised');
+      setLocalMessage(t('messages.model_synced'));
       const cached = await WebLLMProvider.isModelCached(selectedModel);
       setIsModelCached(cached);
     } catch (err: any) {
-      setLocalMessage(err.message || 'Synchronisation failed');
+      if (err.message === 'aborted') {
+        setLocalMessage(null);
+      } else {
+        setLocalMessage(err.message || t('messages.sync_failed'));
+      }
     } finally {
       setIsPrefetching(false);
     }
-  }, [selectedModel]);
+  }, [selectedModel, t]);
 
   const handleRemoveModel = useCallback(async () => {
-    if (!window.confirm('Remove this model from local disk?')) return;
-    setIsRemovingModel(true);
-    try {
-      await WebLLMProvider.deleteModel(selectedModel);
-      setLocalMessage('Model removed');
-      setIsModelCached(false);
-      reset();
-    } catch (err: any) {
-      setLocalMessage(err.message || 'Removal failed');
-    } finally {
-      setIsRemovingModel(false);
-    }
-  }, [selectedModel, reset]);
+    setModalConfig({
+      isOpen: true,
+      title: t('ui.flush_cache'),
+      message: t('messages.confirm_remove_model'),
+      variant: 'danger',
+      onConfirm: async () => {
+        setIsRemovingModel(true);
+        try {
+          await WebLLMProvider.deleteModel(selectedModel);
+          setLocalMessage(t('messages.model_removed'));
+          setIsModelCached(false);
+          reset();
+        } catch (err: any) {
+          setLocalMessage(err.message || t('messages.removal_failed'));
+        } finally {
+          setIsRemovingModel(false);
+        }
+      },
+    });
+  }, [selectedModel, reset, t]);
 
   const handleClearCache = useCallback(async () => {
-    if (!window.confirm('This will delete ALL downloaded models. Continue?')) return;
-    setIsDeleting(true);
-    try {
-      await WebLLMProvider.clearCache();
-      setLocalMessage('Cache cleared');
-      setIsModelCached(false);
-      reset();
-    } catch (err: any) {
-      setLocalMessage(err.message || 'Cache clear failed');
-    } finally {
-      setIsDeleting(false);
-    }
-  }, [reset]);
+    setModalConfig({
+      isOpen: true,
+      title: t('ui.purge_storage'),
+      message: t('messages.confirm_clear_cache'),
+      variant: 'danger',
+      onConfirm: async () => {
+        setIsDeleting(true);
+        try {
+          await WebLLMProvider.clearCache();
+          setLocalMessage(t('messages.cache_cleared'));
+          setIsModelCached(false);
+          reset();
+        } catch (err: any) {
+          setLocalMessage(err.message || t('messages.cache_failed'));
+        } finally {
+          setIsDeleting(false);
+        }
+      },
+    });
+  }, [reset, t]);
 
   const handleCopy = useCallback(() => {
     if (result?.corrected) {
       navigator.clipboard.writeText(result.corrected);
-      setLocalMessage('Copied to clipboard');
+      setLocalMessage(t('messages.copied'));
     }
-  }, [result]);
-
-  const handleReplaceSelection = useCallback(() => {
-    if (result?.corrected) {
-      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        if (tabs[0]?.id) {
-          chrome.tabs.sendMessage(tabs[0].id, {
-            action: 'replaceText',
-            text: result.corrected,
-          });
-          setLocalMessage('Text replaced');
-        }
-      });
-    }
-  }, [result]);
+  }, [result, t]);
 
   useEffect(() => {
     if (localMessage) {
@@ -181,7 +206,7 @@ const SidePanelContent: React.FC = () => {
 
     const triggerAutoRun = async () => {
       try {
-        await runCorrection(trimmed, selectedModel);
+        await runCorrection(trimmed, selectedModel, settings.selectedStyle);
         lastAutoRunKey.current = key;
         shouldAutoRunRef.current = false;
         const cached = await WebLLMProvider.isModelCached(selectedModel);
@@ -193,7 +218,7 @@ const SidePanelContent: React.FC = () => {
     };
 
     triggerAutoRun();
-  }, [isBusy, runCorrection, selectedModel, text]);
+  }, [isBusy, runCorrection, selectedModel, text, settings.selectedStyle]);
 
   useEffect(() => {
     let mounted = true;
@@ -207,11 +232,17 @@ const SidePanelContent: React.FC = () => {
 
   return (
     <div className='h-screen flex flex-col bg-[#F8FAFC] dark:bg-[#0F172A] text-slate-900 dark:text-slate-50 font-sans selection:bg-blue-100 dark:selection:bg-blue-900/40'>
-      <SidebarHeader title={UI_STRINGS.TITLE} subtitle={UI_STRINGS.SUBTITLE} isModelCached={isModelCached} />
+      <SidebarHeader
+        title={t('ui.title')}
+        subtitle={t('ui.subtitle')}
+        isModelCached={isModelCached}
+        language={settings.language}
+        onLanguageChange={handleLanguageChange}
+      />
 
       <main className='flex-1 overflow-y-auto p-6 space-y-6 scroll-smooth'>
         <ModelSection
-          title={UI_STRINGS.MODEL_SECTION}
+          title={t('ui.model_section')}
           selectedModel={selectedModel}
           onModelChange={handleModelChange}
           modelOptions={modelOptions}
@@ -227,8 +258,15 @@ const SidePanelContent: React.FC = () => {
           onStopDownload={stopDownload}
         />
 
+        <StyleSelector
+          selected={settings.selectedStyle}
+          onChange={handleStyleChange}
+          onRecheck={handleCorrect}
+          disabled={isBusy || !text.trim()}
+        />
+
         <TextSection
-          title={UI_STRINGS.TEXT_SECTION}
+          title={t('ui.text_section')}
           text={text}
           onTextChange={(val) => {
             setText(val);
@@ -242,16 +280,15 @@ const SidePanelContent: React.FC = () => {
           isBusy={isBusy}
           hasResult={!!result}
           isResultStale={isResultStale}
-          placeholder={UI_STRINGS.TEXT_PLACEHOLDER}
-          emptyHint={UI_STRINGS.EMPTY_TEXT_HINT}
+          placeholder={t('ui.text_placeholder')}
+          emptyHint={t('ui.empty_text_hint')}
         />
 
         <ResultSection
-          title={UI_STRINGS.RESULT_SECTION}
-          reasoningLabel={UI_STRINGS.REASONING_LABEL}
+          title={t('ui.result_section')}
+          reasoningLabel={t('ui.reasoning_label')}
           result={result}
           onCopy={handleCopy}
-          onReplace={handleReplaceSelection}
           showDebug={showDebug}
           onToggleDebug={() => setShowDebug(!showDebug)}
           onClearCache={handleClearCache}
@@ -261,6 +298,17 @@ const SidePanelContent: React.FC = () => {
           isBusy={isBusy}
         />
       </main>
+
+      <Modal
+        isOpen={modalConfig.isOpen}
+        onClose={() => setModalConfig((prev) => ({ ...prev, isOpen: false }))}
+        onConfirm={modalConfig.onConfirm}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        variant={modalConfig.variant}
+        confirmLabel={t('ui.confirm')}
+        cancelLabel={t('ui.cancel')}
+      />
     </div>
   );
 };

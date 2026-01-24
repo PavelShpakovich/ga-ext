@@ -1,5 +1,6 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { Logger } from '../services/Logger';
+import i18n from 'i18next';
 
 interface Props {
   children: ReactNode;
@@ -55,15 +56,15 @@ export class ErrorBoundary extends Component<Props, State> {
               <line x1='12' y1='16' x2='12.01' y2='16' />
             </svg>
           </div>
-          <h2 className='text-lg font-bold text-gray-900 dark:text-white mb-2'>Something went wrong</h2>
+          <h2 className='text-lg font-bold text-gray-900 dark:text-white mb-2'>{i18n.t('error.something_wrong')}</h2>
           <p className='text-sm text-gray-600 dark:text-gray-300 mb-4'>
-            {this.state.error?.message || 'An unexpected error occurred.'}
+            {this.state.error?.message || i18n.t('error.unexpected')}
           </p>
           <button
             onClick={() => window.location.reload()}
             className='px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium'
           >
-            Reload Extension
+            {i18n.t('error.reload')}
           </button>
         </div>
       );

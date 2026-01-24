@@ -7,6 +7,7 @@ import { IconButton } from '../../components/ui/IconButton';
 import { Progress } from '../../components/ui/Progress';
 import { normalizeDownloadProgress } from '../../utils/helpers';
 import { ModelInfoCard } from '../../components/ui/ModelInfoCard';
+import { useTranslation } from 'react-i18next';
 
 interface ModelSectionProps {
   selectedModel: string;
@@ -41,6 +42,7 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
   onStopDownload,
   title,
 }) => {
+  const { t } = useTranslation();
   const normalizedProgress = downloadProgress ? normalizeDownloadProgress(downloadProgress.progress) : 0;
 
   return (
@@ -56,34 +58,36 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
         {modelInfo && <ModelInfoCard model={modelInfo} />}
 
         <div className='flex gap-3'>
-          <Button
-            onClick={onPrefetch}
-            disabled={isBusy}
-            variant={isModelCached ? 'secondary' : 'primary'}
-            className='flex-1 group h-12'
-          >
-            {isPrefetching ? (
-              <>
-                <Loader2 className='w-4 h-4 animate-spin' />
-                Syncing...
-              </>
-            ) : step === 'preparing-model' ? (
-              <>
-                <Loader2 className='w-4 h-4 animate-spin' />
-                Loading...
-              </>
-            ) : isModelCached ? (
-              <>
-                <Check className='w-4 h-4 text-green-500' />
-                Optimized & Ready
-              </>
-            ) : (
-              <>
-                <Download className='w-4 h-4 transition-transform group-hover:translate-y-0.5' />
-                Cache for Offline
-              </>
-            )}
-          </Button>
+          {isModelCached && !isPrefetching && step !== 'preparing-model' ? (
+            <div className='flex-1 h-12 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 text-slate-600 dark:text-slate-300 flex items-center justify-center gap-2 text-sm font-semibold selection:bg-transparent'>
+              <Check className='w-4 h-4 text-green-500' />
+              {t('ui.optimized_ready')}
+            </div>
+          ) : (
+            <Button
+              onClick={onPrefetch}
+              disabled={isBusy}
+              variant={isModelCached ? 'secondary' : 'primary'}
+              className='flex-1 group h-12'
+            >
+              {isPrefetching ? (
+                <>
+                  <Loader2 className='w-4 h-4 animate-spin' />
+                  {t('ui.syncing')}
+                </>
+              ) : step === 'preparing-model' ? (
+                <>
+                  <Loader2 className='w-4 h-4 animate-spin' />
+                  {t('ui.loading')}
+                </>
+              ) : (
+                <>
+                  <Download className='w-4 h-4 transition-transform group-hover:translate-y-0.5' />
+                  {t('ui.cache_offline')}
+                </>
+              )}
+            </Button>
+          )}
           {isModelCached && (
             <IconButton
               icon={<Trash2 />}
@@ -91,7 +95,7 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
               onClick={onRemoveModel}
               disabled={isRemovingModel || isBusy}
               size='md'
-              title='Flush model cache'
+              title={t('ui.flush_cache')}
               className='text-slate-400 hover:text-red-500 hover:border-red-200 dark:hover:border-red-900/30'
             />
           )}
@@ -103,7 +107,7 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
               <div className='flex items-start justify-between gap-3'>
                 <div className='flex items-start gap-2 min-w-0'>
                   <div className='w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse shrink-0 mt-1.5' />
-                  <span className='text-[10px] font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wider leading-relaxed break-words flex-1'>
+                  <span className='text-[10px] font-bold text-blue-700 dark:text-blue-400 tracking-wider leading-relaxed wrap-break-word flex-1'>
                     {downloadProgress.text}
                   </span>
                 </div>
@@ -117,7 +121,7 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
               onClick={onStopDownload}
               className='w-full text-[9px] text-slate-400 hover:text-red-500 dark:text-slate-500 dark:hover:text-red-400 font-bold uppercase tracking-[0.2em] transition-colors py-1'
             >
-              Cancel Operation
+              {t('ui.cancel_operation')}
             </button>
           </div>
         )}

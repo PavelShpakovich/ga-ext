@@ -1,7 +1,9 @@
 import React from 'react';
 import { Zap, Gauge, Snail } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface ModelInfo {
+  id: string;
   family: string;
   speed: 'fast' | 'medium' | 'slow';
   size: string;
@@ -13,13 +15,15 @@ interface ModelInfoCardProps {
   className?: string;
 }
 
-const speedConfig = {
-  fast: { icon: Zap, label: 'Fast', className: 'text-green-600 dark:text-green-400' },
-  medium: { icon: Gauge, label: 'Medium', className: 'text-yellow-600 dark:text-yellow-400' },
-  slow: { icon: Snail, label: 'Slow', className: 'text-orange-600 dark:text-orange-400' },
-};
-
 export const ModelInfoCard: React.FC<ModelInfoCardProps> = ({ model, className = '' }) => {
+  const { t } = useTranslation();
+
+  const speedConfig = {
+    fast: { icon: Zap, label: t('models.speed.fast'), className: 'text-green-600 dark:text-green-400' },
+    medium: { icon: Gauge, label: t('models.speed.medium'), className: 'text-yellow-600 dark:text-yellow-400' },
+    slow: { icon: Snail, label: t('models.speed.slow'), className: 'text-orange-600 dark:text-orange-400' },
+  };
+
   const { icon: SpeedIcon, label: speedLabel, className: speedColor } = speedConfig[model.speed];
 
   return (
@@ -38,7 +42,9 @@ export const ModelInfoCard: React.FC<ModelInfoCardProps> = ({ model, className =
           {model.size}
         </span>
       </div>
-      <p className='text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-medium'>{model.description}</p>
+      <p className='text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-medium'>
+        {t(`models.descriptions.${model.id}`, { defaultValue: model.description })}
+      </p>
     </div>
   );
 };

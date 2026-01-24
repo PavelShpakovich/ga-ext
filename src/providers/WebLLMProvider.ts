@@ -7,6 +7,7 @@ import {
   deleteModelAllInfoInCache,
 } from '@mlc-ai/web-llm';
 import { AIProvider } from './AIProvider';
+import i18n from 'i18next';
 import { CorrectionResult, CorrectionStyle, ModelOption, ModelProgress } from '../types';
 import { Logger } from '../services/Logger';
 import { DEFAULT_MODEL_ID, SUPPORTED_MODELS } from '../constants';
@@ -97,7 +98,12 @@ export class WebLLMProvider extends AIProvider {
 
           const progressState = cached ? 'loading' : 'downloading';
 
-          this.emitProgress({ text: 'Preparing model…', progress: 0, state: progressState, modelId: this.modelId });
+          this.emitProgress({
+            text: i18n.t('status.preparing'),
+            progress: 0,
+            state: progressState,
+            modelId: this.modelId,
+          });
 
           if (this.cancelled) {
             throw new Error('aborted');
@@ -127,13 +133,20 @@ export class WebLLMProvider extends AIProvider {
             throw new Error('aborted');
           }
 
-          this.emitProgress({ text: 'Model ready', progress: 1, state: 'loading', modelId: this.modelId });
+          this.emitProgress({ text: i18n.t('status.ready'), progress: 1, state: 'loading', modelId: this.modelId });
           return;
         } catch (error: any) {
-          const isAborted = error?.message === 'aborted';
+          const isAborted =
+            error?.message === 'aborted' ||
+            this.cancelled ||
+            (error?.message && error.message.toLowerCase().includes('unload'));
 
           if (this.engine) {
-            await this.engine.unload();
+            try {
+              await this.engine.unload();
+            } catch (e) {
+              // Ignore unload errors during catch
+            }
             this.engine = null;
           }
 
@@ -141,8 +154,13 @@ export class WebLLMProvider extends AIProvider {
 
           if (isAborted) {
             this.initPromise = null;
-            this.emitProgress({ text: 'Download cancelled', progress: 0, state: 'downloading', modelId: this.modelId });
-            throw error;
+            this.emitProgress({
+              text: i18n.t('messages.download_cancelled'),
+              progress: 0,
+              state: 'downloading',
+              modelId: this.modelId,
+            });
+            throw new Error('aborted');
           }
 
           const isStoreMissing = WebLLMProvider.isIdbStoreMissing(error);
@@ -179,7 +197,12 @@ export class WebLLMProvider extends AIProvider {
       this.engine = null;
     }
     this.initPromise = null;
-    this.emitProgress({ text: 'Download cancelled', progress: 0, state: 'downloading', modelId: this.modelId });
+    this.emitProgress({
+      text: i18n.t('messages.download_cancelled'),
+      progress: 0,
+      state: 'downloading',
+      modelId: this.modelId,
+    });
   }
 
   static async stopCurrentDownload(): Promise<boolean> {
@@ -255,8 +278,8 @@ export class WebLLMProvider extends AIProvider {
     return {
       original,
       corrected: original,
-      explanation: 'Could not clarify the model output format.',
-      parseError: 'Invalid JSON response',
+      explanation: i18n.t('error.could_not_parse'),
+      parseError: i18n.t('error.invalid_json'),
       raw,
     };
   }
@@ -273,7 +296,7 @@ export class WebLLMProvider extends AIProvider {
     }
 
     // 2. Defensively extract explanation
-    let explanation = 'Improved grammar and style.';
+    let explanation = i18n.t('prompts.default_explanation');
     if (typeof parsed.explanation === 'string') {
       explanation = parsed.explanation;
     } else if (Array.isArray(parsed.explanation)) {

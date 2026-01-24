@@ -1,6 +1,7 @@
 // Abstract AI Provider Interface
 
 import { CorrectionResult, CorrectionStyle } from '../types';
+import i18n from 'i18next';
 
 export enum ProviderStatus {
   READY = 'ready',
@@ -51,35 +52,43 @@ export abstract class AIProvider {
    * Build the prompt for the AI model
    */
   protected buildPrompt(text: string, style: CorrectionStyle): string {
-    const styleInstructions = {
-      formal: 'formal, professional, no contractions',
-    } as const;
+    const styleInstructions: Record<CorrectionStyle, string> = {
+      [CorrectionStyle.FORMAL]: i18n.t('prompts.style_formal'),
+      [CorrectionStyle.STANDARD]: i18n.t('prompts.style_standard'),
+      [CorrectionStyle.SIMPLE]: i18n.t('prompts.style_simple'),
+      [CorrectionStyle.ACADEMIC]: i18n.t('prompts.style_academic'),
+      [CorrectionStyle.CASUAL]: i18n.t('prompts.style_casual'),
+    };
 
-    return `Instruction: Rewrite the following text and explain the corrections.
-Style: ${styleInstructions[style] || 'Standard'}
-Text to rewrite: "${text}"
+    const styleStr = styleInstructions[style] || i18n.t('prompts.style_standard');
 
-Rules:
-1. Output ONLY a JSON object.
-2. "corrected": STRING - The full rewritten text.
-3. "explanation": STRING - List specific grammatical, punctuation, or stylistic fixes made (e.g., "Fixed subject-verb agreement", "Improved flow"). Do NOT summarize the content of the text.
+    return `${i18n.t('prompts.instruction')}
 
-Example:
+${i18n.t('prompts.style', { style: styleStr })}
+
+${i18n.t('prompts.text_to_rewrite', { text })}
+
+${i18n.t('prompts.rules_header')}
+${i18n.t('prompts.rule_json')}
+${i18n.t('prompts.rule_corrected')}
+${i18n.t('prompts.rule_explanation')}
+${i18n.t('prompts.rule_no_summary')}
+${i18n.t('prompts.rule_no_meaning')}
+${i18n.t('prompts.rule_unchanged')}
+
+${i18n.t('prompts.example_header')}
 {
-  "corrected": "How are you doing today?",
-  "explanation": "Fixed punctuation and corrected the informal 'u' to 'you'."
+  "corrected": "Your corrected multilingual text appears here.",
+  "explanation": "Fixed punctuation errors; improved verb tense consistency; corrected word order; replaced informal phrasing with formal alternatives."
 }
 
-JSON:`;
+${i18n.t('prompts.json_start')}`;
   }
 
   /**
    * Get system prompt for the AI model
    */
   protected getSystemPrompt(): string {
-    return `You are a professional editor. You ONLY output JSON.
-The "explanation" key must strictly describe linguistic, grammatical, and stylistic changes.
-NEVER summarize the meaning, bugs, or content of the user's text.
-Focus only on what was fixed (e.g., "Changed passive to active voice", "Corrected punctuation").`;
+    return i18n.t('prompts.system_role');
   }
 }

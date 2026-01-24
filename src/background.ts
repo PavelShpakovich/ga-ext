@@ -1,5 +1,6 @@
 import { Logger } from './services/Logger';
 import { STORAGE_KEYS } from './constants';
+import i18n from './i18n';
 
 Logger.info('Background', 'Service worker started');
 
@@ -10,7 +11,7 @@ chrome.runtime.onInstalled.addListener(() => {
   // Create context menu
   chrome.contextMenus.create({
     id: 'grammar-assistant-correct',
-    title: 'Correct with Grammar Assistant',
+    title: i18n.t('ui.context_menu_title'),
     contexts: ['selection'],
   });
 });

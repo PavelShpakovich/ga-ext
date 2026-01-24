@@ -1,5 +1,5 @@
 import { STORAGE_KEYS, DEFAULT_MODEL_ID } from '../constants';
-import { Settings } from '../types';
+import { Settings, CorrectionStyle } from '../types';
 import { Logger } from './Logger';
 
 // Define the shape of our storage
@@ -12,6 +12,8 @@ interface StorageSchema {
 
 const DEFAULT_SETTINGS: Settings = {
   selectedModel: DEFAULT_MODEL_ID,
+  selectedStyle: CorrectionStyle.STANDARD,
+  language: 'en',
 };
 
 class StorageService {
