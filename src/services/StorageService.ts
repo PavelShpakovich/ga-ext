@@ -1,19 +1,17 @@
-import { STORAGE_KEYS } from '../constants';
-import { Settings, CorrectionStyle } from '../types';
+import { STORAGE_KEYS, DEFAULT_MODEL_ID } from '../constants';
+import { Settings } from '../types';
 import { Logger } from './Logger';
 
 // Define the shape of our storage
 interface StorageSchema {
   [STORAGE_KEYS.SETTINGS]: Settings;
-  [STORAGE_KEYS.HISTORY]: unknown[]; // TODO: Define HistoryItem type
-  [STORAGE_KEYS.MODEL_CACHE]: unknown;
-  pendingText: string;
+  [STORAGE_KEYS.PENDING_TEXT]: string;
+  [STORAGE_KEYS.PENDING_MODEL_DOWNLOAD]: string;
+  [STORAGE_KEYS.PENDING_AUTO_CORRECT]: boolean;
 }
 
 const DEFAULT_SETTINGS: Settings = {
-  theme: 'light',
-  defaultStyle: 'formal' as CorrectionStyle,
-  selectedModel: '',
+  selectedModel: DEFAULT_MODEL_ID,
 };
 
 class StorageService {

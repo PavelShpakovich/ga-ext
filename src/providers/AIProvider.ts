@@ -52,62 +52,34 @@ export abstract class AIProvider {
    */
   protected buildPrompt(text: string, style: CorrectionStyle): string {
     const styleInstructions = {
-      formal:
-        "Professional tone for business/academic writing. Use complete words (don't→do not). Avoid contractions and casual language.",
-      casual:
-        'Friendly, conversational tone for social/informal contexts. Contractions welcome. Keep it natural and warm.',
-      brief: 'Concise and direct. Remove filler words. Use active voice. Keep only essential information.',
-    };
+      formal: 'formal, professional, no contractions',
+    } as const;
 
-    return `Improve this text:
-"${text}"
+    return `Instruction: Rewrite the following text and explain the corrections.
+Style: ${styleInstructions[style] || 'Standard'}
+Text to rewrite: "${text}"
 
-Style: ${style.toUpperCase()}
-${styleInstructions[style]}
+Rules:
+1. Output ONLY a JSON object.
+2. "corrected": STRING - The full rewritten text.
+3. "explanation": STRING - List specific grammatical, punctuation, or stylistic fixes made (e.g., "Fixed subject-verb agreement", "Improved flow"). Do NOT summarize the content of the text.
 
-IMPORTANT - Never change:
-- Names, emails, @mentions
-- URLs, numbers, dates
-- Technical terms, company names
+Example:
+{
+  "corrected": "How are you doing today?",
+  "explanation": "Fixed punctuation and corrected the informal 'u' to 'you'."
+}
 
-Provide:
-- Corrected text
-- Brief explanation of improvements made
-
-Output JSON only:
-{"corrected":"improved text","explanation":"brief reason"}`;
+JSON:`;
   }
 
   /**
    * Get system prompt for the AI model
    */
   protected getSystemPrompt(): string {
-    return `You are Grammar Assistant, helping non-native English speakers write better.
-
-Your mission:
-- Fix grammar, spelling, and punctuation errors
-- Improve clarity and readability
-- Adjust tone to match the requested style
-- Preserve the original meaning completely
-- Help users learn from corrections
-
-CRITICAL - NEVER change:
-- Email addresses (user@domain.com)
-- @mentions (@username)
-- People's names (John, Maria, etc.)
-- URLs and links
-- Code snippets
-- Technical terms
-- Numbers and dates
-- Company/product names
-
-Output format (valid JSON only):
-{"corrected":"fixed text","explanation":"why changed"}
-
-Rules:
-- Start with { and end with }
-- No reasoning or thinking
-- No markdown formatting
-- Keep explanations under 10 words`;
+    return `You are a professional editor. You ONLY output JSON.
+The "explanation" key must strictly describe linguistic, grammatical, and stylistic changes.
+NEVER summarize the meaning, bugs, or content of the user's text.
+Focus only on what was fixed (e.g., "Changed passive to active voice", "Corrected punctuation").`;
   }
 }

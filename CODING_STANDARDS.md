@@ -271,7 +271,7 @@ Use Tailwind spacing scale (gap-2, gap-3, gap-4, p-2, p-3, p-4).
 <div className='gap-2'>      // Consistent 0.5rem gap
 
 // ❌ Avoid
-<div className='space-y-[17px]'>  // Arbitrary values
+<div className='space-y-4.25'>  // Arbitrary values
 ```
 
 ### ✅ Responsive Design
@@ -280,7 +280,7 @@ Use responsive utilities for different screen sizes.
 
 ```tsx
 // ✅ Good
-<div className='w-full md:w-96 lg:w-[32rem]'>
+<div className='w-full md:w-96 lg:w-lg'>
 
 // ❌ Avoid
 <div className='w-96'>  // Fixed width only

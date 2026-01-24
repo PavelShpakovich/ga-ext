@@ -1,172 +1,274 @@
-import React, { useState, useCallback } from 'react';
-import { FileText } from 'lucide-react';
-import { Card } from '../components/Card';
-import { StyleSelector } from '../components/StyleSelector';
-import { CorrectionStyle, CorrectionResult } from '../types';
+import React, { useCallback, useEffect, useState, useRef, useMemo } from 'react';
 import { useAI } from '../hooks/useAI';
-import { useDownloadProgress } from '../hooks/useDownloadProgress';
 import { usePendingText } from '../hooks/usePendingText';
+import { WebLLMProvider, ProviderFactory } from '../providers';
+import { useDownloadProgress } from '../hooks/useDownloadProgress';
+import { ErrorBoundary } from '../components/ErrorBoundary';
 import { useSettings } from '../hooks/useSettings';
 import { useModelSelection } from '../hooks/useModelSelection';
-import { EmptyState, Kbd, Badge } from '../components/ui';
-import { DownloadStatus } from '../components/correction/DownloadStatus';
-import { ProcessingStatus } from '../components/correction/ProcessingStatus';
-import { ErrorDisplay } from '../components/correction/ErrorDisplay';
-import { CorrectionActions } from '../components/correction/CorrectionActions';
-import { ErrorBoundary } from '../components/ErrorBoundary';
-import { Logger } from '../services';
+import { generateCacheKey } from '../utils/helpers';
+import { SidebarHeader, ModelSection, TextSection, ResultSection } from './components';
+
+// --- Constants ---
+const UI_STRINGS = {
+  TITLE: 'Grammar Assistant',
+  SUBTITLE: 'Local WebGPU Session',
+  MODEL_SECTION: 'AI Model',
+  TEXT_SECTION: 'Source Text',
+  RESULT_SECTION: 'Corrected Result',
+  TEXT_PLACEHOLDER: 'Start typing or paste content...',
+  EMPTY_TEXT_HINT: 'Select text on any webpage or type directly here to begin.',
+  REASONING_LABEL: 'Improvements & Reasoning',
+} as const;
+
+const AUTO_HIDE_DELAY = 3500;
 
 const SidePanelContent: React.FC = () => {
   const [text, setText] = useState('');
-  const [selectedStyle, setSelectedStyle] = useState<CorrectionStyle>(CorrectionStyle.FORMAL);
-  const [correctionResult, setCorrectionResult] = useState<CorrectionResult | null>(null);
+  const [localMessage, setLocalMessage] = useState<string | null>(null);
+  const [isPrefetching, setIsPrefetching] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isRemovingModel, setIsRemovingModel] = useState(false);
+  const [showDebug, setShowDebug] = useState(false);
+  const [isModelCached, setIsModelCached] = useState(false);
 
-  const { correct, isLoading, error } = useAI();
+  const lastAutoRunKey = useRef<string | null>(null);
+  const shouldAutoRunRef = useRef<boolean>(false);
+
+  const { settings, updateSettings } = useSettings();
+  const { selectGroups, allModels, getModelInfo } = useModelSelection();
   const { downloadProgress, stopDownload } = useDownloadProgress();
-  const { settings } = useSettings();
-  const { getModelInfo } = useModelSelection();
+  const { runCorrection, step, error, result, reset } = useAI();
 
-  const selectedModelInfo = getModelInfo(settings.selectedModel);
-  const modelSize = selectedModelInfo?.size;
+  const selectedModel = settings.selectedModel;
+  const modelInfo = useMemo(() => getModelInfo(selectedModel), [selectedModel, getModelInfo]);
+  const isBusy = step === 'preparing-model' || step === 'correcting' || isPrefetching || isDeleting || isRemovingModel;
 
-  const triggerCorrection = useCallback(
-    async (textToCorrect: string, style: CorrectionStyle) => {
-      try {
-        Logger.debug('SidePanel', 'Triggering correction', { length: textToCorrect.length, style });
-        const result = await correct(textToCorrect, style);
-        setCorrectionResult(result);
-      } catch (err) {
-        Logger.error('SidePanel', 'Correction failed', err);
-      }
+  const isResultStale = useMemo(() => {
+    if (!result || !text.trim()) return false;
+    return lastAutoRunKey.current !== generateCacheKey(selectedModel, text);
+  }, [result, selectedModel, text]);
+
+  const modelOptions = selectGroups.length
+    ? selectGroups
+    : [
+        {
+          label: 'Models',
+          options: allModels.map((m) => ({ value: m.id, label: m.name })),
+        },
+      ];
+
+  const handleModelChange = useCallback(
+    (id: string) => {
+      updateSettings({ selectedModel: id });
+      ProviderFactory.clearInstances();
+      lastAutoRunKey.current = null;
+      shouldAutoRunRef.current = false;
     },
-    [correct],
+    [updateSettings],
   );
 
-  const handleStyleChange = useCallback(
-    (style: CorrectionStyle) => {
-      setSelectedStyle(style);
-      if (text) {
-        triggerCorrection(text, style);
-      }
-    },
-    [text, triggerCorrection],
-  );
-
-  const handleRecheck = useCallback(() => {
-    if (text) {
-      triggerCorrection(text, selectedStyle);
+  const handleCorrect = useCallback(async () => {
+    const trimmed = text.trim();
+    if (!trimmed || isBusy) return;
+    try {
+      await runCorrection(trimmed, selectedModel);
+      lastAutoRunKey.current = generateCacheKey(selectedModel, trimmed);
+      shouldAutoRunRef.current = false;
+      const cached = await WebLLMProvider.isModelCached(selectedModel);
+      setIsModelCached(cached);
+    } catch {
+      // Error handled by useAI
     }
-  }, [text, selectedStyle, triggerCorrection]);
+  }, [text, selectedModel, isBusy, runCorrection]);
+
+  const handlePrefetch = useCallback(async () => {
+    setIsPrefetching(true);
+    setLocalMessage(null);
+    try {
+      const provider = ProviderFactory.createProvider(selectedModel);
+      await provider.ensureReady();
+      setLocalMessage('Model synchronised');
+      const cached = await WebLLMProvider.isModelCached(selectedModel);
+      setIsModelCached(cached);
+    } catch (err: any) {
+      setLocalMessage(err.message || 'Synchronisation failed');
+    } finally {
+      setIsPrefetching(false);
+    }
+  }, [selectedModel]);
+
+  const handleRemoveModel = useCallback(async () => {
+    if (!window.confirm('Remove this model from local disk?')) return;
+    setIsRemovingModel(true);
+    try {
+      await WebLLMProvider.deleteModel(selectedModel);
+      setLocalMessage('Model removed');
+      setIsModelCached(false);
+      reset();
+    } catch (err: any) {
+      setLocalMessage(err.message || 'Removal failed');
+    } finally {
+      setIsRemovingModel(false);
+    }
+  }, [selectedModel, reset]);
+
+  const handleClearCache = useCallback(async () => {
+    if (!window.confirm('This will delete ALL downloaded models. Continue?')) return;
+    setIsDeleting(true);
+    try {
+      await WebLLMProvider.clearCache();
+      setLocalMessage('Cache cleared');
+      setIsModelCached(false);
+      reset();
+    } catch (err: any) {
+      setLocalMessage(err.message || 'Cache clear failed');
+    } finally {
+      setIsDeleting(false);
+    }
+  }, [reset]);
+
+  const handleCopy = useCallback(() => {
+    if (result?.corrected) {
+      navigator.clipboard.writeText(result.corrected);
+      setLocalMessage('Copied to clipboard');
+    }
+  }, [result]);
+
+  const handleReplaceSelection = useCallback(() => {
+    if (result?.corrected) {
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs[0]?.id) {
+          chrome.tabs.sendMessage(tabs[0].id, {
+            action: 'replaceText',
+            text: result.corrected,
+          });
+          setLocalMessage('Text replaced');
+        }
+      });
+    }
+  }, [result]);
+
+  useEffect(() => {
+    if (localMessage) {
+      const timer = setTimeout(() => setLocalMessage(null), AUTO_HIDE_DELAY);
+      return () => clearTimeout(timer);
+    }
+  }, [localMessage]);
 
   usePendingText(
     useCallback(
-      (newText: string) => {
-        setText(newText);
-        triggerCorrection(newText, selectedStyle);
+      (incoming: string, options) => {
+        setText(incoming);
+        reset();
+        if (options?.autoRun) {
+          shouldAutoRunRef.current = true;
+        }
       },
-      [selectedStyle, triggerCorrection],
+      [reset],
     ),
   );
 
+  useEffect(() => {
+    const trimmed = text.trim();
+    if (!trimmed || isBusy || !shouldAutoRunRef.current) return;
+
+    const key = generateCacheKey(selectedModel, trimmed);
+    if (lastAutoRunKey.current === key) {
+      shouldAutoRunRef.current = false;
+      return;
+    }
+
+    const triggerAutoRun = async () => {
+      try {
+        await runCorrection(trimmed, selectedModel);
+        lastAutoRunKey.current = key;
+        shouldAutoRunRef.current = false;
+        const cached = await WebLLMProvider.isModelCached(selectedModel);
+        setIsModelCached(cached);
+      } catch {
+        lastAutoRunKey.current = key;
+        shouldAutoRunRef.current = false;
+      }
+    };
+
+    triggerAutoRun();
+  }, [isBusy, runCorrection, selectedModel, text]);
+
+  useEffect(() => {
+    let mounted = true;
+    WebLLMProvider.isModelCached(selectedModel).then((cached) => {
+      if (mounted) setIsModelCached(cached);
+    });
+    return () => {
+      mounted = false;
+    };
+  }, [selectedModel, isPrefetching, isRemovingModel, isDeleting, step]);
+
   return (
-    <div className='h-screen flex flex-col bg-gray-50 dark:bg-gray-900'>
-      <header className='bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4'>
-        <div className='flex items-center gap-2'>
-          <FileText className='w-5 h-5 text-blue-600 dark:text-blue-400' />
-          <div className='flex-1'>
-            <div className='flex items-center gap-2'>
-              <h1 className='text-lg font-bold text-gray-900 dark:text-gray-100 leading-none'>Grammar Assistant</h1>
-              <Badge variant='success' className='text-[10px] px-1.5 py-0'>
-                Local AI
-              </Badge>
-            </div>
-            <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>Privacy-first correction</p>
-          </div>
-        </div>
-      </header>
+    <div className='h-screen flex flex-col bg-[#F8FAFC] dark:bg-[#0F172A] text-slate-900 dark:text-slate-50 font-sans selection:bg-blue-100 dark:selection:bg-blue-900/40'>
+      <SidebarHeader title={UI_STRINGS.TITLE} subtitle={UI_STRINGS.SUBTITLE} isModelCached={isModelCached} />
 
-      <main className='flex-1 overflow-y-auto p-4'>
-        {text ? (
-          <div className='space-y-4'>
-            <Card title='Original Text'>
-              <p className='text-gray-900 dark:text-gray-100 whitespace-pre-wrap max-h-32 overflow-y-auto scrollbar-thin text-sm'>
-                {text}
-              </p>
-            </Card>
+      <main className='flex-1 overflow-y-auto p-6 space-y-6 scroll-smooth'>
+        <ModelSection
+          title={UI_STRINGS.MODEL_SECTION}
+          selectedModel={selectedModel}
+          onModelChange={handleModelChange}
+          modelOptions={modelOptions}
+          modelInfo={modelInfo}
+          isModelCached={isModelCached}
+          isPrefetching={isPrefetching}
+          isRemovingModel={isRemovingModel}
+          isBusy={isBusy}
+          step={step}
+          downloadProgress={downloadProgress}
+          onPrefetch={handlePrefetch}
+          onRemoveModel={handleRemoveModel}
+          onStopDownload={stopDownload}
+        />
 
-            <Card>
-              <StyleSelector
-                selected={selectedStyle}
-                onChange={handleStyleChange}
-                onRecheck={handleRecheck}
-                disabled={isLoading}
-              />
-            </Card>
+        <TextSection
+          title={UI_STRINGS.TEXT_SECTION}
+          text={text}
+          onTextChange={(val) => {
+            setText(val);
+            shouldAutoRunRef.current = false;
+          }}
+          onClear={() => {
+            setText('');
+            reset();
+          }}
+          onCorrect={handleCorrect}
+          isBusy={isBusy}
+          hasResult={!!result}
+          isResultStale={isResultStale}
+          placeholder={UI_STRINGS.TEXT_PLACEHOLDER}
+          emptyHint={UI_STRINGS.EMPTY_TEXT_HINT}
+        />
 
-            {error && !isLoading && (
-              <Card>
-                <ErrorDisplay error={error} />
-              </Card>
-            )}
-
-            {isLoading && (
-              <Card>
-                <div className='flex flex-col items-center justify-center py-8'>
-                  {downloadProgress ? (
-                    <DownloadStatus progress={downloadProgress} onStop={stopDownload} modelSize={modelSize} />
-                  ) : (
-                    <ProcessingStatus />
-                  )}
-                </div>
-              </Card>
-            )}
-
-            {correctionResult && !isLoading && !error && (
-              <div className='space-y-4 animate-fade-in-up'>
-                <Card title='Corrected Text' badge={<Badge variant='primary'>{correctionResult.style}</Badge>}>
-                  <div className='p-3 bg-green-50/50 dark:bg-green-900/10 rounded-md border border-green-100 dark:border-green-800/30'>
-                    <p className='text-gray-900 dark:text-gray-100 whitespace-pre-wrap font-medium'>
-                      {correctionResult.corrected}
-                    </p>
-                  </div>
-                  <CorrectionActions correctionResult={correctionResult} />
-                </Card>
-
-                {correctionResult.summary && (
-                  <Card title='Summary'>
-                    <p className='text-sm text-gray-700 dark:text-gray-300'>{correctionResult.summary}</p>
-                  </Card>
-                )}
-              </div>
-            )}
-          </div>
-        ) : (
-          <EmptyState
-            icon={<FileText className='w-16 h-16 mx-auto mb-4 text-gray-300 dark:text-gray-600' />}
-            title='Select text on any page'
-            description={[
-              'Right-click → "Correct with Grammar Assistant"',
-              <>
-                or press <Kbd>Cmd/Ctrl+Shift+E</Kbd>
-              </>,
-            ]}
-          />
-        )}
+        <ResultSection
+          title={UI_STRINGS.RESULT_SECTION}
+          reasoningLabel={UI_STRINGS.REASONING_LABEL}
+          result={result}
+          onCopy={handleCopy}
+          onReplace={handleReplaceSelection}
+          showDebug={showDebug}
+          onToggleDebug={() => setShowDebug(!showDebug)}
+          onClearCache={handleClearCache}
+          localMessage={localMessage}
+          error={error}
+          step={step}
+          isBusy={isBusy}
+        />
       </main>
-
-      <footer className='bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-3'>
-        <p className='text-xs text-center text-gray-500 dark:text-gray-400'>Grammar Assistant v0.1.0 - Privacy First</p>
-      </footer>
     </div>
   );
 };
 
-const SidePanel: React.FC = () => {
-  return (
-    <ErrorBoundary>
-      <SidePanelContent />
-    </ErrorBoundary>
-  );
-};
+const SidePanel: React.FC = () => (
+  <ErrorBoundary>
+    <SidePanelContent />
+  </ErrorBoundary>
+);
 
 export default SidePanel;

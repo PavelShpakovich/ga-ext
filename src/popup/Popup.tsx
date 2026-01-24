@@ -1,137 +1,76 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Settings, FileText, ExternalLink, ChevronRight } from 'lucide-react';
-import { Alert, IconButton, Divider, Kbd, Badge } from '../components/ui';
-import { ModelManager } from '../components/settings/ModelManager';
-import { StorageManagement } from '../components/settings/StorageManagement';
-import { FeaturesList } from '../components/settings/FeaturesList';
+import React, { useCallback, useEffect, useState } from 'react';
+import { FileText, ArrowRight } from 'lucide-react';
 import { Button } from '../components/Button';
+import { Alert } from '../components/ui/Alert';
+import { Badge } from '../components/ui/Badge';
 import { WebLLMProvider } from '../providers/WebLLMProvider';
-import { useSettings } from '../hooks/useSettings';
-import { useCacheManagement } from '../hooks/useCacheManagement';
-import { useModelSelection } from '../hooks/useModelSelection';
 
 const Popup: React.FC = () => {
-  const [showSettings, setShowSettings] = useState(false);
   const [hasWebGPU, setHasWebGPU] = useState(true);
-
-  const { settings, updateSettings } = useSettings();
-  const { cacheSize, isClearing, clearSuccess, clearCache } = useCacheManagement();
-  const { allModels, selectGroups, getModelInfo } = useModelSelection();
 
   useEffect(() => {
     WebLLMProvider.isWebGPUAvailable().then(setHasWebGPU);
   }, []);
 
-  const handleModelChange = useCallback(
-    (modelId: string) => {
-      updateSettings({ selectedModel: modelId });
-    },
-    [updateSettings],
-  );
-
   const handleOpenPanel = useCallback(() => {
     chrome.runtime.sendMessage({ action: 'openSidePanel' });
-    window.close(); // Close popup when opening side panel
+    window.close();
   }, []);
 
-  const selectedModelInfo = getModelInfo(settings.selectedModel);
-
   return (
-    <div className='w-80 h-[600px] flex flex-col bg-gray-50 dark:bg-gray-900 font-sans text-gray-900'>
-      <header className='flex items-center justify-between p-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm z-10 shrink-0'>
-        <div className='flex items-center gap-2'>
-          <div className='p-1.5 bg-blue-50 dark:bg-blue-900/30 rounded-lg'>
+    <div className='w-[340px] flex flex-col bg-[#F8FAFC] dark:bg-[#0F172A] text-slate-900 dark:text-slate-50 font-sans selection:bg-blue-100 dark:selection:bg-blue-900/40'>
+      {/* Header */}
+      <header className='px-6 py-5 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-between'>
+        <div className='flex items-center gap-3.5'>
+          <div className='p-2 bg-blue-50 dark:bg-blue-900/20 rounded-xl'>
             <FileText className='w-5 h-5 text-blue-600 dark:text-blue-400' />
           </div>
-          <div>
-            <div className='flex items-center gap-2'>
-              <h1 className='text-base font-bold text-gray-900 dark:text-gray-100 leading-none'>Grammar Assistant</h1>
-              <Badge variant='success' className='text-[10px] px-1.5 py-0.5 h-auto'>
-                Local AI
-              </Badge>
-            </div>
+          <div className='flex flex-col'>
+            <h1 className='text-sm font-bold tracking-tight text-slate-800 dark:text-white'>Assistant</h1>
+            <span className='text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-widest font-bold'>
+              Local Session
+            </span>
           </div>
         </div>
-        <IconButton
-          icon={<Settings className='w-4 h-4' />}
-          onClick={() => setShowSettings(!showSettings)}
-          title='Settings'
-          variant={showSettings ? 'default' : 'ghost'}
-          size='sm'
-        />
+        <Badge variant='success' className='text-[10px] px-2 py-0.5 rounded-full uppercase tracking-widest'>
+          WebGPU
+        </Badge>
       </header>
 
-      <main className='flex-1 p-4 overflow-y-auto'>
+      <main className='p-6 space-y-6'>
         {!hasWebGPU && (
-          <Alert variant='error' className='mb-4'>
-            <div className='text-xs'>
-              <strong>WebGPU not available</strong>
-              <p className='mt-1 opacity-90'>Enable hardware acceleration in chrome://settings/system</p>
-            </div>
+          <Alert variant='error' className='rounded-2xl'>
+            WebGPU not available. Enable hardware acceleration in your browser settings.
           </Alert>
         )}
 
-        {showSettings ? (
-          <div className='space-y-4 animate-fade-in-up'>
-            <div className='flex items-center justify-between mb-2'>
-              <h2 className='text-sm font-semibold text-gray-700 dark:text-gray-300'>Settings</h2>
-              <Button variant='ghost' size='sm' onClick={() => setShowSettings(false)} className='text-xs h-7 px-2'>
-                Done
-              </Button>
-            </div>
-
-            <ModelManager
-              selectedModel={settings.selectedModel}
-              onModelChange={handleModelChange}
-              onSettingsClose={() => setShowSettings(false)}
-            />
-
-            <StorageManagement
-              cacheSize={cacheSize}
-              isClearing={isClearing}
-              clearSuccess={clearSuccess}
-              onClearCache={clearCache}
-            />
-
-            <FeaturesList />
-          </div>
-        ) : (
-          <div className='space-y-4 animate-fade-in-up flex flex-col h-full justify-center'>
-            <div className='text-center space-y-2 mb-6'>
-              <h2 className='text-lg font-semibold text-gray-900 dark:text-white'>Ready to write?</h2>
-              <p className='text-sm text-gray-500 dark:text-gray-400'>
-                Select text on any webpage and right-click or use the shortcut to start correcting.
+        <div className='space-y-4'>
+          <div className='bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-2xl p-5 shadow-sm'>
+            <p className='text-[13px] text-slate-600 dark:text-slate-300 leading-relaxed'>
+              Enhance your writing with privacy-first AI. Manage models and corrections in the dedicated side panel.
+            </p>
+            <div className='mt-4 pt-4 border-t border-slate-100 dark:border-slate-700/50'>
+              <p className='text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-[0.15em]'>
+                Experimental local-first AI
               </p>
             </div>
-
-            <Button
-              variant='primary'
-              onClick={handleOpenPanel}
-              className='w-full py-6 text-base shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 group'
-            >
-              Open Side Panel
-              <ChevronRight className='w-4 h-4 group-hover:translate-x-1 transition-transform' />
-            </Button>
-
-            <div className='bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm'>
-              <div className='flex justify-between items-center text-xs text-gray-500 dark:text-gray-400'>
-                <span>Active Model:</span>
-                <span className='font-medium text-blue-600 dark:text-blue-400 truncate max-w-37.5'>
-                  {selectedModelInfo?.name || settings.selectedModel}
-                </span>
-              </div>
-            </div>
           </div>
-        )}
+
+          <Button
+            onClick={handleOpenPanel}
+            className='w-full h-12 rounded-2xl group shadow-lg shadow-blue-500/10'
+            variant='primary'
+          >
+            Open Control Center
+            <ArrowRight className='w-4 h-4 ml-1 transition-transform group-hover:translate-x-0.5' />
+          </Button>
+        </div>
       </main>
 
-      <footer className='shrink-0 p-3 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-200 dark:border-gray-700'>
-        <div className='flex items-center justify-between text-xs text-gray-500 dark:text-gray-400'>
-          <div className='flex items-center gap-1.5'>
-            <Kbd>Cmd</Kbd> + <Kbd>Shift</Kbd> + <Kbd>E</Kbd>
-          </div>
-          <span className='opacity-70'>v0.1.0</span>
-        </div>
+      <footer className='px-6 py-4 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-200 dark:border-slate-800'>
+        <p className='text-[10px] text-center text-slate-400 dark:text-slate-500 font-medium'>
+          Privacy First • No Data Sent to Servers
+        </p>
       </footer>
     </div>
   );

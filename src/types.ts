@@ -1,21 +1,37 @@
-// Type definitions for the extension
+// Core types for the simplified grammar assistant
 
+// We keep style as a simple enum even though the UI defaults to a single option,
+// which leaves room for future tone tweaks without widening the surface area elsewhere.
 export enum CorrectionStyle {
   FORMAL = 'formal',
-  CASUAL = 'casual',
-  BRIEF = 'brief',
 }
 
 export interface CorrectionResult {
   original: string;
   corrected: string;
-  style: CorrectionStyle;
   explanation?: string;
-  summary?: string;
+  raw?: string;
+  parseError?: string;
+}
+
+export type ExecutionStep = 'idle' | 'preparing-model' | 'correcting' | 'done' | 'error';
+
+export interface ModelProgress {
+  text: string;
+  progress: number; // 0-1
+  state: 'downloading' | 'loading';
+  modelId?: string;
+}
+
+export interface ModelOption {
+  id: string;
+  name: string;
+  description?: string;
+  size?: string;
+  speed?: 'fast' | 'medium' | 'slow';
+  family?: string;
 }
 
 export interface Settings {
-  theme: 'light' | 'dark' | 'system';
-  defaultStyle: CorrectionStyle;
   selectedModel: string;
 }

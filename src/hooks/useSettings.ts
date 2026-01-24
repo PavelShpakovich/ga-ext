@@ -1,13 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Settings } from '../types';
 import { DEFAULT_MODEL_ID } from '../constants';
-import { CorrectionStyle } from '../types';
 import { Storage, Logger } from '../services';
 
 export const useSettings = () => {
   const [settings, setSettings] = useState<Settings>({
-    theme: 'light',
-    defaultStyle: CorrectionStyle.FORMAL,
     selectedModel: DEFAULT_MODEL_ID,
   });
   const [isLoading, setIsLoading] = useState(true);

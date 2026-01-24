@@ -1,4 +1,5 @@
 import { Logger } from './services/Logger';
+import { STORAGE_KEYS } from './constants';
 
 Logger.info('Background', 'Service worker started');
 
@@ -23,8 +24,11 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
     // Open side panel
     chrome.sidePanel.open({ tabId: tab.id });
 
-    // Send selected text to side panel (will be sent when side panel loads)
-    chrome.storage.local.set({ pendingText: selectedText });
+    // Send selected text to side panel and flag auto-correct
+    chrome.storage.local.set({
+      [STORAGE_KEYS.PENDING_TEXT]: selectedText,
+      [STORAGE_KEYS.PENDING_AUTO_CORRECT]: true,
+    });
   }
 });
 
@@ -37,7 +41,10 @@ chrome.commands.onCommand.addListener((command, tab) => {
     chrome.tabs.sendMessage(tab.id, { action: 'getSelectedText' }, (response) => {
       if (response?.text && tab.id) {
         chrome.sidePanel.open({ tabId: tab.id });
-        chrome.storage.local.set({ pendingText: response.text });
+        chrome.storage.local.set({
+          [STORAGE_KEYS.PENDING_TEXT]: response.text,
+          [STORAGE_KEYS.PENDING_AUTO_CORRECT]: true,
+        });
       }
     });
   }
@@ -52,7 +59,7 @@ chrome.runtime.onMessage.addListener((message, sender, _sendResponse) => {
     if (sender.tab?.id) {
       chrome.sidePanel.open({ tabId: sender.tab.id });
       if (message.text) {
-        chrome.storage.local.set({ pendingText: message.text });
+        chrome.storage.local.set({ [STORAGE_KEYS.PENDING_TEXT]: message.text });
       }
     } else {
       // If message comes from popup, query the active tab
@@ -60,8 +67,25 @@ chrome.runtime.onMessage.addListener((message, sender, _sendResponse) => {
         if (tabs[0]?.id) {
           chrome.sidePanel.open({ tabId: tabs[0].id });
           if (message.text) {
-            chrome.storage.local.set({ pendingText: message.text });
+            chrome.storage.local.set({ [STORAGE_KEYS.PENDING_TEXT]: message.text });
           }
+        }
+      });
+    }
+  }
+
+  if (message.action === 'startModelDownload') {
+    const modelId = message.modelId as string | undefined;
+    if (!modelId) return true;
+
+    if (sender.tab?.id) {
+      chrome.sidePanel.open({ tabId: sender.tab.id });
+      chrome.storage.local.set({ [STORAGE_KEYS.PENDING_MODEL_DOWNLOAD]: modelId });
+    } else {
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs[0]?.id) {
+          chrome.sidePanel.open({ tabId: tabs[0].id });
+          chrome.storage.local.set({ [STORAGE_KEYS.PENDING_MODEL_DOWNLOAD]: modelId });
         }
       });
     }
