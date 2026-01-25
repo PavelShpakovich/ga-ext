@@ -6,7 +6,7 @@ A professional, privacy-first AI writing companion that runs entirely in your br
 
 - **Privacy First**: 100% local processing. No data leaves your machine.
 - **WebGPU Accelerated**: High-performance AI execution directly on your hardware.
-- **Multilingual Support**: Full English and Russian UI, with the ability to correct text in any language.
+- **English-First**: Optimized for English grammar correction, style polishing, and professional rewriting.
 - **5 Professional Styles**:
   - **Standard**: Neutral, natural corrections.
   - **Formal**: Professional tone, no contractions.

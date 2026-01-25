@@ -1,0 +1,131 @@
+import React from 'react';
+import { Settings as SettingsIcon, Download, Check, Loader2, Trash2 } from 'lucide-react';
+import { Card } from '@/shared/components/Card';
+import { Select } from '@/shared/components/ui/Select';
+import { Button } from '@/shared/components/Button';
+import { IconButton } from '@/shared/components/ui/IconButton';
+import { Progress } from '@/shared/components/ui/Progress';
+import { normalizeDownloadProgress } from '@/shared/utils/helpers';
+import { ModelInfoCard } from '@/shared/components/ui/ModelInfoCard';
+import { useTranslation } from 'react-i18next';
+
+interface ModelSectionProps {
+  selectedModel: string;
+  onModelChange: (id: string) => void;
+  modelOptions: { label: string; options: { value: string; label: string }[] }[];
+  modelInfo?: any;
+  isModelCached: boolean;
+  isPrefetching: boolean;
+  isRemovingModel: boolean;
+  isBusy: boolean;
+  step: string;
+  downloadProgress: any;
+  onPrefetch: () => void;
+  onRemoveModel: () => void;
+  onStopDownload: () => void;
+  title: string;
+}
+
+export const ModelSection: React.FC<ModelSectionProps> = ({
+  selectedModel,
+  onModelChange,
+  modelOptions,
+  modelInfo,
+  isModelCached,
+  isPrefetching,
+  isRemovingModel,
+  isBusy,
+  step,
+  downloadProgress,
+  onPrefetch,
+  onRemoveModel,
+  onStopDownload,
+  title,
+}) => {
+  const { t } = useTranslation();
+  const normalizedProgress = downloadProgress ? normalizeDownloadProgress(downloadProgress.progress) : 0;
+
+  return (
+    <Card title={title} icon={<SettingsIcon className='w-3.5 h-3.5' />}>
+      <div className='space-y-4'>
+        <Select
+          value={selectedModel}
+          onChange={onModelChange}
+          groups={modelOptions}
+          className='text-sm font-medium py-3 rounded-xl'
+        />
+
+        {modelInfo && <ModelInfoCard model={modelInfo} />}
+
+        <div className='flex gap-3'>
+          {isModelCached && !isPrefetching && step !== 'preparing-model' ? (
+            <div className='flex-1 h-12 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 text-slate-600 dark:text-slate-300 flex items-center justify-center gap-2 text-sm font-semibold selection:bg-transparent'>
+              <Check className='w-4 h-4 text-green-500' />
+              {t('ui.optimized_ready')}
+            </div>
+          ) : (
+            <Button
+              onClick={onPrefetch}
+              disabled={isBusy}
+              variant={isModelCached ? 'secondary' : 'primary'}
+              className='flex-1 group h-12'
+            >
+              {isPrefetching ? (
+                <>
+                  <Loader2 className='w-4 h-4 animate-spin' />
+                  {t('ui.syncing')}
+                </>
+              ) : step === 'preparing-model' ? (
+                <>
+                  <Loader2 className='w-4 h-4 animate-spin' />
+                  {t('ui.loading')}
+                </>
+              ) : (
+                <>
+                  <Download className='w-4 h-4 transition-transform group-hover:translate-y-0.5' />
+                  {t('ui.cache_offline')}
+                </>
+              )}
+            </Button>
+          )}
+          {isModelCached && (
+            <IconButton
+              icon={<Trash2 />}
+              variant='outline'
+              onClick={onRemoveModel}
+              disabled={isRemovingModel || isBusy}
+              size='md'
+              title={t('ui.flush_cache')}
+              className='text-slate-400 hover:text-red-500 hover:border-red-200 dark:hover:border-red-900/30'
+            />
+          )}
+        </div>
+
+        {downloadProgress && (
+          <div className='bg-blue-50/40 dark:bg-blue-950/20 border border-blue-100/50 dark:border-blue-900/30 rounded-2xl p-4 space-y-3 animate-in slide-in-from-top-2 duration-300 shadow-sm'>
+            <div className='space-y-2.5'>
+              <div className='flex items-start justify-between gap-3'>
+                <div className='flex items-start gap-2 min-w-0'>
+                  <div className='w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse shrink-0 mt-1.5' />
+                  <span className='text-[10px] font-bold text-blue-700 dark:text-blue-400 tracking-wider leading-relaxed wrap-break-word flex-1'>
+                    {downloadProgress.text}
+                  </span>
+                </div>
+                <span className='text-[11px] font-black text-blue-600 dark:text-blue-400 tabular-nums shrink-0 pt-0.5'>
+                  {Math.round(normalizedProgress * 100)}%
+                </span>
+              </div>
+              <Progress value={normalizedProgress} max={1} />
+            </div>
+            <button
+              onClick={onStopDownload}
+              className='w-full text-[9px] text-slate-400 hover:text-red-500 dark:text-slate-500 dark:hover:text-red-400 font-bold uppercase tracking-[0.2em] transition-colors py-1'
+            >
+              {t('ui.cancel_operation')}
+            </button>
+          </div>
+        )}
+      </div>
+    </Card>
+  );
+};

@@ -1,0 +1,109 @@
+{
+  "ui": {
+    "title": "Grammar Assistant",
+    "subtitle": "Local WebGPU Session",
+    "model_section": "AI Model",
+    "text_section": "Source Text",
+    "result_section": "Corrected Result",
+    "text_placeholder": "Start typing or paste content...",
+    "empty_text_hint": "Select text on any webpage or type directly here to begin.",
+    "reasoning_label": "Improvements & Reasoning",
+    "syncing": "Syncing...",
+    "loading": "Loading...",
+    "optimized_ready": "Optimized & Ready",
+    "cache_offline": "Cache for Offline",
+    "flush_cache": "Flush model cache",
+    "copy_result": "Copy Result",
+    "mask_output": "Mask Engine Output",
+    "view_output": "View Engine Output",
+    "context_menu_title": "Correct with Grammar Assistant",
+    "clear_all": "Clear all",
+    "update_results": "Update Results",
+    "run_ai": "Run AI Correction",
+    "purge_storage": "Purge All Storage",
+    "engine_trace": "Engine Trace",
+    "fault": "Fault",
+    "local": "Local",
+    "remote": "Remote",
+    "terminate_action": "Terminate Action",
+    "cancel_operation": "Cancel Operation",
+    "confirm": "Confirm",
+    "cancel": "Cancel"
+  },
+  "styles": {
+    "standard": "Standard",
+    "formal": "Formal",
+    "academic": "Academic",
+    "simple": "Simple",
+    "casual": "Casual"
+  },
+  "settings": {
+    "correction_style": "Correction Style"
+  },
+  "actions": {
+    "recheck": "Re-check"
+  },
+  "status": {
+    "ready": "Ready",
+    "busy": "Busy...",
+    "analysing": "Analysing Text...",
+    "preparing": "Preparing model...",
+    "downloading": "Downloading...",
+    "halting": "Execution Halted",
+    "processing": "Processing...",
+    "syncing": "Synchronising..."
+  },
+  "messages": {
+    "model_synced": "Model synchronised",
+    "sync_failed": "Synchronisation failed",
+    "model_removed": "Model removed",
+    "removal_failed": "Removal failed",
+    "cache_cleared": "Cache cleared",
+    "cache_failed": "Cache clear failed",
+    "copied": "Copied to clipboard",
+    "download_cancelled": "Download cancelled",
+    "provide_text": "Please provide text to correct.",
+    "model_failed_load": "Model failed to load. Try downloading again.",
+    "correction_failed": "Correction failed",
+    "confirm_remove_model": "Remove this model from local disk?",
+    "confirm_clear_cache": "This will delete ALL downloaded models. Continue?",
+    "no_engine_trace": "No trace available",
+    "webgpu_not_available": "WebGPU not available. Enable hardware acceleration in your browser settings to use local AI.",
+    "privacy_note": "Privacy First • No Data Sent to Servers",
+    "no_changes": "No changes needed"
+  },
+  "popup": {
+    "assistant": "Assistant",
+    "local_session": "Local Session",
+    "webgpu": "WebGPU",
+    "description": "Enhance your writing with privacy-first AI.",
+    "experimental": "Experimental local-first AI",
+    "open_center": "Open Control Center",
+    "update_results": "Update Results",
+    "run_ai": "Run AI Correction"
+  },
+  "error": {
+    "something_wrong": "Something went wrong",
+    "unexpected": "An unexpected error occurred.",
+    "reload": "Reload Extension",
+    "model_not_ready": "Model not ready",
+    "invalid_json": "Invalid JSON response",
+    "could_not_parse": "Could not clarify the model output format."
+  },
+  "models": {
+    "speed": {
+      "fast": "Fast",
+      "medium": "Medium",
+      "slow": "Slow"
+    },
+    "descriptions": {
+      "gemma-2-9b-it-q4f16_1-MLC": "Gold standard for multilingual grammar correction and reasoning.",
+      "Llama-3.1-8B-Instruct-q4f16_1-MLC": "Highly reliable multilingual model with support for 8+ major languages.",
+      "Qwen2.5-7B-Instruct-q4f16_1-MLC": "Exceptional performance in 29+ languages. Best for formal writing.",
+      "Mistral-7B-Instruct-v0.3-q4f16_1-MLC": "European language specialist. Efficient and highly capable.",
+      "Phi-3.5-mini-instruct-q4f16_1-MLC": "Lightweight model with great reasoning capabilities.",
+      "Qwen2.5-3B-Instruct-q4f16_1-MLC": "Perfect balance of speed and multilingual intelligence.",
+      "Llama-3.2-3B-Instruct-q4f16_1-MLC": "Modern, efficient model for reliable multilingual corrections."
+    }
+  }
+}

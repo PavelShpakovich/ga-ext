@@ -4,10 +4,10 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
   entry: {
-    background: './src/background.ts',
-    'content-script': './src/content-script.ts',
-    popup: './src/popup/index.tsx',
-    sidepanel: './src/sidepanel/index.tsx',
+    background: './src/app/background/index.ts',
+    'content-script': './src/app/content/index.ts',
+    popup: './src/app/popup/index.tsx',
+    sidepanel: './src/app/sidepanel/index.tsx',
   },
   output: {
     path: path.resolve(__dirname, 'dist'),
@@ -46,12 +46,12 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: './src/popup/popup.html',
+      template: './src/app/popup/popup.html',
       filename: 'popup.html',
       chunks: ['popup'],
     }),
     new HtmlWebpackPlugin({
-      template: './src/sidepanel/sidepanel.html',
+      template: './src/app/sidepanel/sidepanel.html',
       filename: 'sidepanel.html',
       chunks: ['sidepanel'],
     }),
