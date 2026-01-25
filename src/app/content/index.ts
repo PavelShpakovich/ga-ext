@@ -3,8 +3,6 @@ import { Logger } from '@/core/services/Logger';
 Logger.info('ContentScript', 'Content script loaded');
 
 // Listen for text selection
-let lastActiveElement: HTMLInputElement | HTMLTextAreaElement | null = null;
-let lastSelectionRange: Range | null = null;
 let lastInteractedElement: HTMLElement | null = null;
 
 const getDeepActiveElement = (root: Document | ShadowRoot = document): Element | null => {
@@ -23,8 +21,7 @@ const getActiveSelectionText = (): string => {
   if (selectionText) {
     // If we have a selection, update the range tracker
     if (selection && selection.rangeCount > 0) {
-      lastSelectionRange = selection.getRangeAt(0).cloneRange();
-      lastActiveElement = null;
+      // track selection range if needed
     }
     return selectionText;
   }
@@ -37,8 +34,6 @@ const getActiveSelectionText = (): string => {
     const start = input.selectionStart ?? 0;
     const end = input.selectionEnd ?? 0;
     if (start !== end) {
-      lastActiveElement = input;
-      lastSelectionRange = null;
       return input.value.substring(start, end).trim();
     }
   }
@@ -62,15 +57,9 @@ const updateSelectedText = () => {
 
   // Track standard inputs
   if (activeElement && (activeElement.tagName === 'TEXTAREA' || activeElement.tagName === 'INPUT')) {
-    const input = activeElement as HTMLInputElement | HTMLTextAreaElement;
-    if (input.selectionStart !== input.selectionEnd) {
-      lastActiveElement = input;
-      lastSelectionRange = null;
-    }
+    // track input selection if needed
   } else if (selection && selection.rangeCount > 0 && selection.toString().trim()) {
     // Track DOM selection (including contenteditable)
-    lastSelectionRange = selection.getRangeAt(0).cloneRange();
-    lastActiveElement = null;
   }
 };
 

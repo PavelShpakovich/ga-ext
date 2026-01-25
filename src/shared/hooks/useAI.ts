@@ -4,9 +4,15 @@ import { CorrectionResult, CorrectionStyle, ExecutionStep } from '@/shared/types
 import { Logger } from '@/core/services';
 import { useTranslation } from 'react-i18next';
 
-export const useAI = () => {
+export const useAI = (): {
+  runCorrection: (text: string, modelId: string, style?: CorrectionStyle) => Promise<CorrectionResult>;
+  step: ExecutionStep;
+  error: string | null;
+  result: CorrectionResult | null;
+  reset: () => void;
+} => {
   const { t } = useTranslation();
-  const [step, setStep] = useState<ExecutionStep>('idle');
+  const [step, setStep] = useState<ExecutionStep>(ExecutionStep.IDLE);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<CorrectionResult | null>(null);
 
@@ -20,7 +26,7 @@ export const useAI = () => {
         throw new Error(t('messages.provide_text'));
       }
 
-      setStep('preparing-model');
+      setStep(ExecutionStep.PREPARING_MODEL);
       setError(null);
       setResult(null);
 
@@ -37,22 +43,22 @@ export const useAI = () => {
           throw new Error(t('messages.model_failed_load'));
         }
 
-        setStep('correcting');
+        setStep(ExecutionStep.CORRECTING);
         const correctionResult = await aiProvider.correct(text, style);
         setResult(correctionResult);
-        setStep('done');
+        setStep(ExecutionStep.DONE);
 
         return correctionResult;
       } catch (err) {
         if ((err as Error)?.message === 'aborted') {
-          setStep('idle');
+          setStep(ExecutionStep.IDLE);
           return { original: text, corrected: text };
         }
 
         const errorMessage = (err as Error)?.message || t('messages.correction_failed');
         Logger.error('useAI', 'Correction error', err);
         setError(errorMessage);
-        setStep('error');
+        setStep(ExecutionStep.ERROR);
         throw new Error(errorMessage);
       }
     },
@@ -60,7 +66,7 @@ export const useAI = () => {
   );
 
   const reset = useCallback(() => {
-    setStep('idle');
+    setStep(ExecutionStep.IDLE);
     setError(null);
     setResult(null);
   }, []);

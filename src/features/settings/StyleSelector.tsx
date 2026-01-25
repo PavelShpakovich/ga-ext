@@ -1,7 +1,7 @@
 import React from 'react';
 import { FileText, LucideIcon, Zap, Languages, GraduationCap, Coffee } from 'lucide-react';
 import { CorrectionStyle } from '@/shared/types';
-import { Button } from '@/shared/components/Button';
+import { Button, ButtonVariant, ButtonSize } from '@/shared/components/Button';
 import { StyleButton } from '@/shared/components/ui';
 import { useTranslation } from 'react-i18next';
 
@@ -37,8 +37,8 @@ export const StyleSelector: React.FC<StyleSelectorProps> = ({ selected, onChange
         </h3>
         {onRecheck && (
           <Button
-            variant='ghost'
-            size='sm'
+            variant={ButtonVariant.GHOST}
+            size={ButtonSize.SM}
             onClick={onRecheck}
             disabled={disabled}
             className='text-[10px] text-blue-500 hover:text-blue-600 disabled:text-gray-400 px-2 py-0.5 h-auto font-bold uppercase tracking-tight'

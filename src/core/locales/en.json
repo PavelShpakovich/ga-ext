@@ -6,7 +6,7 @@
     "text_section": "Source Text",
     "result_section": "Corrected Result",
     "text_placeholder": "Start typing or paste content...",
-    "empty_text_hint": "Select text on any webpage or type directly here to begin.",
+    "empty_text_hint": "Paste or type your text here to get started.",
     "reasoning_label": "Improvements & Reasoning",
     "syncing": "Syncing...",
     "loading": "Loading...",
@@ -78,9 +78,11 @@
     "webgpu": "WebGPU",
     "description": "Enhance your writing with privacy-first AI.",
     "experimental": "Experimental local-first AI",
-    "open_center": "Open Control Center",
-    "update_results": "Update Results",
-    "run_ai": "Run AI Correction"
+    "launch": "Launch Assistant",
+    "privacy_title": "Your text stays private",
+    "privacy_description": "No data leaves your device. Everything runs locally in your browser.",
+    "speed_title": "Lightning fast",
+    "speed_description": "Powered by your GPU for instant corrections without internet."
   },
   "error": {
     "something_wrong": "Something went wrong",
@@ -88,9 +90,16 @@
     "reload": "Reload Extension",
     "model_not_ready": "Model not ready",
     "invalid_json": "Invalid JSON response",
-    "could_not_parse": "Could not clarify the model output format."
+    "could_not_parse": "Could not clarify the model output format.",
+    "unparseable_output_detail": "The selected model returned an invalid format. This often happens with smaller models or specific styles. Please try selecting a different model from the list."
   },
   "models": {
+    "category": {
+      "pro": "Professional (Large)",
+      "standard": "Standard (Balanced)",
+      "flash": "Flash (Ultra-Fast)",
+      "available": "Available Models"
+    },
     "speed": {
       "fast": "Fast",
       "medium": "Medium",

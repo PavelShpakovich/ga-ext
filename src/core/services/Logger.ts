@@ -1,5 +1,3 @@
-declare var process: any;
-
 export enum LogLevel {
   DEBUG = 0,
   INFO = 1,

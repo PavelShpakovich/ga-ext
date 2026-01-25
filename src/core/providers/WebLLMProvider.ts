@@ -1,5 +1,4 @@
 import {
-  CreateMLCEngine,
   MLCEngine,
   ChatCompletionMessageParam,
   prebuiltAppConfig,
@@ -8,9 +7,23 @@ import {
 } from '@mlc-ai/web-llm';
 import { AIProvider } from '@/core/providers/AIProvider';
 import i18n from 'i18next';
-import { CorrectionResult, CorrectionStyle, ModelOption, ModelProgress } from '@/shared/types';
+import {
+  CorrectionResult,
+  CorrectionStyle,
+  ModelOption,
+  ModelProgress,
+  ModelProgressState,
+  ModelSpeed,
+  ModelCategory,
+} from '@/shared/types';
 import { Logger } from '@/core/services/Logger';
 import { DEFAULT_MODEL_ID, SUPPORTED_MODELS } from '@/core/constants';
+
+const MAX_INIT_ATTEMPTS = 2;
+const INITIAL_PROGRESS = 0;
+const COMPLETED_PROGRESS = 1;
+const DEFAULT_TEMPERATURE = 0.1;
+const MAX_TOKENS = 1024;
 
 // WebGPU type declarations
 declare global {
@@ -56,7 +69,8 @@ export class WebLLMProvider extends AIProvider {
       name: m.name,
       family: m.family,
       size: m.size,
-      speed: m.speed as 'fast' | 'medium' | 'slow',
+      speed: m.speed as ModelSpeed,
+      category: m.category as ModelCategory,
       description: m.description,
     }));
   }
@@ -86,7 +100,7 @@ export class WebLLMProvider extends AIProvider {
 
     this.initPromise = (async () => {
       let attempt = 0;
-      while (attempt < 2) {
+      while (attempt < MAX_INIT_ATTEMPTS) {
         try {
           WebLLMProvider.currentInstance = this;
           this.cancelled = false;
@@ -96,11 +110,11 @@ export class WebLLMProvider extends AIProvider {
             useIndexedDBCache: true,
           });
 
-          const progressState = cached ? 'loading' : 'downloading';
+          const progressState = cached ? ModelProgressState.LOADING : ModelProgressState.DOWNLOADING;
 
           this.emitProgress({
             text: i18n.t('status.preparing'),
-            progress: 0,
+            progress: INITIAL_PROGRESS,
             state: progressState,
             modelId: this.modelId,
           });
@@ -115,7 +129,7 @@ export class WebLLMProvider extends AIProvider {
               if (this.cancelled) return;
               this.emitProgress({
                 text: p.text,
-                progress: p.progress || 0,
+                progress: p.progress || INITIAL_PROGRESS,
                 state: progressState,
                 modelId: this.modelId,
               });
@@ -133,13 +147,19 @@ export class WebLLMProvider extends AIProvider {
             throw new Error('aborted');
           }
 
-          this.emitProgress({ text: i18n.t('status.ready'), progress: 1, state: 'loading', modelId: this.modelId });
+          this.emitProgress({
+            text: i18n.t('status.ready'),
+            progress: COMPLETED_PROGRESS,
+            state: ModelProgressState.LOADING,
+            modelId: this.modelId,
+          });
           return;
-        } catch (error: any) {
+        } catch (error: unknown) {
+          const err = error as Error;
           const isAborted =
-            error?.message === 'aborted' ||
+            err?.message === 'aborted' ||
             this.cancelled ||
-            (error?.message && error.message.toLowerCase().includes('unload'));
+            (err?.message && err.message.toLowerCase().includes('unload'));
 
           if (this.engine) {
             try {
@@ -156,8 +176,8 @@ export class WebLLMProvider extends AIProvider {
             this.initPromise = null;
             this.emitProgress({
               text: i18n.t('messages.download_cancelled'),
-              progress: 0,
-              state: 'downloading',
+              progress: INITIAL_PROGRESS,
+              state: ModelProgressState.DOWNLOADING,
               modelId: this.modelId,
             });
             throw new Error('aborted');
@@ -172,7 +192,12 @@ export class WebLLMProvider extends AIProvider {
 
           this.initPromise = null;
           const message = (error as Error)?.message || 'Model failed to load';
-          this.emitProgress({ text: message, progress: 0, state: 'downloading', modelId: this.modelId });
+          this.emitProgress({
+            text: message,
+            progress: INITIAL_PROGRESS,
+            state: ModelProgressState.DOWNLOADING,
+            modelId: this.modelId,
+          });
           throw error;
         } finally {
           WebLLMProvider.currentInstance = null;
@@ -199,8 +224,8 @@ export class WebLLMProvider extends AIProvider {
     this.initPromise = null;
     this.emitProgress({
       text: i18n.t('messages.download_cancelled'),
-      progress: 0,
-      state: 'downloading',
+      progress: INITIAL_PROGRESS,
+      state: ModelProgressState.DOWNLOADING,
       modelId: this.modelId,
     });
   }
@@ -239,8 +264,8 @@ export class WebLLMProvider extends AIProvider {
 
     const response = await this.engine.chat.completions.create({
       messages,
-      temperature: 0.1,
-      max_tokens: 1024,
+      temperature: DEFAULT_TEMPERATURE,
+      max_tokens: MAX_TOKENS,
     });
 
     const content = response.choices[0]?.message?.content || '';
@@ -304,10 +329,10 @@ export class WebLLMProvider extends AIProvider {
     };
   }
 
-  private formatResult(parsed: any, original: string, raw: string): CorrectionResult {
+  private formatResult(parsed: Record<string, unknown>, original: string, raw: string): CorrectionResult {
     // 1. Defensively extract corrected text
     let corrected = original;
-    const correctedValue = parsed.corrected || parsed.corrected_text || parsed.correctedText;
+    const correctedValue = parsed['corrected'] || parsed['corrected_text'] || parsed['correctedText'];
 
     if (typeof correctedValue === 'string' && correctedValue.trim().length > 0) {
       corrected = correctedValue;
@@ -319,12 +344,13 @@ export class WebLLMProvider extends AIProvider {
 
     // 2. Defensively extract explanation
     let explanation = '';
-    if (typeof parsed.explanation === 'string') {
-      explanation = parsed.explanation;
-    } else if (Array.isArray(parsed.explanation)) {
-      explanation = parsed.explanation.join(' ');
-    } else if (parsed.explanation) {
-      explanation = String(parsed.explanation);
+    const explanationValue = parsed['explanation'];
+    if (typeof explanationValue === 'string') {
+      explanation = explanationValue;
+    } else if (Array.isArray(explanationValue)) {
+      explanation = explanationValue.join(' ');
+    } else if (explanationValue) {
+      explanation = String(explanationValue);
     }
 
     const sameText = corrected.trim() === original.trim();

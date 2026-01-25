@@ -1,7 +1,6 @@
 // Abstract AI Provider Interface
 
 import { CorrectionResult, CorrectionStyle } from '@/shared/types';
-import i18n from 'i18next';
 import { PROMPTS } from '@/core/prompt-templates';
 
 export enum ProviderStatus {

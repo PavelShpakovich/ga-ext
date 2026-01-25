@@ -7,14 +7,15 @@ import { ErrorBoundary } from '@/shared/components/ErrorBoundary';
 import { useSettings } from '@/shared/hooks/useSettings';
 import { useModelSelection } from '@/shared/hooks/useModelSelection';
 import { generateCacheKey } from '@/shared/utils/helpers';
+import { Logger } from '@/core/services/Logger';
 import { SidebarHeader } from '@/features/settings/SidebarHeader';
 import { ModelSection } from '@/features/models/ModelSection';
 import { TextSection } from '@/features/correction/TextSection';
 import { ResultSection } from '@/features/correction/ResultSection';
 import { useTranslation } from 'react-i18next';
-import { Modal } from '@/shared/components/ui';
+import { Modal, ModalVariant } from '@/shared/components/ui';
 import { StyleSelector } from '@/features/settings/StyleSelector';
-import { CorrectionStyle, ModelOption } from '@/shared/types';
+import { CorrectionStyle, ModelOption, ExecutionStep } from '@/shared/types';
 
 // --- Constants ---
 const AUTO_HIDE_DELAY = 3500;
@@ -34,7 +35,7 @@ const SidePanelContent: React.FC = () => {
     title: string;
     message: string;
     onConfirm: () => void;
-    variant?: 'danger' | 'info';
+    variant?: ModalVariant;
   }>({
     isOpen: false,
     title: '',
@@ -52,7 +53,12 @@ const SidePanelContent: React.FC = () => {
 
   const selectedModel = settings.selectedModel;
   const modelInfo = useMemo(() => getModelInfo(selectedModel), [selectedModel, getModelInfo]);
-  const isBusy = step === 'preparing-model' || step === 'correcting' || isPrefetching || isDeleting || isRemovingModel;
+  const isBusy =
+    step === ExecutionStep.PREPARING_MODEL ||
+    step === ExecutionStep.CORRECTING ||
+    isPrefetching ||
+    isDeleting ||
+    isRemovingModel;
 
   const isResultStale = useMemo(() => {
     if (!result || !text.trim()) return false;
@@ -96,8 +102,9 @@ const SidePanelContent: React.FC = () => {
       shouldAutoRunRef.current = false;
       const cached = await WebLLMProvider.isModelCached(selectedModel);
       setIsModelCached(cached);
-    } catch {
-      // Error handled by useAI
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      Logger.error('SidePanel', 'Correction error', { error: errorMessage });
     }
   }, [text, selectedModel, isBusy, runCorrection, settings.selectedStyle]);
 
@@ -110,11 +117,12 @@ const SidePanelContent: React.FC = () => {
       setLocalMessage(t('messages.model_synced'));
       const cached = await WebLLMProvider.isModelCached(selectedModel);
       setIsModelCached(cached);
-    } catch (err: any) {
-      if (err.message === 'aborted') {
+    } catch (err: unknown) {
+      if (err instanceof Error && err.message === 'aborted') {
         setLocalMessage(null);
       } else {
-        setLocalMessage(err.message || t('messages.sync_failed'));
+        const errorMessage = err instanceof Error ? err.message : t('messages.sync_failed');
+        setLocalMessage(errorMessage);
       }
     } finally {
       setIsPrefetching(false);
@@ -126,7 +134,7 @@ const SidePanelContent: React.FC = () => {
       isOpen: true,
       title: t('ui.flush_cache'),
       message: t('messages.confirm_remove_model'),
-      variant: 'danger',
+      variant: ModalVariant.DANGER,
       onConfirm: async () => {
         setIsRemovingModel(true);
         try {
@@ -134,8 +142,9 @@ const SidePanelContent: React.FC = () => {
           setLocalMessage(t('messages.model_removed'));
           setIsModelCached(false);
           reset();
-        } catch (err: any) {
-          setLocalMessage(err.message || t('messages.removal_failed'));
+        } catch (err: unknown) {
+          const errorMessage = err instanceof Error ? err.message : t('messages.removal_failed');
+          setLocalMessage(errorMessage);
         } finally {
           setIsRemovingModel(false);
         }
@@ -148,7 +157,7 @@ const SidePanelContent: React.FC = () => {
       isOpen: true,
       title: t('ui.purge_storage'),
       message: t('messages.confirm_clear_cache'),
-      variant: 'danger',
+      variant: ModalVariant.DANGER,
       onConfirm: async () => {
         setIsDeleting(true);
         try {
@@ -156,8 +165,9 @@ const SidePanelContent: React.FC = () => {
           setLocalMessage(t('messages.cache_cleared'));
           setIsModelCached(false);
           reset();
-        } catch (err: any) {
-          setLocalMessage(err.message || t('messages.cache_failed'));
+        } catch (err: unknown) {
+          const errorMessage = err instanceof Error ? err.message : t('messages.cache_failed');
+          setLocalMessage(errorMessage);
         } finally {
           setIsDeleting(false);
         }

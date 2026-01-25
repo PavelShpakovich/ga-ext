@@ -1,21 +1,21 @@
 import React from 'react';
 import { ArrowRight, Copy, Info, X } from 'lucide-react';
 import { Card } from '@/shared/components/Card';
-import { IconButton } from '@/shared/components/ui/IconButton';
-import { Button } from '@/shared/components/Button';
-import { Alert } from '@/shared/components/ui/Alert';
+import { Button, ButtonVariant } from '@/shared/components/Button';
+import { Alert, AlertVariant } from '@/shared/components/ui/Alert';
+import { CorrectionResult, ExecutionStep } from '@/shared/types';
 import { StatusIndicator } from '@/features/models/StatusIndicator';
 import { useTranslation } from 'react-i18next';
 
 interface ResultSectionProps {
-  result: any;
+  result: CorrectionResult | null;
   onCopy: () => void;
   showDebug: boolean;
   onToggleDebug: () => void;
   onClearCache: () => void;
   localMessage: string | null;
   error: string | null;
-  step: string;
+  step: ExecutionStep;
   isBusy: boolean;
   title: string;
   reasoningLabel: string;
@@ -40,8 +40,8 @@ export const ResultSection: React.FC<ResultSectionProps> = ({
     <div className='space-y-4'>
       <StatusIndicator step={step} isBusy={isBusy} />
 
-      {error && <Alert variant='error'>{error}</Alert>}
-      {localMessage && !error && <Alert variant='success'>{localMessage}</Alert>}
+      {error && <Alert variant={AlertVariant.ERROR}>{error}</Alert>}
+      {localMessage && !error && <Alert variant={AlertVariant.SUCCESS}>{localMessage}</Alert>}
 
       {result && (
         <Card
@@ -50,11 +50,30 @@ export const ResultSection: React.FC<ResultSectionProps> = ({
           className='animate-in fade-in slide-in-from-bottom-3 duration-500'
         >
           <div className='space-y-6'>
-            <div className='bg-blue-50/30 dark:bg-blue-500/5 border border-blue-100/30 dark:border-blue-500/10 rounded-2xl p-5 text-sm text-slate-800 dark:text-slate-100 whitespace-pre-wrap leading-loose shadow-sm selection:bg-blue-200 dark:selection:bg-blue-700 min-h-[100px] overflow-y-auto custom-scrollbar'>
-              {result.corrected}
-            </div>
+            {result.parseError ? (
+              <div className='space-y-4'>
+                <Alert
+                  variant={AlertVariant.ERROR}
+                  className='bg-rose-50/50 dark:bg-rose-500/5 border-rose-100/50 dark:border-rose-500/20'
+                >
+                  <div className='flex flex-col gap-1'>
+                    <span className='font-bold text-rose-600 dark:text-rose-400'>{t('ui.fault')}</span>
+                    <p className='text-rose-500/80 dark:text-rose-400/70 text-[12px] leading-relaxed'>
+                      {t('error.unparseable_output_detail')}
+                    </p>
+                  </div>
+                </Alert>
+                <div className='bg-slate-50/50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 text-sm text-slate-400 dark:text-slate-500 italic whitespace-pre-wrap leading-loose'>
+                  {result.original}
+                </div>
+              </div>
+            ) : (
+              <div className='bg-blue-50/30 dark:bg-blue-500/5 border border-blue-100/30 dark:border-blue-500/10 rounded-2xl p-5 text-sm text-slate-800 dark:text-slate-100 whitespace-pre-wrap leading-loose shadow-sm selection:bg-blue-200 dark:selection:bg-blue-700 min-h-[100px] overflow-y-auto custom-scrollbar'>
+                {result.corrected}
+              </div>
+            )}
 
-            {result.explanation && (
+            {result.explanation && !result.parseError && (
               <div className='bg-slate-50/50 dark:bg-slate-900/30 rounded-xl p-4 border border-slate-100 dark:border-slate-800/50'>
                 <div className='flex items-center gap-2 mb-2'>
                   <Info className='w-3 h-3 text-blue-500' />
@@ -69,7 +88,12 @@ export const ResultSection: React.FC<ResultSectionProps> = ({
             )}
 
             <div className='pb-2'>
-              <Button variant='primary' className='w-full h-12 text-xs font-bold' onClick={onCopy}>
+              <Button
+                variant={ButtonVariant.PRIMARY}
+                className='w-full h-12 text-xs font-bold'
+                onClick={onCopy}
+                disabled={!!result.parseError}
+              >
                 <Copy className='w-4 h-4' />
                 {t('ui.copy_result')}
               </Button>

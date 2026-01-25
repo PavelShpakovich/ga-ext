@@ -2,7 +2,9 @@
   "manifest_version": 3,
   "name": "Grammar Assistant",
   "version": "0.1.0",
+  "author": "Pavel Shpakovich",
   "description": "Privacy-first AI-powered grammar correction for better writing",
+  "homepage_url": "https://github.com/PavelShpakovich/ext-ga",
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",

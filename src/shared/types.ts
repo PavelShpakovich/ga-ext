@@ -10,21 +10,36 @@ export enum CorrectionStyle {
   CASUAL = 'casual',
 }
 
-export interface CorrectionResult {
-  original: string;
-  corrected: string;
-  explanation?: string;
-  raw?: string;
-  parseError?: string;
+export enum ExecutionStep {
+  IDLE = 'idle',
+  PREPARING_MODEL = 'preparing-model',
+  CORRECTING = 'correcting',
+  DONE = 'done',
+  ERROR = 'error',
 }
 
-export type ExecutionStep = 'idle' | 'preparing-model' | 'correcting' | 'done' | 'error';
+export enum ModelProgressState {
+  DOWNLOADING = 'downloading',
+  LOADING = 'loading',
+}
 
 export interface ModelProgress {
   text: string;
   progress: number; // 0-1
-  state: 'downloading' | 'loading';
+  state: ModelProgressState;
   modelId?: string;
+}
+
+export enum ModelSpeed {
+  FAST = 'fast',
+  MEDIUM = 'medium',
+  SLOW = 'slow',
+}
+
+export enum ModelCategory {
+  PRO = 'pro',
+  STANDARD = 'standard',
+  FLASH = 'flash',
 }
 
 export interface ModelOption {
@@ -32,8 +47,17 @@ export interface ModelOption {
   name: string;
   description?: string;
   size?: string;
-  speed?: 'fast' | 'medium' | 'slow';
+  speed?: ModelSpeed;
   family?: string;
+  category?: ModelCategory;
+}
+
+export interface CorrectionResult {
+  original: string;
+  corrected: string;
+  explanation?: string;
+  raw?: string;
+  parseError?: string;
 }
 
 export interface Settings {

@@ -1,7 +1,12 @@
 import React, { useEffect } from 'react';
 import { X, AlertTriangle } from 'lucide-react';
-import { Button } from '@/shared/components/Button';
-import { IconButton } from '@/shared/components/ui/IconButton';
+import { Button, ButtonVariant } from '@/shared/components/Button';
+import { IconButton, IconButtonVariant, IconButtonSize } from '@/shared/components/ui/IconButton';
+
+export enum ModalVariant {
+  DANGER = 'danger',
+  INFO = 'info',
+}
 
 interface ModalProps {
   isOpen: boolean;
@@ -11,7 +16,7 @@ interface ModalProps {
   message: string;
   confirmLabel?: string;
   cancelLabel?: string;
-  variant?: 'danger' | 'info';
+  variant?: ModalVariant;
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -22,7 +27,7 @@ export const Modal: React.FC<ModalProps> = ({
   message,
   confirmLabel = 'Confirm',
   cancelLabel = 'Cancel',
-  variant = 'info',
+  variant = ModalVariant.INFO,
 }) => {
   useEffect(() => {
     if (isOpen) {
@@ -45,11 +50,19 @@ export const Modal: React.FC<ModalProps> = ({
       >
         <div className='px-6 pt-6 pb-2 flex justify-between items-start'>
           <div
-            className={`p-2 rounded-xl ${variant === 'danger' ? 'bg-red-50 dark:bg-red-900/20' : 'bg-blue-50 dark:bg-blue-900/20'}`}
+            className={`p-2 rounded-xl ${variant === ModalVariant.DANGER ? 'bg-red-50 dark:bg-red-900/20' : 'bg-blue-50 dark:bg-blue-900/20'}`}
           >
-            <AlertTriangle className={`w-5 h-5 ${variant === 'danger' ? 'text-red-500' : 'text-blue-500'}`} />
+            <AlertTriangle
+              className={`w-5 h-5 ${variant === ModalVariant.DANGER ? 'text-red-500' : 'text-blue-500'}`}
+            />
           </div>
-          <IconButton icon={<X />} onClick={onClose} variant='ghost' size='sm' className='-mr-2 -mt-2' />
+          <IconButton
+            icon={<X />}
+            onClick={onClose}
+            variant={IconButtonVariant.GHOST}
+            size={IconButtonSize.SM}
+            className='-mr-2 -mt-2'
+          />
         </div>
 
         <div className='px-6 py-4'>
@@ -58,12 +71,12 @@ export const Modal: React.FC<ModalProps> = ({
         </div>
 
         <div className='px-6 pb-6 pt-2 flex gap-3'>
-          <Button variant='secondary' className='flex-1 h-11 text-xs' onClick={onClose}>
+          <Button variant={ButtonVariant.SECONDARY} className='flex-1 h-11 text-xs' onClick={onClose}>
             {cancelLabel}
           </Button>
           <Button
-            variant={variant === 'danger' ? 'primary' : 'primary'}
-            className={`flex-1 h-11 text-xs ${variant === 'danger' ? 'bg-red-500 hover:bg-red-600 border-red-500 hover:border-red-600' : ''}`}
+            variant={ButtonVariant.PRIMARY}
+            className={`flex-1 h-11 text-xs ${variant === ModalVariant.DANGER ? 'bg-red-500 hover:bg-red-600 border-red-500 hover:border-red-600' : ''}`}
             onClick={() => {
               onConfirm();
               onClose();

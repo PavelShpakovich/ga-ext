@@ -1,14 +1,18 @@
 import { useState, useEffect } from 'react';
 import { Settings, CorrectionStyle } from '@/shared/types';
-import { DEFAULT_MODEL_ID } from '@/core/constants';
+import { DEFAULT_MODEL_ID, DEFAULT_LANGUAGE } from '@/core/constants';
 import { Storage, Logger } from '@/core/services';
 import i18n from '@/core/i18n';
 
-export const useSettings = () => {
+export const useSettings = (): {
+  settings: Settings;
+  updateSettings: (updates: Partial<Settings>) => Promise<void>;
+  isLoading: boolean;
+} => {
   const [settings, setSettings] = useState<Settings>({
     selectedModel: DEFAULT_MODEL_ID,
     selectedStyle: CorrectionStyle.STANDARD,
-    language: 'en',
+    language: DEFAULT_LANGUAGE,
   });
   const [isLoading, setIsLoading] = useState(true);
 
@@ -29,13 +33,13 @@ export const useSettings = () => {
       }
 
       // Force English
-      loadedSettings.language = 'en';
+      loadedSettings.language = DEFAULT_LANGUAGE;
 
       await Storage.updateSettings(loadedSettings);
 
       // Apply language to i18n
-      if (i18n.language !== 'en') {
-        i18n.changeLanguage('en');
+      if (i18n.language !== DEFAULT_LANGUAGE) {
+        i18n.changeLanguage(DEFAULT_LANGUAGE);
       }
 
       setSettings(loadedSettings);

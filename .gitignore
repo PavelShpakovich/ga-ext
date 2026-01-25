@@ -4,3 +4,6 @@ dist
 *.log
 .env
 .env.local
+
+# Documentation
+CODING_STANDARDS.md

@@ -2,24 +2,25 @@ import React from 'react';
 import { Settings as SettingsIcon, Download, Check, Loader2, Trash2 } from 'lucide-react';
 import { Card } from '@/shared/components/Card';
 import { Select } from '@/shared/components/ui/Select';
-import { Button } from '@/shared/components/Button';
-import { IconButton } from '@/shared/components/ui/IconButton';
+import { Button, ButtonVariant } from '@/shared/components/Button';
+import { IconButton, IconButtonVariant, IconButtonSize } from '@/shared/components/ui/IconButton';
 import { Progress } from '@/shared/components/ui/Progress';
-import { normalizeDownloadProgress } from '@/shared/utils/helpers';
 import { ModelInfoCard } from '@/shared/components/ui/ModelInfoCard';
+import { normalizeDownloadProgress } from '@/shared/utils/helpers';
+import { ModelOption, ExecutionStep, ModelProgress } from '@/shared/types';
 import { useTranslation } from 'react-i18next';
 
 interface ModelSectionProps {
   selectedModel: string;
   onModelChange: (id: string) => void;
   modelOptions: { label: string; options: { value: string; label: string }[] }[];
-  modelInfo?: any;
+  modelInfo?: ModelOption;
   isModelCached: boolean;
   isPrefetching: boolean;
   isRemovingModel: boolean;
   isBusy: boolean;
-  step: string;
-  downloadProgress: any;
+  step: ExecutionStep;
+  downloadProgress: ModelProgress | null;
   onPrefetch: () => void;
   onRemoveModel: () => void;
   onStopDownload: () => void;
@@ -58,7 +59,7 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
         {modelInfo && <ModelInfoCard model={modelInfo} />}
 
         <div className='flex gap-3'>
-          {isModelCached && !isPrefetching && step !== 'preparing-model' ? (
+          {isModelCached && !isPrefetching && step !== ExecutionStep.PREPARING_MODEL ? (
             <div className='flex-1 h-12 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 text-slate-600 dark:text-slate-300 flex items-center justify-center gap-2 text-sm font-semibold selection:bg-transparent'>
               <Check className='w-4 h-4 text-green-500' />
               {t('ui.optimized_ready')}
@@ -67,7 +68,7 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
             <Button
               onClick={onPrefetch}
               disabled={isBusy}
-              variant={isModelCached ? 'secondary' : 'primary'}
+              variant={isModelCached ? ButtonVariant.SECONDARY : ButtonVariant.PRIMARY}
               className='flex-1 group h-12'
             >
               {isPrefetching ? (
@@ -75,7 +76,7 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
                   <Loader2 className='w-4 h-4 animate-spin' />
                   {t('ui.syncing')}
                 </>
-              ) : step === 'preparing-model' ? (
+              ) : step === ExecutionStep.PREPARING_MODEL ? (
                 <>
                   <Loader2 className='w-4 h-4 animate-spin' />
                   {t('ui.loading')}
@@ -91,10 +92,10 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
           {isModelCached && (
             <IconButton
               icon={<Trash2 />}
-              variant='outline'
+              variant={IconButtonVariant.OUTLINE}
               onClick={onRemoveModel}
               disabled={isRemovingModel || isBusy}
-              size='md'
+              size={IconButtonSize.MD}
               title={t('ui.flush_cache')}
               className='text-slate-400 hover:text-red-500 hover:border-red-200 dark:hover:border-red-900/30'
             />

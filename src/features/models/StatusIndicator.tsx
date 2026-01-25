@@ -1,29 +1,30 @@
 import React from 'react';
 import { Loader2 } from 'lucide-react';
+import { ExecutionStep } from '@/shared/types';
 import { useTranslation } from 'react-i18next';
 
 interface StatusIndicatorProps {
-  step: string;
+  step: ExecutionStep;
   isBusy: boolean;
 }
 
 export const StatusIndicator: React.FC<StatusIndicatorProps> = ({ step, isBusy }) => {
   const { t } = useTranslation();
 
-  if (step === 'idle' && !isBusy) return null;
+  if (step === ExecutionStep.IDLE && !isBusy) return null;
 
   // Derive a more accurate label based on the combination of step and busy-ness
   let label = '';
-  if (step === 'preparing-model') {
+  if (step === ExecutionStep.PREPARING_MODEL) {
     label = t('status.preparing');
-  } else if (step === 'correcting') {
+  } else if (step === ExecutionStep.CORRECTING) {
     label = t('status.analysing');
-  } else if (step === 'done' && isBusy) {
+  } else if (step === ExecutionStep.DONE && isBusy) {
     // This happens if we're busy with sync/delete but the previous result is still there
     label = t('status.busy');
-  } else if (step === 'done') {
+  } else if (step === ExecutionStep.DONE) {
     label = t('status.ready');
-  } else if (step === 'error') {
+  } else if (step === ExecutionStep.ERROR) {
     label = t('status.halting');
   } else if (isBusy) {
     label = t('status.processing');
