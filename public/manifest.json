@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Grammar Assistant",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "author": "Pavel Shpakovich",
   "description": "Free AI grammar correction that runs locally in your browser. Private, fast, and works offline.",
   "homepage_url": "https://github.com/PavelShpakovich/ext-ga",

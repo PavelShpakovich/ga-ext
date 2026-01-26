@@ -63,8 +63,8 @@ const SidePanelContent: React.FC = () => {
 
   const isResultStale = useMemo(() => {
     if (!result || !text.trim()) return false;
-    return lastAutoRunKey.current !== generateCacheKey(selectedModel, text);
-  }, [result, selectedModel, text]);
+    return lastAutoRunKey.current !== generateCacheKey(selectedModel, text, settings.selectedStyle);
+  }, [result, selectedModel, text, settings.selectedStyle]);
 
   const modelOptions = selectGroups.length
     ? selectGroups
@@ -97,7 +97,7 @@ const SidePanelContent: React.FC = () => {
     (style: CorrectionStyle) => {
       updateSettings({ selectedStyle: style });
       lastAutoRunKey.current = null;
-      shouldAutoRunRef.current = true;
+      shouldAutoRunRef.current = false;
     },
     [updateSettings],
   );
@@ -217,7 +217,7 @@ const SidePanelContent: React.FC = () => {
     const trimmed = text.trim();
     if (!trimmed || isBusy || !shouldAutoRunRef.current) return;
 
-    const key = generateCacheKey(selectedModel, trimmed);
+    const key = generateCacheKey(selectedModel, trimmed, settings.selectedStyle);
     if (lastAutoRunKey.current === key) {
       shouldAutoRunRef.current = false;
       return;
@@ -230,9 +230,11 @@ const SidePanelContent: React.FC = () => {
         shouldAutoRunRef.current = false;
         const cached = await WebLLMProvider.isModelCached(selectedModel);
         setIsModelCached(cached);
-      } catch {
+      } catch (err: unknown) {
         lastAutoRunKey.current = key;
         shouldAutoRunRef.current = false;
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        Logger.error('SidePanel', 'Auto-run correction failed', { error: errorMessage });
       }
     };
 
@@ -258,7 +260,7 @@ const SidePanelContent: React.FC = () => {
     <div className='h-screen flex flex-col bg-[#F8FAFC] dark:bg-[#0F172A] text-slate-900 dark:text-slate-50 font-sans selection:bg-blue-100 dark:selection:bg-blue-900/40'>
       <SidebarHeader title={t('ui.title')} subtitle={t('ui.subtitle')} isModelCached={isModelCached} />
 
-      <main className='flex-1 overflow-y-auto p-6 space-y-6 scroll-smooth'>
+      <main className='flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth'>
         <ModelSection
           title={t('ui.model_section')}
           selectedModel={selectedModel}

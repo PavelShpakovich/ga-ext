@@ -11,8 +11,8 @@ export const isWebGPUAvailable = async (): Promise<boolean> => {
   }
 };
 
-export const generateCacheKey = (modelId: string, text: string): string => {
-  return `${modelId}::${text.trim()}`;
+export const generateCacheKey = (modelId: string, text: string, style?: string): string => {
+  return style ? `${modelId}::${style}::${text.trim()}` : `${modelId}::${text.trim()}`;
 };
 
 export const normalizeDownloadProgress = (progress: number): number => {

@@ -79,6 +79,7 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
               disabled={isBusy}
               variant={isModelCached ? ButtonVariant.SECONDARY : ButtonVariant.PRIMARY}
               className='flex-1 group'
+              aria-busy={isPrefetching || step === ExecutionStep.PREPARING_MODEL}
             >
               {isPrefetching ? (
                 <>
@@ -106,13 +107,18 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
               disabled={isRemovingModel || isBusy}
               size={IconButtonSize.MD}
               title={t('ui.flush_cache')}
+              aria-label={t('ui.flush_cache')}
               className='text-slate-400 hover:text-red-500 hover:border-red-200 dark:hover:border-red-900/30'
             />
           )}
         </div>
 
         {downloadProgress && (
-          <div className='bg-blue-50/40 dark:bg-blue-950/20 border border-blue-100/50 dark:border-blue-900/30 rounded-2xl p-4 space-y-3 animate-in slide-in-from-top-2 duration-300 shadow-sm'>
+          <div
+            className='bg-blue-50/40 dark:bg-blue-950/20 border border-blue-100/50 dark:border-blue-900/30 rounded-2xl p-4 space-y-3 animate-in slide-in-from-top-2 duration-300 shadow-sm'
+            role='status'
+            aria-live='polite'
+          >
             <div className='space-y-2.5'>
               <div className='flex items-start justify-between gap-3'>
                 <div className='flex items-start gap-2 min-w-0'>

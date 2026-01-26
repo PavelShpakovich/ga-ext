@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.5] - 2026-01-26
+
+### Added
+
+- Added ARIA labels to all icon-only buttons for better screen reader accessibility
+- Added `aria-busy` attribute to download buttons during loading states
+- Added `role="status"` and `aria-live="polite"` to download progress for screen reader announcements
+- Added responsive correction style selector that shows icon-only view on small screens
+- Added selected style name indicator that appears on small screens when button labels are hidden
+- Added error logging for auto-run correction failures (previously silent)
+
+### Changed
+
+- **Changed correction style behavior**: Selecting a different style no longer auto-runs AI - users must manually click "RE-CHECK" button
+- **More compact UI**: Reduced padding in sidepanel (p-6 → p-4, space-y-6 → space-y-4) and header (px-6 py-5 → px-4 py-3)
+- **Updated cache key generation** to include correction style - enables proper stale result detection when style changes
+- **Improved Standard style icon**: Changed from Languages to FileCheck for better visual representation
+- **Responsive style buttons**: Labels hidden on small screens (≤640px), showing only icons with tooltips
+- Enhanced download progress cancelation to prevent UI flashing during model switches
+
+### Fixed
+
+- Fixed download progress block flashing when switching between models
+- Fixed cancelled progress state only emitting on explicit user cancellation (not internal operations)
+- Fixed excessive cache checking - removed `isBusy` dependency to prevent checks on every state change
+- Fixed re-check button not appearing when correction style is changed
+
 ## [0.1.4] - 2026-01-26
 
 ### Added

@@ -1,5 +1,5 @@
 import React from 'react';
-import { FileText, LucideIcon, Zap, Languages, GraduationCap, Coffee } from 'lucide-react';
+import { FileText, LucideIcon, Zap, FileCheck, GraduationCap, Coffee } from 'lucide-react';
 import { CorrectionStyle } from '@/shared/types';
 import { Button, ButtonVariant, ButtonSize } from '@/shared/components/Button';
 import { StyleButton } from '@/shared/components/ui';
@@ -22,7 +22,7 @@ export const StyleSelector: React.FC<StyleSelectorProps> = ({ selected, onChange
   const { t } = useTranslation();
 
   const styles: StyleOption[] = [
-    { value: CorrectionStyle.STANDARD, label: t('styles.standard'), icon: Languages },
+    { value: CorrectionStyle.STANDARD, label: t('styles.standard'), icon: FileCheck },
     { value: CorrectionStyle.FORMAL, label: t('styles.formal'), icon: FileText },
     { value: CorrectionStyle.ACADEMIC, label: t('styles.academic'), icon: GraduationCap },
     { value: CorrectionStyle.SIMPLE, label: t('styles.simple'), icon: Zap },
@@ -42,10 +42,16 @@ export const StyleSelector: React.FC<StyleSelectorProps> = ({ selected, onChange
             onClick={onRecheck}
             disabled={disabled}
             className='text-[10px] text-blue-500 hover:text-blue-600 disabled:text-gray-400 px-2 py-0.5 h-auto font-bold uppercase tracking-tight'
+            aria-label={t('actions.recheck')}
           >
             {t('actions.recheck')}
           </Button>
         )}
+      </div>
+
+      {/* Selected style indicator - visible only on small screens */}
+      <div className='sm:hidden text-center text-xs font-semibold text-blue-600 dark:text-blue-400'>
+        {styles.find((s) => s.value === selected)?.label}
       </div>
 
       <div className='grid grid-cols-5 gap-1.5'>

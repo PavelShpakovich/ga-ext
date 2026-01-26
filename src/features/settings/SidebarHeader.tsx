@@ -12,7 +12,7 @@ export const SidebarHeader: React.FC<SidebarHeaderProps> = ({ title, subtitle, i
   const { t } = useTranslation();
 
   return (
-    <header className='px-6 py-5 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-10 flex items-center justify-between transition-colors duration-500'>
+    <header className='px-4 py-3 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-10 flex items-center justify-between transition-colors duration-500'>
       <div className='flex items-center gap-3.5'>
         <div className='w-9 h-9 rounded-lg flex items-center justify-center overflow-hidden shadow-lg shadow-blue-500/10 border border-white dark:border-slate-800 transition-all'>
           <img

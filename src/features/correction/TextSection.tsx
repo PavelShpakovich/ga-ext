@@ -56,6 +56,7 @@ export const TextSection: React.FC<TextSectionProps> = ({
               className='text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10'
               onClick={onClear}
               title={t('ui.clear_all')}
+              aria-label={t('ui.clear_all')}
             />
             {(!hasResult || isResultStale) && !isBusy && (
               <IconButton
@@ -64,6 +65,7 @@ export const TextSection: React.FC<TextSectionProps> = ({
                 size={IconButtonSize.SM}
                 onClick={onCorrect}
                 title={isResultStale ? t('ui.update_results') : t('ui.run_ai')}
+                aria-label={isResultStale ? t('ui.update_results') : t('ui.run_ai')}
               />
             )}
           </>

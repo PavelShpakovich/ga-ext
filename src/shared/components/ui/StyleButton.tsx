@@ -25,9 +25,12 @@ export const StyleButton: React.FC<StyleButtonProps> = ({ icon: Icon, label, isS
         ${disabled ? 'opacity-50 cursor-not-allowed grayscale' : ''}
       `}
       title={label}
+      aria-label={label}
     >
       <Icon className={`w-4 h-4 ${isSelected ? 'animate-in zoom-in-75 duration-300' : ''}`} />
-      <span className='text-[10px] font-bold uppercase tracking-tight truncate w-full text-center'>{label}</span>
+      <span className='text-[10px] font-bold uppercase tracking-tight truncate w-full text-center hidden sm:block'>
+        {label}
+      </span>
     </button>
   );
 };
