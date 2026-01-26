@@ -252,7 +252,7 @@ const SidePanelContent: React.FC = () => {
     return () => {
       mounted = false;
     };
-  }, [selectedModel, isBusy]);
+  }, [selectedModel]);
 
   return (
     <div className='h-screen flex flex-col bg-[#F8FAFC] dark:bg-[#0F172A] text-slate-900 dark:text-slate-50 font-sans selection:bg-blue-100 dark:selection:bg-blue-900/40'>
