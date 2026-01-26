@@ -52,7 +52,7 @@ chrome.commands.onCommand.addListener((command, tab) => {
 });
 
 // Handle messages from content script and side panel
-chrome.runtime.onMessage.addListener((message, sender, _sendResponse) => {
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   Logger.debug('Background', 'Message received', { action: message.action, fromTab: !!sender.tab });
 
   if (message.action === 'openSidePanel') {
@@ -65,6 +65,7 @@ chrome.runtime.onMessage.addListener((message, sender, _sendResponse) => {
           [STORAGE_KEYS.PENDING_AUTO_CORRECT]: !!message.autoRun,
         });
       }
+      sendResponse({ success: true });
     } else {
       // If message comes from popup, query the active tab
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -77,7 +78,9 @@ chrome.runtime.onMessage.addListener((message, sender, _sendResponse) => {
             });
           }
         }
+        sendResponse({ success: true });
       });
+      return true; // Keep channel open for async response
     }
   }
 

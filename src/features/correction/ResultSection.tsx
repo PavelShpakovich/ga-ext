@@ -3,6 +3,7 @@ import { ArrowRight, Copy, Info, X } from 'lucide-react';
 import { Card } from '@/shared/components/Card';
 import { Button, ButtonVariant } from '@/shared/components/Button';
 import { Alert, AlertVariant } from '@/shared/components/ui/Alert';
+import { TextButton, TextButtonVariant } from '@/shared/components/ui/TextButton';
 import { CorrectionResult, ExecutionStep } from '@/shared/types';
 import { StatusIndicator } from '@/features/models/StatusIndicator';
 import { useTranslation } from 'react-i18next';
@@ -68,7 +69,7 @@ export const ResultSection: React.FC<ResultSectionProps> = ({
                 </div>
               </div>
             ) : (
-              <div className='bg-blue-50/30 dark:bg-blue-500/5 border border-blue-100/30 dark:border-blue-500/10 rounded-2xl p-5 text-sm text-slate-800 dark:text-slate-100 whitespace-pre-wrap leading-loose shadow-sm selection:bg-blue-200 dark:selection:bg-blue-700 min-h-[100px] overflow-y-auto custom-scrollbar'>
+              <div className='bg-blue-50/30 dark:bg-blue-500/5 border border-blue-100/30 dark:border-blue-500/10 rounded-2xl p-5 text-sm text-slate-800 dark:text-slate-100 whitespace-pre-wrap leading-loose shadow-sm selection:bg-blue-200 dark:selection:bg-blue-700 min-h-25 overflow-y-auto custom-scrollbar'>
                 {result.corrected}
               </div>
             )}
@@ -100,18 +101,7 @@ export const ResultSection: React.FC<ResultSectionProps> = ({
             </div>
 
             <div className='pt-5 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center px-1'>
-              <button
-                onClick={onToggleDebug}
-                className='text-[9px] font-bold text-slate-400 hover:text-blue-500 dark:hover:text-blue-400 uppercase tracking-widest transition-colors flex items-center gap-1.5'
-              >
-                {showDebug ? t('ui.mask_output') : t('ui.view_output')}
-              </button>
-              <button
-                onClick={onClearCache}
-                className='text-[9px] font-bold text-slate-300 hover:text-red-500 dark:hover:text-red-400 uppercase tracking-[0.15em] transition-colors pl-2'
-              >
-                {t('ui.purge_storage')}
-              </button>
+              <TextButton onClick={onToggleDebug}>{showDebug ? t('ui.mask_output') : t('ui.view_output')}</TextButton>
             </div>
 
             {showDebug && (
@@ -120,7 +110,7 @@ export const ResultSection: React.FC<ResultSectionProps> = ({
                   <span className='text-blue-400/80 font-bold uppercase text-[9px] tracking-widest'>
                     {t('ui.engine_trace')}
                   </span>
-                  <pre className='whitespace-pre-wrap break-words leading-relaxed bg-black/30 p-3 rounded-lg border border-white/5 max-h-[300px] overflow-y-auto custom-scrollbar'>
+                  <pre className='whitespace-pre-wrap wrap-break-word leading-relaxed bg-black/30 p-3 rounded-lg border border-white/5 max-h-75 overflow-y-auto custom-scrollbar'>
                     {result.raw || t('messages.no_engine_trace')}
                   </pre>
                 </div>
@@ -135,6 +125,16 @@ export const ResultSection: React.FC<ResultSectionProps> = ({
           </div>
         </Card>
       )}
+
+      <div className='pt-2 flex justify-center'>
+        <TextButton
+          onClick={onClearCache}
+          variant={TextButtonVariant.DANGER}
+          className='text-[11px] opacity-50 hover:opacity-100 transition-opacity'
+        >
+          {t('ui.purge_storage')}
+        </TextButton>
+      </div>
     </div>
   );
 };

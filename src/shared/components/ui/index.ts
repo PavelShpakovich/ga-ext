@@ -6,3 +6,4 @@ export { ModelInfoCard } from '@/shared/components/ui/ModelInfoCard';
 export { IconButton, IconButtonVariant, IconButtonSize } from '@/shared/components/ui/IconButton';
 export { Modal, ModalVariant } from '@/shared/components/ui/Modal';
 export { StyleButton } from '@/shared/components/ui/StyleButton';
+export { TextButton, TextButtonVariant } from '@/shared/components/ui/TextButton';

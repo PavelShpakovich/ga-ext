@@ -7,18 +7,19 @@ interface CardProps {
   title?: string;
   badge?: React.ReactNode;
   icon?: React.ReactNode;
+  actions?: React.ReactNode;
 }
 
-export const Card: React.FC<CardProps> = ({ children, className, title, badge, icon }) => {
+export const Card: React.FC<CardProps> = ({ children, className, title, badge, icon, actions }) => {
   return (
     <div
       className={clsx(
-        'bg-white dark:bg-gray-850 rounded-2xl p-5 shadow-sm border border-gray-200 dark:border-gray-800 transition-all duration-200',
+        'bg-white dark:bg-gray-850 rounded-2xl p-4 shadow-sm border border-gray-200 dark:border-gray-800 transition-all duration-200',
         className,
       )}
     >
-      {(title || badge || icon) && (
-        <div className='flex justify-between items-center mb-4 px-0.5'>
+      {(title || badge || icon || actions) && (
+        <div className='flex justify-between items-center mb-3 px-0.5'>
           <div className='flex items-center gap-2.5'>
             {icon && <div className='text-gray-400 dark:text-gray-500'>{icon}</div>}
             {title && (
@@ -27,7 +28,10 @@ export const Card: React.FC<CardProps> = ({ children, className, title, badge, i
               </h3>
             )}
           </div>
-          {badge && <div className='animate-in fade-in duration-500'>{badge}</div>}
+          <div className='flex items-center gap-1'>
+            {badge && <div className='animate-in fade-in duration-500'>{badge}</div>}
+            {actions && <div className='flex items-center gap-1'>{actions}</div>}
+          </div>
         </div>
       )}
       <div className='relative'>{children}</div>

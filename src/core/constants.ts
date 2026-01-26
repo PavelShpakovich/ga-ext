@@ -2,7 +2,7 @@ import { ModelSpeed, ModelCategory } from '@/shared/types';
 
 // Global constants for the simplified flow
 
-export const DEFAULT_MODEL_ID = 'Llama-3.2-3B-Instruct-q4f16_1-MLC';
+export const DEFAULT_MODEL_ID = 'Qwen2.5-3B-Instruct-q4f16_1-MLC';
 export const DEFAULT_LANGUAGE = 'en';
 
 export const SUPPORTED_MODELS = [
@@ -82,15 +82,6 @@ export const SUPPORTED_MODELS = [
     speed: ModelSpeed.FAST,
     category: ModelCategory.FLASH,
     description: 'Ultra-fast; excellent multilingual support for quick edits.',
-  },
-  {
-    id: 'Llama-3.2-1B-Instruct-q4f16_1-MLC',
-    name: 'Llama 3.2 1B (Flash)',
-    family: 'Meta',
-    size: '1.1GB',
-    speed: ModelSpeed.FAST,
-    category: ModelCategory.FLASH,
-    description: 'Minimal latency; perfect for real-time grammar checks.',
   },
 ] as const;
 

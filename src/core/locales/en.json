@@ -5,8 +5,8 @@
     "model_section": "AI Model",
     "text_section": "Source Text",
     "result_section": "Corrected Result",
-    "text_placeholder": "Start typing or paste content...",
-    "empty_text_hint": "Paste or type your text here to get started.",
+    "text_placeholder": "Start typing or paste content... (Cmd+Enter or Ctrl+Enter to run)",
+    "empty_text_hint": "Paste or type your text here to get started. Press Cmd+Enter (Mac) or Ctrl+Enter (Windows) to run AI correction.",
     "reasoning_label": "Improvements & Reasoning",
     "syncing": "Syncing...",
     "loading": "Loading...",
@@ -25,7 +25,6 @@
     "fault": "Fault",
     "local": "Local",
     "remote": "Remote",
-    "terminate_action": "Terminate Action",
     "cancel_operation": "Cancel Operation",
     "confirm": "Confirm",
     "cancel": "Cancel"
@@ -73,11 +72,8 @@
     "no_changes": "No changes needed"
   },
   "popup": {
-    "assistant": "Assistant",
     "local_session": "Local Session",
     "webgpu": "WebGPU",
-    "description": "Enhance your writing with privacy-first AI.",
-    "experimental": "Experimental local-first AI",
     "launch": "Launch Assistant",
     "privacy_title": "Your text stays private",
     "privacy_description": "No data leaves your device. Everything runs locally in your browser.",

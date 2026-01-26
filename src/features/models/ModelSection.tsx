@@ -6,6 +6,7 @@ import { Button, ButtonVariant } from '@/shared/components/Button';
 import { IconButton, IconButtonVariant, IconButtonSize } from '@/shared/components/ui/IconButton';
 import { Progress } from '@/shared/components/ui/Progress';
 import { ModelInfoCard } from '@/shared/components/ui/ModelInfoCard';
+import { TextButton, TextButtonVariant } from '@/shared/components/ui/TextButton';
 import { normalizeDownloadProgress } from '@/shared/utils/helpers';
 import { ModelOption, ExecutionStep, ModelProgress } from '@/shared/types';
 import { useTranslation } from 'react-i18next';
@@ -53,6 +54,7 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
           value={selectedModel}
           onChange={onModelChange}
           groups={modelOptions}
+          disabled={isBusy}
           className='text-sm font-medium py-3 rounded-xl'
         />
 
@@ -60,7 +62,7 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
 
         <div className='flex gap-3'>
           {isModelCached && !isPrefetching && step !== ExecutionStep.PREPARING_MODEL ? (
-            <div className='flex-1 h-12 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 text-slate-600 dark:text-slate-300 flex items-center justify-center gap-2 text-sm font-semibold selection:bg-transparent'>
+            <div className='flex-1 h-11 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 text-slate-600 dark:text-slate-300 flex items-center justify-center gap-2 text-sm font-semibold selection:bg-transparent'>
               <Check className='w-4 h-4 text-green-500' />
               {t('ui.optimized_ready')}
             </div>
@@ -69,7 +71,7 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
               onClick={onPrefetch}
               disabled={isBusy}
               variant={isModelCached ? ButtonVariant.SECONDARY : ButtonVariant.PRIMARY}
-              className='flex-1 group h-12'
+              className='flex-1 group'
             >
               {isPrefetching ? (
                 <>
@@ -118,12 +120,13 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
               </div>
               <Progress value={normalizedProgress} max={1} />
             </div>
-            <button
+            <TextButton
               onClick={onStopDownload}
-              className='w-full text-[9px] text-slate-400 hover:text-red-500 dark:text-slate-500 dark:hover:text-red-400 font-bold uppercase tracking-[0.2em] transition-colors py-1'
+              variant={TextButtonVariant.DANGER}
+              className='w-full justify-center py-1 tracking-[0.2em]'
             >
               {t('ui.cancel_operation')}
-            </button>
+            </TextButton>
           </div>
         )}
       </div>

@@ -76,12 +76,13 @@ const SidePanelContent: React.FC = () => {
 
   const handleModelChange = useCallback(
     (id: string) => {
+      if (id === selectedModel) return;
       updateSettings({ selectedModel: id });
       ProviderFactory.clearInstances();
       lastAutoRunKey.current = null;
       shouldAutoRunRef.current = false;
     },
-    [updateSettings],
+    [updateSettings, selectedModel],
   );
 
   const handleStyleChange = useCallback(
@@ -264,7 +265,7 @@ const SidePanelContent: React.FC = () => {
           selected={settings.selectedStyle}
           onChange={handleStyleChange}
           onRecheck={handleCorrect}
-          disabled={isBusy || !text.trim()}
+          disabled={isBusy || (!text.trim() && !!result)}
         />
 
         <TextSection

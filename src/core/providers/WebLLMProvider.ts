@@ -41,6 +41,7 @@ export class WebLLMProvider extends AIProvider {
   private engine: MLCEngine | null = null;
   private modelId: string;
   private initPromise: Promise<void> | null = null;
+  private rejectInit: ((reason: any) => void) | null = null;
   private abortController: AbortController | null = null;
   private cancelled = false;
 
@@ -83,7 +84,7 @@ export class WebLLMProvider extends AIProvider {
 
   static async isModelCached(modelId: string): Promise<boolean> {
     try {
-      // Ensure we use the same config as during creation
+      // Ensure we use a config that includes all models
       return await hasModelInCache(modelId, {
         model_list: prebuiltAppConfig.model_list,
         useIndexedDBCache: true,
@@ -98,113 +99,121 @@ export class WebLLMProvider extends AIProvider {
     if (this.engine) return;
     if (this.initPromise) return this.initPromise;
 
-    this.initPromise = (async () => {
-      let attempt = 0;
-      while (attempt < MAX_INIT_ATTEMPTS) {
-        try {
-          WebLLMProvider.currentInstance = this;
-          this.cancelled = false;
+    this.initPromise = new Promise<void>((resolve, reject) => {
+      this.rejectInit = reject;
+      (async () => {
+        let attempt = 0;
+        while (attempt < MAX_INIT_ATTEMPTS) {
+          try {
+            WebLLMProvider.currentInstance = this;
+            this.cancelled = false;
 
-          const cached = await hasModelInCache(this.modelId, {
-            model_list: prebuiltAppConfig.model_list,
-            useIndexedDBCache: true,
-          });
+            const cached = await hasModelInCache(this.modelId, {
+              model_list: prebuiltAppConfig.model_list,
+              useIndexedDBCache: true,
+            });
 
-          const progressState = cached ? ModelProgressState.LOADING : ModelProgressState.DOWNLOADING;
+            const progressState = cached ? ModelProgressState.LOADING : ModelProgressState.DOWNLOADING;
 
-          this.emitProgress({
-            text: i18n.t('status.preparing'),
-            progress: INITIAL_PROGRESS,
-            state: progressState,
-            modelId: this.modelId,
-          });
+            this.emitProgress({
+              text: i18n.t('status.preparing'),
+              progress: INITIAL_PROGRESS,
+              state: progressState,
+              modelId: this.modelId,
+            });
 
-          if (this.cancelled) {
-            throw new Error('aborted');
-          }
+            if (this.cancelled) {
+              throw new Error('aborted');
+            }
 
-          const engine = new MLCEngine({
-            appConfig: { model_list: prebuiltAppConfig.model_list, useIndexedDBCache: true },
-            initProgressCallback: (p) => {
-              if (this.cancelled) return;
+            const engine = new MLCEngine({
+              appConfig: { model_list: prebuiltAppConfig.model_list, useIndexedDBCache: true },
+              initProgressCallback: (p) => {
+                if (this.cancelled) return;
+                this.emitProgress({
+                  text: p.text,
+                  progress: p.progress || INITIAL_PROGRESS,
+                  state: progressState,
+                  modelId: this.modelId,
+                });
+              },
+            });
+
+            // Assign engine IMMEDIATELY so stopDownload can call unload() if needed during reload
+            this.engine = engine;
+
+            // Start model loading
+            await this.engine.reload(this.modelId);
+
+            if (this.cancelled) {
+              await this.engine.unload();
+              this.engine = null;
+              throw new Error('aborted');
+            }
+
+            this.emitProgress({
+              text: i18n.t('status.ready'),
+              progress: COMPLETED_PROGRESS,
+              state: ModelProgressState.LOADING,
+              modelId: this.modelId,
+            });
+            resolve();
+            return;
+          } catch (error: unknown) {
+            const err = error as Error;
+            const isAborted =
+              err?.message === 'aborted' ||
+              this.cancelled ||
+              (err?.message && err.message.toLowerCase().includes('unload'));
+
+            if (this.engine) {
+              try {
+                await this.engine.unload();
+              } catch (e) {
+                // Ignore unload errors during catch
+              }
+              this.engine = null;
+            }
+
+            WebLLMProvider.currentInstance = null;
+
+            if (isAborted) {
+              this.initPromise = null;
               this.emitProgress({
-                text: p.text,
-                progress: p.progress || INITIAL_PROGRESS,
-                state: progressState,
+                text: i18n.t('messages.download_cancelled'),
+                progress: INITIAL_PROGRESS,
+                state: ModelProgressState.DOWNLOADING,
                 modelId: this.modelId,
               });
-            },
-          });
-
-          this.engine = engine;
-
-          // Start model loading
-          await this.engine.reload(this.modelId);
-
-          if (this.cancelled) {
-            await this.engine.unload();
-            this.engine = null;
-            throw new Error('aborted');
-          }
-
-          this.emitProgress({
-            text: i18n.t('status.ready'),
-            progress: COMPLETED_PROGRESS,
-            state: ModelProgressState.LOADING,
-            modelId: this.modelId,
-          });
-          return;
-        } catch (error: unknown) {
-          const err = error as Error;
-          const isAborted =
-            err?.message === 'aborted' ||
-            this.cancelled ||
-            (err?.message && err.message.toLowerCase().includes('unload'));
-
-          if (this.engine) {
-            try {
-              await this.engine.unload();
-            } catch (e) {
-              // Ignore unload errors during catch
+              reject(new Error('aborted'));
+              return;
             }
-            this.engine = null;
-          }
 
-          WebLLMProvider.currentInstance = null;
+            const isStoreMissing = WebLLMProvider.isIdbStoreMissing(error);
+            if (isStoreMissing && attempt === 0) {
+              await WebLLMProvider.clearCache();
+              attempt += 1;
+              continue;
+            }
 
-          if (isAborted) {
             this.initPromise = null;
+            const message = (error as Error)?.message || 'Model failed to load';
             this.emitProgress({
-              text: i18n.t('messages.download_cancelled'),
+              text: message,
               progress: INITIAL_PROGRESS,
               state: ModelProgressState.DOWNLOADING,
               modelId: this.modelId,
             });
-            throw new Error('aborted');
+            reject(error);
+            return;
+          } finally {
+            WebLLMProvider.currentInstance = null;
+            this.cancelled = false;
+            this.rejectInit = null;
           }
-
-          const isStoreMissing = WebLLMProvider.isIdbStoreMissing(error);
-          if (isStoreMissing && attempt === 0) {
-            await WebLLMProvider.clearCache();
-            attempt += 1;
-            continue;
-          }
-
-          this.initPromise = null;
-          const message = (error as Error)?.message || 'Model failed to load';
-          this.emitProgress({
-            text: message,
-            progress: INITIAL_PROGRESS,
-            state: ModelProgressState.DOWNLOADING,
-            modelId: this.modelId,
-          });
-          throw error;
-        } finally {
-          WebLLMProvider.currentInstance = null;
-          this.cancelled = false;
         }
-      }
-    })();
+      })();
+    });
 
     return this.initPromise;
   }
@@ -217,11 +226,30 @@ export class WebLLMProvider extends AIProvider {
 
   async stopDownload(): Promise<void> {
     this.cancelled = true;
+    const modelToClean = this.modelId;
+
+    if (this.rejectInit) {
+      this.rejectInit(new Error('aborted'));
+      this.rejectInit = null;
+    }
+
     if (this.engine) {
-      await this.engine.unload();
+      try {
+        await this.engine.unload();
+      } catch (e) {
+        // Ignore unload errors
+      }
       this.engine = null;
     }
     this.initPromise = null;
+
+    // Clean up partial download from cache
+    try {
+      await WebLLMProvider.deleteModel(modelToClean);
+    } catch (e) {
+      Logger.error('WebLLMProvider', 'Failed to clean up partial model', e);
+    }
+
     this.emitProgress({
       text: i18n.t('messages.download_cancelled'),
       progress: INITIAL_PROGRESS,

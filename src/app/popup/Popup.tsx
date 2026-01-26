@@ -24,8 +24,9 @@ const Popup: React.FC = () => {
       const isRestricted = !tab?.id || tab.url?.startsWith('chrome://') || tab.url?.startsWith('edge://');
 
       if (isRestricted) {
-        chrome.runtime.sendMessage({ action: 'openSidePanel' });
-        window.close();
+        chrome.runtime.sendMessage({ action: 'openSidePanel' }, () => {
+          window.close();
+        });
         return;
       }
 
@@ -33,21 +34,28 @@ const Popup: React.FC = () => {
       chrome.tabs.sendMessage(tab.id!, { action: 'getSelectedText' }, (response) => {
         // Fallback: If no response or error, just open the panel normally
         if (chrome.runtime.lastError || !response) {
-          chrome.runtime.sendMessage({ action: 'openSidePanel' });
+          chrome.runtime.sendMessage({ action: 'openSidePanel' }, () => {
+            window.close();
+          });
         } else {
           // Open side panel with text context
-          chrome.runtime.sendMessage({
-            action: 'openSidePanel',
-            text: response.text || '',
-            autoRun: !!response.text,
-          });
+          chrome.runtime.sendMessage(
+            {
+              action: 'openSidePanel',
+              text: response.text || '',
+              autoRun: !!response.text,
+            },
+            () => {
+              window.close();
+            },
+          );
         }
-        window.close();
       });
     } catch (error) {
       // Final fallback for any error
-      chrome.runtime.sendMessage({ action: 'openSidePanel' });
-      window.close();
+      chrome.runtime.sendMessage({ action: 'openSidePanel' }, () => {
+        window.close();
+      });
     }
   }, []);
 
@@ -127,17 +135,11 @@ const Popup: React.FC = () => {
           <Button
             onClick={handleLaunchAssistant}
             disabled={!hasWebGPU || isLoading}
-            className='w-full h-12 rounded-xl bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg shadow-blue-500/20 border-0 group transition-all transform hover:scale-[1.01] active:scale-[0.99]'
+            className='w-full'
             variant={ButtonVariant.PRIMARY}
           >
-            <Sparkles
-              className={
-                isLoading
-                  ? 'w-4.5 h-4.5 mr-2 animate-pulse'
-                  : 'w-4.5 h-4.5 mr-2 group-hover:rotate-12 transition-transform'
-              }
-            />
-            <span className='font-bold text-[14px]'>{t('popup.launch')}</span>
+            <Sparkles className={isLoading ? 'w-4 h-4 animate-pulse' : 'w-4 h-4'} />
+            {t('popup.launch')}
           </Button>
         </div>
       </main>
