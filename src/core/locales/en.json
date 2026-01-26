@@ -103,13 +103,18 @@
       "slow": "Slow"
     },
     "descriptions": {
-      "gemma-2-9b-it-q4f16_1-MLC": "Gold standard for multilingual grammar correction and reasoning.",
-      "Llama-3.1-8B-Instruct-q4f16_1-MLC": "Highly reliable multilingual model with support for 8+ major languages.",
-      "Qwen2.5-7B-Instruct-q4f16_1-MLC": "Exceptional performance in 29+ languages. Best for formal writing.",
+      "gemma-2-9b-it-q4f16_1-MLC": "Best for complex rewrites, deep stylistic changes, and paragraph restructuring.",
+      "Llama-3.1-8B-Instruct-q4f16_1-MLC": "Excellent for polishing professional reports and business correspondence.",
+      "Qwen2.5-7B-Instruct-q4f16_1-MLC": "The specialist for multilingual grammar and technical documentation.",
       "Mistral-7B-Instruct-v0.3-q4f16_1-MLC": "European language specialist. Efficient and highly capable.",
-      "Phi-3.5-mini-instruct-q4f16_1-MLC": "Lightweight model with great reasoning capabilities.",
-      "Qwen2.5-3B-Instruct-q4f16_1-MLC": "Perfect balance of speed and multilingual intelligence.",
-      "Llama-3.2-3B-Instruct-q4f16_1-MLC": "Modern, efficient model for reliable multilingual corrections."
+      "Phi-3.5-mini-instruct-q4f16_1-MLC": "High logic density; great for improving argument flow and structure.",
+      "Qwen2.5-3B-Instruct-q4f16_1-MLC": "Balanced choice for fixing errors while preserving your original meaning.",
+      "Llama-3.2-3B-Instruct-q4f16_1-MLC": "Perfect for quick daily grammar fixes and polishing chat messages.",
+      "gemma-2-2b-it-q4f16_1-MLC": "Lightweight and creative; ideal for simple sentence rewrites.",
+      "Qwen2.5-1.5B-Instruct-q4f16_1-MLC": "Instantaneous checks for typos and basic punctuation errors."
     }
+  },
+  "errors": {
+    "content_too_long": "Content too long. Please select specific text to correct."
   }
 }

@@ -7,3 +7,4 @@ export { IconButton, IconButtonVariant, IconButtonSize } from '@/shared/componen
 export { Modal, ModalVariant } from '@/shared/components/ui/Modal';
 export { StyleButton } from '@/shared/components/ui/StyleButton';
 export { TextButton, TextButtonVariant } from '@/shared/components/ui/TextButton';
+export { Toast, type ToastProps } from '@/shared/components/ui/Toast';

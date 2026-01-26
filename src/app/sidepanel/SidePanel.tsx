@@ -7,14 +7,15 @@ import { ErrorBoundary } from '@/shared/components/ErrorBoundary';
 import { useSettings } from '@/shared/hooks/useSettings';
 import { useModelSelection } from '@/shared/hooks/useModelSelection';
 import { generateCacheKey } from '@/shared/utils/helpers';
+import { MAX_TEXT_LENGTH } from '@/core/constants';
 import { Logger } from '@/core/services/Logger';
 import { SidebarHeader } from '@/features/settings/SidebarHeader';
+import { StyleSelector } from '@/features/settings/StyleSelector';
 import { ModelSection } from '@/features/models/ModelSection';
 import { TextSection } from '@/features/correction/TextSection';
 import { ResultSection } from '@/features/correction/ResultSection';
 import { useTranslation } from 'react-i18next';
-import { Modal, ModalVariant } from '@/shared/components/ui';
-import { StyleSelector } from '@/features/settings/StyleSelector';
+import { Modal, ModalVariant, Toast } from '@/shared/components/ui';
 import { CorrectionStyle, ModelOption, ExecutionStep } from '@/shared/types';
 
 // --- Constants ---
@@ -48,6 +49,23 @@ const SidePanelContent: React.FC = () => {
   const shouldAutoRunRef = useRef<boolean>(false);
 
   const { settings, updateSettings } = useSettings();
+  const [toast, setToast] = useState<{
+    message: string;
+    variant: 'success' | 'error' | 'info' | 'warning';
+    isVisible: boolean;
+  }>({
+    message: '',
+    variant: 'info',
+    isVisible: false,
+  });
+
+  const showToast = useCallback((message: string, variant: 'success' | 'error' | 'info' | 'warning' = 'info') => {
+    setToast({ message, variant, isVisible: true });
+  }, []);
+
+  const hideToast = useCallback(() => {
+    setToast((prev) => ({ ...prev, isVisible: false }));
+  }, []);
   const { selectGroups, allModels, getModelInfo } = useModelSelection();
   const { downloadProgress, stopDownload } = useDownloadProgress();
   const { runCorrection, step, error, result, reset } = useAI();
@@ -105,6 +123,12 @@ const SidePanelContent: React.FC = () => {
   const handleCorrect = useCallback(async () => {
     const trimmed = text.trim();
     if (!trimmed || isBusy) return;
+
+    if (trimmed.length > MAX_TEXT_LENGTH) {
+      showToast(t('errors.content_too_long'), 'warning');
+      return;
+    }
+
     try {
       await runCorrection(trimmed, selectedModel, settings.selectedStyle);
       lastAutoRunKey.current = generateCacheKey(selectedModel, trimmed);
@@ -115,7 +139,7 @@ const SidePanelContent: React.FC = () => {
       const errorMessage = err instanceof Error ? err.message : String(err);
       Logger.error('SidePanel', 'Correction error', { error: errorMessage });
     }
-  }, [text, selectedModel, isBusy, runCorrection, settings.selectedStyle]);
+  }, [text, selectedModel, isBusy, runCorrection, settings.selectedStyle, showToast, t]);
 
   const handlePrefetch = useCallback(async () => {
     setIsPrefetching(true);
@@ -211,11 +235,27 @@ const SidePanelContent: React.FC = () => {
       },
       [reset],
     ),
+    useCallback(
+      (error: string) => {
+        if (error === 'TOO_LONG') {
+          showToast(t('errors.content_too_long'), 'warning');
+        } else {
+          showToast(error, 'error');
+        }
+      },
+      [showToast, t],
+    ),
   );
 
   useEffect(() => {
     const trimmed = text.trim();
     if (!trimmed || isBusy || !shouldAutoRunRef.current) return;
+
+    if (trimmed.length > MAX_TEXT_LENGTH) {
+      showToast(t('errors.content_too_long'), 'warning');
+      shouldAutoRunRef.current = false;
+      return;
+    }
 
     const key = generateCacheKey(selectedModel, trimmed, settings.selectedStyle);
     if (lastAutoRunKey.current === key) {
@@ -239,7 +279,7 @@ const SidePanelContent: React.FC = () => {
     };
 
     triggerAutoRun();
-  }, [isBusy, runCorrection, selectedModel, text, settings.selectedStyle]);
+  }, [isBusy, runCorrection, selectedModel, text, settings.selectedStyle, showToast, t]);
 
   useEffect(() => {
     let mounted = true;
@@ -330,6 +370,8 @@ const SidePanelContent: React.FC = () => {
         confirmLabel={t('ui.confirm')}
         cancelLabel={t('ui.cancel')}
       />
+
+      <Toast message={toast.message} variant={toast.variant} isVisible={toast.isVisible} onClose={hideToast} />
     </div>
   );
 };

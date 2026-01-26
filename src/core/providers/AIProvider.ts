@@ -30,6 +30,11 @@ export abstract class AIProvider {
   abstract correct(text: string, style: CorrectionStyle): Promise<CorrectionResult>;
 
   /**
+   * Unload the model to free up resources
+   */
+  abstract unload(): Promise<void>;
+
+  /**
    * Check if the provider is available and configured
    */
   abstract isAvailable(): Promise<boolean>;

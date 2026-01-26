@@ -4,11 +4,15 @@ import { Logger } from '@/core/services/Logger';
 
 // Define the shape of our storage
 interface StorageSchema {
-  [STORAGE_KEYS.SETTINGS]: Settings;
-  [STORAGE_KEYS.PENDING_TEXT]: string;
-  [STORAGE_KEYS.PENDING_MODEL_DOWNLOAD]: string;
-  [STORAGE_KEYS.PENDING_AUTO_CORRECT]: boolean;
+  grammar_assistant_settings: Settings;
+  pendingText: string;
+  pendingModelDownload: string;
+  pendingAutoCorrect: boolean;
+  pendingError: string;
 }
+
+// Type to ensure STORAGE_KEYS values match StorageSchema keys
+type StorageKey = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS];
 
 const DEFAULT_SETTINGS: Settings = {
   selectedModel: DEFAULT_MODEL_ID,
@@ -16,7 +20,7 @@ const DEFAULT_SETTINGS: Settings = {
   language: 'en',
 };
 
-class StorageService {
+export class StorageService {
   private static instance: StorageService;
 
   private constructor() {}
@@ -33,13 +37,13 @@ class StorageService {
    * @param key The key to retrieve
    * @returns Promise resolving to the value
    */
-  public async get<K extends keyof StorageSchema>(key: K): Promise<StorageSchema[K] | undefined> {
+  public async get<K extends StorageKey>(key: K): Promise<K extends keyof StorageSchema ? StorageSchema[K] : never> {
     try {
       const result = await chrome.storage.local.get(key);
       return result[key];
     } catch (error) {
       Logger.error('StorageService', `Failed to get key: ${key}`, error);
-      return undefined;
+      return undefined as any;
     }
   }
 
@@ -48,11 +52,21 @@ class StorageService {
    * @param key The key to set
    * @param value The value to store
    */
-  public async set<K extends keyof StorageSchema>(key: K, value: StorageSchema[K]): Promise<void> {
+  public async set<K extends StorageKey>(
+    key: K,
+    value: K extends keyof StorageSchema ? StorageSchema[K] : never,
+  ): Promise<void> {
     try {
       await chrome.storage.local.set({ [key]: value });
       Logger.debug('StorageService', `Set key: ${key}`, value);
     } catch (error) {
+      const errorMessage = (error as Error)?.message || '';
+      if (errorMessage.includes('QUOTA') || errorMessage.includes('quota')) {
+        Logger.warn('StorageService', `Storage quota exceeded when setting ${key}. Value not saved.`);
+        // Swallow error to prevent app crash, but data is lost.
+        // potentially could try to clear other keys here.
+        return;
+      }
       Logger.error('StorageService', `Failed to set key: ${key}`, error);
       throw error;
     }

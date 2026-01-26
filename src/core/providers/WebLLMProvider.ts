@@ -18,7 +18,7 @@ import {
 } from '@/shared/types';
 import { Logger } from '@/core/services/Logger';
 import { DEFAULT_MODEL_ID, SUPPORTED_MODELS } from '@/core/constants';
-import { generateCacheKey, isWebGPUAvailable, normalizeDownloadProgress } from '@/shared/utils/helpers';
+import { isWebGPUAvailable } from '@/shared/utils/helpers';
 
 const MAX_INIT_ATTEMPTS = 2;
 const INITIAL_PROGRESS = 0;
@@ -42,7 +42,7 @@ export class WebLLMProvider extends AIProvider {
   private engine: MLCEngine | null = null;
   private modelId: string;
   private initPromise: Promise<void> | null = null;
-  private rejectInit: ((reason: any) => void) | null = null;
+  private rejectInit: ((reason: unknown) => void) | null = null;
   private cancelled = false;
 
   static onProgressUpdate: ((progress: ModelProgress) => void) | null = null;
@@ -292,6 +292,18 @@ export class WebLLMProvider extends AIProvider {
         state: ModelProgressState.DOWNLOADING,
         modelId: this.modelId,
       });
+    }
+  }
+
+  /**
+   * Unload the model to free up resources
+   */
+  async unload(): Promise<void> {
+    Logger.debug('WebLLMProvider', `Unloading model ${this.modelId}`);
+    try {
+      await this.stopDownload(false);
+    } catch (e) {
+      Logger.error('WebLLMProvider', 'Error unloading model', e);
     }
   }
 

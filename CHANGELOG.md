@@ -7,6 +7,51 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.6] - 2026-01-27
+
+### Added
+
+- **Toast notification system** - User-friendly error messages displayed in bottom-right corner with 4 variants (success/error/warning/info)
+- **Text length validation** - Added `MAX_TEXT_LENGTH` constant (12,000 characters ~3,000 tokens) enforced at all entry points
+- **Unit test infrastructure** - Implemented Vitest with React Testing Library, 14 passing tests covering Logger, StorageService, and ProviderFactory
+- **Chrome API mocks** - Comprehensive test setup with proper type assertions for storage, runtime, tabs, and other Chrome APIs
+- Added `PENDING_ERROR` storage key for error propagation from content script to sidepanel
+
+### Changed
+
+- **Model metadata accuracy** - Verified and corrected all 8 model sizes from HuggingFace manifests:
+  - Gemma 2 9B: 5.43GB → 4.84GB
+  - Llama 3.1 8B: 5.18GB → 4.31GB
+  - Qwen 2.5 7B: 4.43GB → 3.99GB
+  - Phi 3.5: 2.31GB → 2.05GB
+  - Llama 3.2 3B: 1.93GB → 1.72GB
+  - Qwen 2.5 3B: 1.87GB → 1.66GB
+  - Gemma 2 2B: 1.57GB → 1.40GB
+  - Qwen 2.5 1.5B: 0.93GB → 0.83GB
+- **Improved model descriptions** - Aligned with grammar assistant purpose (Pro: complex rewrites, Standard: daily fixes, Flash: quick typos)
+- **Memory management** - Refactored ProviderFactory from multi-instance to Single Active Model pattern to prevent GPU memory leaks
+- **Environment-aware logging** - Logger now uses DEBUG level in development, INFO in production
+- **Error handling** - Enhanced StorageService with QUOTA_BYTES error detection and graceful degradation
+- **Type safety improvements** - Fixed `StorageSchema` interface with explicit string literals instead of computed properties
+- **Build configuration** - Properly excluded test files from production build in tsconfig.json and webpack.config.js
+
+### Fixed
+
+- **Removed deprecated code** - Cleaned up 60 lines of HTML/CSS injection logic from content script
+- **Text overflow validation** - Content script now returns `null` when text exceeds maximum length, triggering proper error flow
+- **Background script error routing** - Keyboard shortcut handler properly stores `TOO_LONG` errors and always opens sidepanel
+- **SidePanel integration** - Added Toast component with error handling in `usePendingText` and length validation in both manual and auto-run flows
+- **TypeScript errors** - Resolved all false positive type errors in test files with proper Chrome API type assertions
+- **18 lint warnings** - Fixed unused imports, replaced `any` types with proper types, added missing React Hook dependencies
+
+### Internal
+
+- Added vitest.config.ts with proper React and path alias support
+- Added tsconfig.test.json for test-specific TypeScript configuration
+- Created src/test/setup.ts with comprehensive Chrome API mocks
+- Exported Logger and StorageService classes for testing
+- Added `unload()` method to WebLLMProvider for proper cleanup
+
 ## [0.1.5] - 2026-01-26
 
 ### Added

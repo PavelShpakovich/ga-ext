@@ -8,12 +8,19 @@ Logger.info('Background', 'Service worker started');
 chrome.runtime.onInstalled.addListener(() => {
   Logger.info('Background', 'Extension installed');
 
-  // Create context menu
-  chrome.contextMenus.create({
-    id: 'grammar-assistant-correct',
-    title: i18n.t('ui.context_menu_title'),
-    contexts: ['selection'],
-  });
+  const createMenu = () => {
+    chrome.contextMenus.create({
+      id: 'grammar-assistant-correct',
+      title: i18n.t('ui.context_menu_title'),
+      contexts: ['selection'],
+    });
+  };
+
+  if (i18n.isInitialized) {
+    createMenu();
+  } else {
+    i18n.on('initialized', createMenu);
+  }
 });
 
 // Handle context menu clicks
@@ -40,12 +47,29 @@ chrome.commands.onCommand.addListener((command, tab) => {
 
     // Request selected text from content script
     chrome.tabs.sendMessage(tab.id, { action: 'getSelectedText' }, (response) => {
-      if (response?.text && tab.id) {
+      // Always open SidePanel for better UX, even if no text selected
+      if (tab.id) {
         chrome.sidePanel.open({ tabId: tab.id });
+      }
+
+      if (response?.error === 'TOO_LONG') {
+        Logger.debug('Background', 'Text too long, sending error to SidePanel');
         chrome.storage.local.set({
-          [STORAGE_KEYS.PENDING_TEXT]: response.text,
+          [STORAGE_KEYS.PENDING_ERROR]: 'TOO_LONG',
+        });
+        return;
+      }
+
+      const text = response?.text;
+
+      if (text) {
+        chrome.storage.local.set({
+          [STORAGE_KEYS.PENDING_TEXT]: text,
           [STORAGE_KEYS.PENDING_AUTO_CORRECT]: true,
         });
+      } else {
+        // Optional: Could send a message to the sidepanel to show "Select text first" hint
+        Logger.debug('Background', 'No text selected from content script', response);
       }
     });
   }

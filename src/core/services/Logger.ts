@@ -14,15 +14,19 @@ interface LogEntry {
   data?: unknown;
 }
 
-class LoggerService {
+// Determine environment safely
+const isProduction = process.env.NODE_ENV === 'production';
+
+export class LoggerService {
   private static instance: LoggerService;
-  private level: LogLevel = LogLevel.DEBUG;
+  // Default to INFO in production, DEBUG in dev
+  private level: LogLevel = isProduction ? LogLevel.INFO : LogLevel.DEBUG;
   private logs: LogEntry[] = [];
-  private readonly MAX_LOGS = 1000;
+  // Reduce memory footprint in production
+  private readonly MAX_LOGS = isProduction ? 100 : 1000;
 
   private constructor() {
-    // Default to DEBUG level to ensure visibility
-    // We can tighten this later for production releases
+    // Default level initialized above based on environment
   }
 
   public static getInstance(): LoggerService {

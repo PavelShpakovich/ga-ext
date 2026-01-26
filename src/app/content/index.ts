@@ -1,4 +1,5 @@
 import { Logger } from '@/core/services/Logger';
+import { MAX_TEXT_LENGTH } from '@/core/constants';
 
 Logger.info('ContentScript', 'Content script loaded');
 
@@ -14,14 +15,14 @@ const getDeepActiveElement = (root: Document | ShadowRoot = document): Element |
   return activeEl;
 };
 
-const getActiveSelectionText = (): string => {
+const getActiveSelectionText = (): string | null => {
   const selection = window.getSelection();
   const selectionText = selection?.toString().trim() || '';
 
   if (selectionText) {
-    // If we have a selection, update the range tracker
-    if (selection && selection.rangeCount > 0) {
-      // track selection range if needed
+    if (selectionText.length > MAX_TEXT_LENGTH) {
+      Logger.warn('ContentScript', 'Selected text too long.');
+      return null;
     }
     return selectionText;
   }
@@ -41,25 +42,25 @@ const getActiveSelectionText = (): string => {
   // Handle contenteditable if no text is explicitly selected but element is focused
   if (activeElement.isContentEditable) {
     lastInteractedElement = activeElement;
-    return activeElement.innerText.trim();
+    const text = activeElement.innerText.trim();
+
+    // Safety check: Prevent accidental processing of huge documents
+    // If text is larger than limits, require user to select smaller chunk
+    if (text.length > MAX_TEXT_LENGTH) {
+      Logger.warn('ContentScript', 'Text too long for auto-selection.');
+      return null;
+    }
+    return text;
   }
 
   return '';
 };
 
 const updateSelectedText = () => {
-  const selection = window.getSelection();
   const activeElement = getDeepActiveElement() as HTMLElement;
 
   if (activeElement && activeElement !== document.body) {
     lastInteractedElement = activeElement;
-  }
-
-  // Track standard inputs
-  if (activeElement && (activeElement.tagName === 'TEXTAREA' || activeElement.tagName === 'INPUT')) {
-    // track input selection if needed
-  } else if (selection && selection.rangeCount > 0 && selection.toString().trim()) {
-    // Track DOM selection (including contenteditable)
   }
 };
 
@@ -79,8 +80,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   if (message.action === 'getSelectedText') {
     const text = getActiveSelectionText();
-    sendResponse({ text });
+    if (text === null) {
+      sendResponse({ error: 'TOO_LONG' });
+    } else {
+      sendResponse({ text });
+    }
   }
 
   return true;
 });
+null;
