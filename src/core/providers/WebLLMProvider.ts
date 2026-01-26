@@ -284,14 +284,15 @@ export class WebLLMProvider extends AIProvider {
       } catch (e) {
         Logger.error('WebLLMProvider', 'Failed to clean up partial model', e);
       }
-    }
 
-    this.emitProgress({
-      text: i18n.t('messages.download_cancelled'),
-      progress: INITIAL_PROGRESS,
-      state: ModelProgressState.DOWNLOADING,
-      modelId: this.modelId,
-    });
+      // Only emit cancelled progress for explicit user cancellation
+      this.emitProgress({
+        text: i18n.t('messages.download_cancelled'),
+        progress: INITIAL_PROGRESS,
+        state: ModelProgressState.DOWNLOADING,
+        modelId: this.modelId,
+      });
+    }
   }
 
   static async stopCurrentDownload(): Promise<boolean> {
