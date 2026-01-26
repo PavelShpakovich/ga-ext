@@ -10,6 +10,7 @@
     "reasoning_label": "Improvements & Reasoning",
     "syncing": "Syncing...",
     "loading": "Loading...",
+    "checking": "Checking...",
     "optimized_ready": "Optimized & Ready",
     "cache_offline": "Cache for Offline",
     "flush_cache": "Flush model cache",

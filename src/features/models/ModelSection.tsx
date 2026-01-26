@@ -17,6 +17,7 @@ interface ModelSectionProps {
   modelOptions: { label: string; options: { value: string; label: string }[] }[];
   modelInfo?: ModelOption;
   isModelCached: boolean;
+  isCheckingCache: boolean;
   isPrefetching: boolean;
   isRemovingModel: boolean;
   isBusy: boolean;
@@ -34,6 +35,7 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
   modelOptions,
   modelInfo,
   isModelCached,
+  isCheckingCache,
   isPrefetching,
   isRemovingModel,
   isBusy,
@@ -61,7 +63,12 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
         {modelInfo && <ModelInfoCard model={modelInfo} />}
 
         <div className='flex gap-3'>
-          {isModelCached && !isPrefetching && step !== ExecutionStep.PREPARING_MODEL ? (
+          {isCheckingCache ? (
+            <div className='flex-1 h-11 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 text-slate-600 dark:text-slate-300 flex items-center justify-center gap-2 text-sm font-semibold selection:bg-transparent'>
+              <Loader2 className='w-4 h-4 animate-spin text-blue-500' />
+              <span className='text-slate-500 dark:text-slate-400'>{t('ui.checking')}</span>
+            </div>
+          ) : isModelCached && !isPrefetching && step !== ExecutionStep.PREPARING_MODEL ? (
             <div className='flex-1 h-11 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 text-slate-600 dark:text-slate-300 flex items-center justify-center gap-2 text-sm font-semibold selection:bg-transparent'>
               <Check className='w-4 h-4 text-green-500' />
               {t('ui.optimized_ready')}

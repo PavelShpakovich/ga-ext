@@ -3,7 +3,7 @@ import { Sparkles, ShieldCheck, Zap } from 'lucide-react';
 import { Button, ButtonVariant } from '@/shared/components/Button';
 import { Alert, AlertVariant } from '@/shared/components/ui/Alert';
 import { Badge, BadgeVariant } from '@/shared/components/ui/Badge';
-import { WebLLMProvider } from '@/core/providers/WebLLMProvider';
+import { isWebGPUAvailable } from '@/shared/utils/helpers';
 import { useTranslation } from 'react-i18next';
 
 const Popup: React.FC = () => {
@@ -12,7 +12,7 @@ const Popup: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    WebLLMProvider.isWebGPUAvailable().then(setHasWebGPU);
+    isWebGPUAvailable().then(setHasWebGPU);
   }, []);
 
   const handleLaunchAssistant = useCallback(async () => {

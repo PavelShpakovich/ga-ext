@@ -25,9 +25,18 @@ export class ProviderFactory {
    * Clears all cached provider instances.
    * Useful when reloading models or clearing memory.
    */
-  static clearInstances(): void {
+  static async clearInstances(): Promise<void> {
+    const instances = Array.from(this.instances.values());
     this.instances.clear();
-    Logger.debug('ProviderFactory', 'Cleared all provider instances');
+
+    for (const instance of instances) {
+      try {
+        await instance.stopDownload();
+      } catch (err) {
+        Logger.error('ProviderFactory', 'Error stopping instance during clear', err);
+      }
+    }
+    Logger.debug('ProviderFactory', 'Cleared and stopped all provider instances');
   }
 }
 

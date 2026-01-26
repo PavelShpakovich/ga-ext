@@ -1,3 +1,16 @@
+import { Logger } from '@/core/services/Logger';
+
+export const isWebGPUAvailable = async (): Promise<boolean> => {
+  if (typeof navigator === 'undefined' || !navigator.gpu) return false;
+  try {
+    const adapter = await navigator.gpu.requestAdapter();
+    return adapter !== null;
+  } catch (error) {
+    Logger.error('GPUUtils', 'WebGPU check failed', error);
+    return false;
+  }
+};
+
 export const generateCacheKey = (modelId: string, text: string): string => {
   return `${modelId}::${text.trim()}`;
 };

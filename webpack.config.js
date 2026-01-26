@@ -62,5 +62,22 @@ module.exports = {
       ],
     }),
   ],
+  optimization: {
+    splitChunks: {
+      chunks: (chunk) => !['background', 'content-script'].includes(chunk.name),
+      cacheGroups: {
+        webllm: {
+          test: /[\\/]node_modules[\\/]@mlc-ai[\\/]web-llm/,
+          name: 'webllm',
+          priority: 20,
+        },
+        vendors: {
+          test: /[\\/]node_modules[\\/]/,
+          name: 'vendors',
+          priority: 10,
+        },
+      },
+    },
+  },
   devtool: 'cheap-module-source-map',
 };

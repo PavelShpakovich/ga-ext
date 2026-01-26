@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-01-26
+
+### Added
+
+- Added loading indicator ("Checking...") while verifying model cache status during model switching
+- Added visual feedback for cache validation operations to improve user experience
+
+### Changed
+
+- **Optimized bundle sizes significantly** - Reduced popup.js from 5.6 MiB to 389 KiB (~93% reduction)
+  - Implemented code splitting with separate chunks for WebLLM library (5.25 MiB) and vendors (251 KiB)
+  - Configured webpack to exclude background and content scripts from splitting for Manifest V3 compliance
+  - Extracted WebGPU availability check to shared utilities to reduce duplication
+- Improved model switching flow to prevent UI flashing of canceled download states
+- Enhanced cache check reliability with immediate progress clearing during model switches
+- Optimized model ID normalization with automatic migration for legacy model IDs
+
+### Fixed
+
+- Fixed accidental model deletion bug - Changed cancel download behavior to only cleanup on explicit user cancellation
+  - Modified `stopDownload()` to accept `shouldCleanup` parameter (default: false)
+  - Ensured model files are only deleted when user clicks "Cancel Operation" button
+  - Prevented automatic cleanup during model switching or engine lifecycle management
+- Fixed flashing "Download cancelled" message when switching between models
+- Fixed focus-visible outline styles across all interactive buttons for better accessibility
+- Fixed "Purge All Storage" button visibility - Now always visible regardless of cache state
+- Improved model lifecycle management to prevent memory leaks during rapid model switching
+
+### Removed
+
+- Removed confusing TTL-based in-memory cache that caused unnecessary re-downloads
+- Removed redundant WebGPU availability checks from WebLLMProvider (now uses shared utility)
+
 ## [0.1.3] - 2026-01-26
 
 ### Fixed

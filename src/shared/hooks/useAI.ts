@@ -1,8 +1,9 @@
 import { useState, useCallback } from 'react';
-import { ProviderFactory, WebLLMProvider } from '@/core/providers';
+import { ProviderFactory } from '@/core/providers';
 import { CorrectionResult, CorrectionStyle, ExecutionStep } from '@/shared/types';
 import { Logger } from '@/core/services';
 import { useTranslation } from 'react-i18next';
+import { isWebGPUAvailable } from '@/shared/utils/helpers';
 
 export const useAI = (): {
   runCorrection: (text: string, modelId: string, style?: CorrectionStyle) => Promise<CorrectionResult>;
@@ -36,7 +37,7 @@ export const useAI = (): {
 
         const isAvailable = await aiProvider.isAvailable();
         if (!isAvailable) {
-          const hasWebGPU = await WebLLMProvider.isWebGPUAvailable();
+          const hasWebGPU = await isWebGPUAvailable();
           if (!hasWebGPU) {
             throw new Error(t('messages.webgpu_not_available'));
           }

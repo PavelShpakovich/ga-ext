@@ -29,6 +29,7 @@ const SidePanelContent: React.FC = () => {
   const [isRemovingModel, setIsRemovingModel] = useState(false);
   const [showDebug, setShowDebug] = useState(false);
   const [isModelCached, setIsModelCached] = useState(false);
+  const [isCheckingCache, setIsCheckingCache] = useState(false);
 
   const [modalConfig, setModalConfig] = useState<{
     isOpen: boolean;
@@ -75,14 +76,21 @@ const SidePanelContent: React.FC = () => {
       ];
 
   const handleModelChange = useCallback(
-    (id: string) => {
+    async (id: string) => {
       if (id === selectedModel) return;
+      // Immediately stop download and clear progress to prevent flashing
+      if (downloadProgress) {
+        stopDownload();
+      }
+      // Reset cache checking state to show loading on new model
+      setIsCheckingCache(true);
+      setIsModelCached(false);
       updateSettings({ selectedModel: id });
-      ProviderFactory.clearInstances();
+      await ProviderFactory.clearInstances();
       lastAutoRunKey.current = null;
       shouldAutoRunRef.current = false;
     },
-    [updateSettings, selectedModel],
+    [updateSettings, selectedModel, downloadProgress, stopDownload],
   );
 
   const handleStyleChange = useCallback(
@@ -162,6 +170,8 @@ const SidePanelContent: React.FC = () => {
       onConfirm: async () => {
         setIsDeleting(true);
         try {
+          // Robust cleanup: stop all active engines before clearing storage
+          await ProviderFactory.clearInstances();
           await WebLLMProvider.clearCache();
           setLocalMessage(t('messages.cache_cleared'));
           setIsModelCached(false);
@@ -231,13 +241,18 @@ const SidePanelContent: React.FC = () => {
 
   useEffect(() => {
     let mounted = true;
-    WebLLMProvider.isModelCached(selectedModel).then((cached) => {
-      if (mounted) setIsModelCached(cached);
-    });
+    setIsCheckingCache(true);
+    WebLLMProvider.isModelCached(selectedModel)
+      .then((cached) => {
+        if (mounted) setIsModelCached(cached);
+      })
+      .finally(() => {
+        if (mounted) setIsCheckingCache(false);
+      });
     return () => {
       mounted = false;
     };
-  }, [selectedModel, isPrefetching, isRemovingModel, isDeleting, step]);
+  }, [selectedModel, isBusy]);
 
   return (
     <div className='h-screen flex flex-col bg-[#F8FAFC] dark:bg-[#0F172A] text-slate-900 dark:text-slate-50 font-sans selection:bg-blue-100 dark:selection:bg-blue-900/40'>
@@ -251,6 +266,7 @@ const SidePanelContent: React.FC = () => {
           modelOptions={modelOptions}
           modelInfo={modelInfo}
           isModelCached={isModelCached}
+          isCheckingCache={isCheckingCache}
           isPrefetching={isPrefetching}
           isRemovingModel={isRemovingModel}
           isBusy={isBusy}

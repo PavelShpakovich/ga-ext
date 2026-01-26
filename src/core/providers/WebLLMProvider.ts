@@ -18,6 +18,7 @@ import {
 } from '@/shared/types';
 import { Logger } from '@/core/services/Logger';
 import { DEFAULT_MODEL_ID, SUPPORTED_MODELS } from '@/core/constants';
+import { generateCacheKey, isWebGPUAvailable, normalizeDownloadProgress } from '@/shared/utils/helpers';
 
 const MAX_INIT_ATTEMPTS = 2;
 const INITIAL_PROGRESS = 0;
@@ -42,7 +43,6 @@ export class WebLLMProvider extends AIProvider {
   private modelId: string;
   private initPromise: Promise<void> | null = null;
   private rejectInit: ((reason: any) => void) | null = null;
-  private abortController: AbortController | null = null;
   private cancelled = false;
 
   static onProgressUpdate: ((progress: ModelProgress) => void) | null = null;
@@ -51,17 +51,6 @@ export class WebLLMProvider extends AIProvider {
   constructor(modelId: string = DEFAULT_MODEL_ID) {
     super();
     this.modelId = modelId;
-  }
-
-  static async isWebGPUAvailable(): Promise<boolean> {
-    if (!navigator.gpu) return false;
-    try {
-      const adapter = await navigator.gpu.requestAdapter();
-      return adapter !== null;
-    } catch (error) {
-      Logger.error('WebLLMProvider', 'WebGPU check failed', error);
-      return false;
-    }
   }
 
   static getAvailableModels(): ModelOption[] {
@@ -84,13 +73,39 @@ export class WebLLMProvider extends AIProvider {
 
   static async isModelCached(modelId: string): Promise<boolean> {
     try {
-      // Ensure we use a config that includes all models
-      return await hasModelInCache(modelId, {
+      // Try exact match first
+      const config = {
         model_list: prebuiltAppConfig.model_list,
         useIndexedDBCache: true,
-      });
+      };
+
+      let result = await hasModelInCache(modelId, config);
+
+      if (!result) {
+        // If not found, try to find the canonical ID from the prebuilt config
+        const modelRecord = prebuiltAppConfig.model_list.find(
+          (m) => m.model_id.toLowerCase() === modelId.toLowerCase(),
+        );
+
+        if (modelRecord && modelRecord.model_id !== modelId) {
+          result = await hasModelInCache(modelRecord.model_id, config);
+        }
+
+        if (!result) {
+          // Final attempt: TitleCase
+          const titleCaseId = modelId.charAt(0).toUpperCase() + modelId.slice(1);
+          if (titleCaseId !== modelId && titleCaseId !== (modelRecord?.model_id || '')) {
+            result = await hasModelInCache(titleCaseId, config);
+          }
+        }
+      }
+
+      return result;
     } catch (error) {
-      Logger.error('WebLLMProvider', 'Cache check failed', error);
+      // Only log if it's not a expected missing record
+      if (!(error instanceof Error && error.message.includes('Cannot find model record'))) {
+        Logger.error('WebLLMProvider', 'Cache check failed', error);
+      }
       return false;
     }
   }
@@ -98,6 +113,22 @@ export class WebLLMProvider extends AIProvider {
   private async initialize(): Promise<void> {
     if (this.engine) return;
     if (this.initPromise) return this.initPromise;
+
+    // Validate ID before starting
+    const modelRecord = prebuiltAppConfig.model_list.find(
+      (m) => m.model_id.toLowerCase() === this.modelId.toLowerCase(),
+    );
+
+    if (!modelRecord) {
+      throw new Error(
+        i18n.t('messages.model_not_supported', {
+          defaultValue: `Model ${this.modelId} is not supported by the current engine version.`,
+        }),
+      );
+    }
+
+    // Use the exact ID from the config to avoid casing issues
+    const exactModelId = modelRecord.model_id;
 
     this.initPromise = new Promise<void>((resolve, reject) => {
       this.rejectInit = reject;
@@ -108,7 +139,7 @@ export class WebLLMProvider extends AIProvider {
             WebLLMProvider.currentInstance = this;
             this.cancelled = false;
 
-            const cached = await hasModelInCache(this.modelId, {
+            const cached = await hasModelInCache(exactModelId, {
               model_list: prebuiltAppConfig.model_list,
               useIndexedDBCache: true,
             });
@@ -119,7 +150,7 @@ export class WebLLMProvider extends AIProvider {
               text: i18n.t('status.preparing'),
               progress: INITIAL_PROGRESS,
               state: progressState,
-              modelId: this.modelId,
+              modelId: exactModelId,
             });
 
             if (this.cancelled) {
@@ -127,14 +158,17 @@ export class WebLLMProvider extends AIProvider {
             }
 
             const engine = new MLCEngine({
-              appConfig: { model_list: prebuiltAppConfig.model_list, useIndexedDBCache: true },
+              appConfig: {
+                ...prebuiltAppConfig,
+                useIndexedDBCache: true,
+              },
               initProgressCallback: (p) => {
                 if (this.cancelled) return;
                 this.emitProgress({
                   text: p.text,
                   progress: p.progress || INITIAL_PROGRESS,
                   state: progressState,
-                  modelId: this.modelId,
+                  modelId: exactModelId,
                 });
               },
             });
@@ -143,7 +177,7 @@ export class WebLLMProvider extends AIProvider {
             this.engine = engine;
 
             // Start model loading
-            await this.engine.reload(this.modelId);
+            await this.engine.reload(exactModelId);
 
             if (this.cancelled) {
               await this.engine.unload();
@@ -155,7 +189,7 @@ export class WebLLMProvider extends AIProvider {
               text: i18n.t('status.ready'),
               progress: COMPLETED_PROGRESS,
               state: ModelProgressState.LOADING,
-              modelId: this.modelId,
+              modelId: exactModelId,
             });
             resolve();
             return;
@@ -224,7 +258,7 @@ export class WebLLMProvider extends AIProvider {
     return message.includes('object store') || message.includes('IDBDatabase');
   }
 
-  async stopDownload(): Promise<void> {
+  async stopDownload(shouldCleanup: boolean = false): Promise<void> {
     this.cancelled = true;
     const modelToClean = this.modelId;
 
@@ -243,11 +277,13 @@ export class WebLLMProvider extends AIProvider {
     }
     this.initPromise = null;
 
-    // Clean up partial download from cache
-    try {
-      await WebLLMProvider.deleteModel(modelToClean);
-    } catch (e) {
-      Logger.error('WebLLMProvider', 'Failed to clean up partial model', e);
+    // ONLY clean up from cache if explicitly requested (e.g. via Cancel button)
+    if (shouldCleanup) {
+      try {
+        await WebLLMProvider.deleteModel(modelToClean);
+      } catch (e) {
+        Logger.error('WebLLMProvider', 'Failed to clean up partial model', e);
+      }
     }
 
     this.emitProgress({
@@ -260,14 +296,15 @@ export class WebLLMProvider extends AIProvider {
 
   static async stopCurrentDownload(): Promise<boolean> {
     if (WebLLMProvider.currentInstance) {
-      await WebLLMProvider.currentInstance.stopDownload();
+      // User-initiated stop should cleanup partial files
+      await WebLLMProvider.currentInstance.stopDownload(true);
       return true;
     }
     return false;
   }
 
   async isAvailable(): Promise<boolean> {
-    const hasWebGPU = await WebLLMProvider.isWebGPUAvailable();
+    const hasWebGPU = await isWebGPUAvailable();
     if (!hasWebGPU) return false;
 
     await this.initialize();

@@ -30,9 +30,10 @@ export const useDownloadProgress = (): {
     };
   }, []);
 
-  const stopDownload = useCallback(() => {
-    WebLLMProvider.stopCurrentDownload();
+  const stopDownload = useCallback(async () => {
+    // Clear progress immediately to prevent UI flash
     setDownloadProgress(null);
+    await WebLLMProvider.stopCurrentDownload();
   }, []);
 
   return { downloadProgress, stopDownload };
