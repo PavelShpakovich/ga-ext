@@ -14,16 +14,17 @@ export const SUPPORTED_MODELS = [
     size: '4.84GB',
     speed: ModelSpeed.SLOW,
     category: ModelCategory.PRO,
-    description: 'Best for complex rewrites, deep stylistic changes, and paragraph restructuring.',
+    description: 'Elite level rewrites and paragraph restructuring. Requires high VRAM.',
   },
   {
-    id: 'Llama-3.1-8B-Instruct-q4f16_1-MLC',
-    name: 'Llama 3.1 8B (Pro)',
-    family: 'Meta',
+    // Upgraded to Hermes-3 for better JSON adherence
+    id: 'Hermes-3-Llama-3.1-8B-q4f16_1-MLC',
+    name: 'Hermes 3 (Llama 8B)',
+    family: 'Meta/Nous',
     size: '4.31GB',
     speed: ModelSpeed.SLOW,
     category: ModelCategory.PRO,
-    description: 'Excellent for polishing professional reports and business correspondence.',
+    description: 'Highly obedient model; best for strict professional and formal styles.',
   },
   {
     id: 'Qwen2.5-7B-Instruct-q4f16_1-MLC',
@@ -32,19 +33,10 @@ export const SUPPORTED_MODELS = [
     size: '3.99GB',
     speed: ModelSpeed.MEDIUM,
     category: ModelCategory.PRO,
-    description: 'The specialist for multilingual grammar and technical documentation.',
+    description: 'Top-tier for technical documentation and non-English text.',
   },
 
   // --- Balanced (Standard) ---
-  {
-    id: 'Llama-3.2-3B-Instruct-q4f16_1-MLC',
-    name: 'Llama 3.2 3B (Standard)',
-    family: 'Meta',
-    size: '1.72GB',
-    speed: ModelSpeed.FAST,
-    category: ModelCategory.STANDARD,
-    description: 'Perfect for quick daily grammar fixes and polishing chat messages.',
-  },
   {
     id: 'Qwen2.5-3B-Instruct-q4f16_1-MLC',
     name: 'Qwen 2.5 3B (Standard)',
@@ -52,16 +44,7 @@ export const SUPPORTED_MODELS = [
     size: '1.66GB',
     speed: ModelSpeed.FAST,
     category: ModelCategory.STANDARD,
-    description: 'Balanced choice for fixing errors while preserving your original meaning.',
-  },
-  {
-    id: 'gemma-2-2b-it-q4f16_1-MLC',
-    name: 'Gemma 2 2B (Standard)',
-    family: 'Google',
-    size: '1.40GB',
-    speed: ModelSpeed.FAST,
-    category: ModelCategory.STANDARD,
-    description: 'Lightweight and creative; ideal for simple sentence rewrites.',
+    description: 'Balanced choice for fixing errors while preserving meaning.',
   },
 
   // --- Ultra-Fast (Flash) ---
@@ -72,7 +55,7 @@ export const SUPPORTED_MODELS = [
     size: '0.83GB',
     speed: ModelSpeed.FAST,
     category: ModelCategory.FLASH,
-    description: 'Instantaneous checks for typos and basic punctuation errors.',
+    description: 'Fastest multilingual check for simple errors.',
   },
 ] as const;
 
