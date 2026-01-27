@@ -133,11 +133,7 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
               </div>
               <Progress value={normalizedProgress} max={1} />
             </div>
-            <TextButton
-              onClick={onStopDownload}
-              variant={TextButtonVariant.DANGER}
-              className='w-full justify-center py-1 tracking-[0.2em]'
-            >
+            <TextButton onClick={onStopDownload} variant={TextButtonVariant.DANGER}>
               {t('ui.cancel_operation')}
             </TextButton>
           </div>

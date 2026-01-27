@@ -79,6 +79,8 @@ const SidePanelContent: React.FC = () => {
     isDeleting ||
     isRemovingModel;
 
+  const isModelLoading = !!(downloadProgress || isPrefetching || step === ExecutionStep.PREPARING_MODEL);
+
   const isResultStale = useMemo(() => {
     if (!result || !text.trim()) return false;
     return lastAutoRunKey.current !== generateCacheKey(selectedModel, text, settings.selectedStyle);
@@ -311,7 +313,7 @@ const SidePanelContent: React.FC = () => {
           isCheckingCache={isCheckingCache}
           isPrefetching={isPrefetching}
           isRemovingModel={isRemovingModel}
-          isBusy={isBusy}
+          isBusy={isModelLoading}
           step={step}
           downloadProgress={downloadProgress}
           onPrefetch={handlePrefetch}
@@ -323,7 +325,7 @@ const SidePanelContent: React.FC = () => {
           selected={settings.selectedStyle}
           onChange={handleStyleChange}
           onRecheck={handleCorrect}
-          disabled={isBusy || (!text.trim() && !!result)}
+          disabled={isModelLoading || (!text.trim() && !!result)}
         />
 
         <TextSection
@@ -338,7 +340,7 @@ const SidePanelContent: React.FC = () => {
             reset();
           }}
           onCorrect={handleCorrect}
-          isBusy={isBusy}
+          isBusy={isModelLoading}
           hasResult={!!result}
           isResultStale={isResultStale}
           placeholder={t('ui.text_placeholder')}

@@ -1,7 +1,13 @@
 import { Logger } from '@/core/services/Logger';
 import { MAX_TEXT_LENGTH } from '@/core/constants';
 
-Logger.info('ContentScript', 'Content script loaded');
+// Prevent multiple initializations in case of re-injection
+if ((window as any).__GA_CONTENT_SCRIPT_LOADED__) {
+  Logger.debug('ContentScript', 'Already loaded, skipping initialization');
+} else {
+  (window as any).__GA_CONTENT_SCRIPT_LOADED__ = true;
+  Logger.info('ContentScript', 'Content script loaded');
+}
 
 // Listen for text selection
 let lastInteractedElement: HTMLElement | null = null;
