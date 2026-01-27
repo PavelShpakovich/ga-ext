@@ -77,7 +77,8 @@ const SidePanelContent: React.FC = () => {
     step === ExecutionStep.CORRECTING ||
     isPrefetching ||
     isDeleting ||
-    isRemovingModel;
+    isRemovingModel ||
+    isCheckingCache;
 
   const isModelLoading = !!(downloadProgress || isPrefetching || step === ExecutionStep.PREPARING_MODEL);
 
@@ -97,6 +98,7 @@ const SidePanelContent: React.FC = () => {
 
   const handleModelChange = useCallback(
     async (id: string) => {
+      if (isBusy) return; // prevent changing model while busy
       if (id === selectedModel) return;
       // Immediately stop download and clear progress to prevent flashing
       if (downloadProgress) {
@@ -110,16 +112,17 @@ const SidePanelContent: React.FC = () => {
       lastAutoRunKey.current = null;
       shouldAutoRunRef.current = false;
     },
-    [updateSettings, selectedModel, downloadProgress, stopDownload],
+    [updateSettings, selectedModel, downloadProgress, stopDownload, isBusy],
   );
 
   const handleStyleChange = useCallback(
     (style: CorrectionStyle) => {
+      if (isBusy) return; // prevent changing style while busy
       updateSettings({ selectedStyle: style });
       lastAutoRunKey.current = null;
       shouldAutoRunRef.current = false;
     },
-    [updateSettings],
+    [updateSettings, isBusy],
   );
 
   const handleCorrect = useCallback(async () => {
@@ -144,6 +147,7 @@ const SidePanelContent: React.FC = () => {
   }, [text, selectedModel, isBusy, runCorrection, settings.selectedStyle, showToast, t]);
 
   const handlePrefetch = useCallback(async () => {
+    if (isBusy) return;
     setIsPrefetching(true);
     setLocalMessage(null);
     try {
@@ -162,9 +166,10 @@ const SidePanelContent: React.FC = () => {
     } finally {
       setIsPrefetching(false);
     }
-  }, [selectedModel, t]);
+  }, [selectedModel, t, isBusy]);
 
   const handleRemoveModel = useCallback(async () => {
+    if (isBusy) return;
     setModalConfig({
       isOpen: true,
       title: t('ui.flush_cache'),
@@ -185,9 +190,10 @@ const SidePanelContent: React.FC = () => {
         }
       },
     });
-  }, [selectedModel, reset, t]);
+  }, [selectedModel, reset, t, isBusy]);
 
   const handleClearCache = useCallback(async () => {
+    if (isBusy) return;
     setModalConfig({
       isOpen: true,
       title: t('ui.purge_storage'),
@@ -210,7 +216,7 @@ const SidePanelContent: React.FC = () => {
         }
       },
     });
-  }, [reset, t]);
+  }, [reset, t, isBusy]);
 
   const handleCopy = useCallback(() => {
     if (result?.corrected) {
@@ -313,7 +319,7 @@ const SidePanelContent: React.FC = () => {
           isCheckingCache={isCheckingCache}
           isPrefetching={isPrefetching}
           isRemovingModel={isRemovingModel}
-          isBusy={isModelLoading}
+          isBusy={isBusy}
           step={step}
           downloadProgress={downloadProgress}
           onPrefetch={handlePrefetch}
@@ -325,7 +331,7 @@ const SidePanelContent: React.FC = () => {
           selected={settings.selectedStyle}
           onChange={handleStyleChange}
           onRecheck={handleCorrect}
-          disabled={isModelLoading || (!text.trim() && !!result)}
+          disabled={isBusy || (!text.trim() && !!result)}
         />
 
         <TextSection
@@ -340,7 +346,7 @@ const SidePanelContent: React.FC = () => {
             reset();
           }}
           onCorrect={handleCorrect}
-          isBusy={isModelLoading}
+          isBusy={isBusy}
           hasResult={!!result}
           isResultStale={isResultStale}
           placeholder={t('ui.text_placeholder')}

@@ -82,9 +82,19 @@ export const ResultSection: React.FC<ResultSectionProps> = ({
                     {reasoningLabel}
                   </span>
                 </div>
-                <p className='text-[13px] text-slate-600 dark:text-slate-400 leading-relaxed indent-0.5'>
-                  {result.explanation}
-                </p>
+                {Array.isArray(result.explanation) ? (
+                  <ul className='text-[13px] text-slate-600 dark:text-slate-400 leading-relaxed list-disc pl-5 space-y-1'>
+                    {result.explanation.map((line, idx) => (
+                      <li key={idx} className='indent-0.5'>
+                        {line}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className='text-[13px] text-slate-600 dark:text-slate-400 leading-relaxed indent-0.5'>
+                    {result.explanation}
+                  </p>
+                )}
               </div>
             )}
 

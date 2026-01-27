@@ -5,6 +5,24 @@ All notable changes to Grammar Assistant will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.8] - 2026-01-27
+
+### Fixed
+
+- Prevent UI interactions while model is preparing or running — unified `isBusy` across SidePanel controls to disable model selection, style selection, and text editing during model operations.
+- Preserve and render array explanations as bulleted lists in `ResultSection`; `WebLLMProvider` now preserves explanation arrays instead of joining them.
+
+### Changed
+
+- Target `ES2022` in `tsconfig.json` to enable modern helpers like `.at()`.
+- Refactor: extracted explanation note-append helper in `WebLLMProvider` to improve clarity and avoid duplicate notes.
+- Added two extra-fast models to `SUPPORTED_MODELS`: `gemma-2-1.3b-it-q4f16_1-MLC`, `Llama-3.2-1.4B-Instruct-q4f16_1-MLC`.
+
+### Dev
+
+- Bumped package version to `0.1.8`.
+- Build completed successfully after changes (webpack warnings about large `webllm.js` bundle remain expected).
+
 ## [0.1.7] - 2026-01-27
 
 ### Fixed

@@ -421,23 +421,45 @@ export class WebLLMProvider extends AIProvider {
     }
 
     // 2. Defensively extract explanation
-    let explanation = '';
+    // Preserve arrays so the UI can present them line-by-line
+    let explanation: string | string[] = '';
     const explanationValue = parsed['explanation'];
     if (typeof explanationValue === 'string') {
       explanation = explanationValue;
     } else if (Array.isArray(explanationValue)) {
-      explanation = explanationValue.join(' ');
+      explanation = explanationValue.map((v) => (v === null || v === undefined ? '' : String(v)));
     } else if (explanationValue) {
       explanation = String(explanationValue);
     }
 
     const sameText = corrected.trim() === original.trim();
-    const resolvedExplanation = sameText ? `${explanation} (${i18n.t('messages.no_changes')})`.trim() : explanation;
+
+    if (sameText) {
+      const note = `(${i18n.t('messages.no_changes')})`;
+
+      const appendNote = (exp: string | string[], n: string): string | string[] => {
+        if (Array.isArray(exp)) {
+          if (exp.length === 0) return [n];
+          const lastIndex = exp.length - 1;
+          const last = exp.at?.(-1) || exp[lastIndex] || '';
+          if (last.includes(n)) return exp;
+          const copy = exp.slice();
+          copy[lastIndex] = `${copy[lastIndex]} ${n}`.trim();
+          return copy;
+        }
+
+        const s = (exp as string) || '';
+        if (s.includes(n)) return s;
+        return `${s} ${n}`.trim();
+      };
+
+      explanation = appendNote(explanation, note);
+    }
 
     return {
       original,
       corrected,
-      explanation: resolvedExplanation,
+      explanation,
       raw,
     };
   }

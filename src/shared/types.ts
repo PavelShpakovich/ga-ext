@@ -55,7 +55,8 @@ export interface ModelOption {
 export interface CorrectionResult {
   original: string;
   corrected: string;
-  explanation?: string;
+  // Explanation may be a plain string or an array of lines/messages
+  explanation?: string | string[];
   raw?: string;
   parseError?: string;
 }

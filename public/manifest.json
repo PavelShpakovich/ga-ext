@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Grammar Assistant - Privacy-First AI That Runs Locally",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "author": "Pavel Shpakovich",
   "description": "Free AI grammar correction that runs locally in your browser. Private, fast, and works offline.",
   "homepage_url": "https://github.com/PavelShpakovich/ext-ga",
@@ -11,7 +11,7 @@
     "128": "icons/icon128.png"
   },
   "permissions": ["activeTab", "contextMenus", "sidePanel", "storage"],
-  "host_permissions": ["<all_urls>", "https://huggingface.co/*", "https://*.huggingface.co/*"],
+  "host_permissions": ["https://huggingface.co/*", "https://*.huggingface.co/*", "https://cdn.huggingface.co/*"],
   "content_security_policy": {
     "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
   },
