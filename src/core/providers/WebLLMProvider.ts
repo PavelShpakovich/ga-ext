@@ -23,7 +23,7 @@ import { isWebGPUAvailable } from '@/shared/utils/helpers';
 const MAX_INIT_ATTEMPTS = 2;
 const INITIAL_PROGRESS = 0;
 const COMPLETED_PROGRESS = 1;
-const DEFAULT_TEMPERATURE = 0.1;
+const DEFAULT_TEMPERATURE = 0.0;
 const MAX_TOKENS = 4096;
 
 // WebGPU type declarations

@@ -5,6 +5,18 @@ All notable changes to Grammar Assistant will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.9] - 2026-01-27
+
+### Fixed
+
+- Ensure local UI messages use appropriate alert variants (success/error/info/warning) — `SidePanel` now sets typed `localMessage` variants and `ResultSection` renders correct alert types.
+- Clip textarea scrollbars to rounded corners and refactor `TextSection` to use `clsx` for clearer class composition.
+
+### Changed
+
+- Tightened prompt templates to require strict JSON outputs and added few-shot examples to improve small-model output quality.
+- Set default inference `temperature` to `0.0` in `WebLLMProvider` for deterministic outputs.
+
 ## [0.1.8] - 2026-01-27
 
 ### Fixed

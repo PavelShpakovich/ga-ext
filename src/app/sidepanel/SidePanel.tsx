@@ -15,7 +15,7 @@ import { ModelSection } from '@/features/models/ModelSection';
 import { TextSection } from '@/features/correction/TextSection';
 import { ResultSection } from '@/features/correction/ResultSection';
 import { useTranslation } from 'react-i18next';
-import { Modal, ModalVariant, Toast } from '@/shared/components/ui';
+import { Modal, ModalVariant, Toast, AlertVariant } from '@/shared/components/ui';
 import { CorrectionStyle, ModelOption, ExecutionStep } from '@/shared/types';
 
 // --- Constants ---
@@ -24,7 +24,7 @@ const AUTO_HIDE_DELAY = 3500;
 const SidePanelContent: React.FC = () => {
   const { t } = useTranslation();
   const [text, setText] = useState('');
-  const [localMessage, setLocalMessage] = useState<string | null>(null);
+  const [localMessage, setLocalMessage] = useState<{ message: string; variant: AlertVariant } | null>(null);
   const [isPrefetching, setIsPrefetching] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isRemovingModel, setIsRemovingModel] = useState(false);
@@ -153,7 +153,7 @@ const SidePanelContent: React.FC = () => {
     try {
       const provider = ProviderFactory.createProvider(selectedModel);
       await provider.ensureReady();
-      setLocalMessage(t('messages.model_synced'));
+      setLocalMessage({ message: t('messages.model_synced'), variant: AlertVariant.SUCCESS });
       const cached = await WebLLMProvider.isModelCached(selectedModel);
       setIsModelCached(cached);
     } catch (err: unknown) {
@@ -161,7 +161,7 @@ const SidePanelContent: React.FC = () => {
         setLocalMessage(null);
       } else {
         const errorMessage = err instanceof Error ? err.message : t('messages.sync_failed');
-        setLocalMessage(errorMessage);
+        setLocalMessage({ message: errorMessage, variant: AlertVariant.ERROR });
       }
     } finally {
       setIsPrefetching(false);
@@ -179,12 +179,12 @@ const SidePanelContent: React.FC = () => {
         setIsRemovingModel(true);
         try {
           await WebLLMProvider.deleteModel(selectedModel);
-          setLocalMessage(t('messages.model_removed'));
+          setLocalMessage({ message: t('messages.model_removed'), variant: AlertVariant.SUCCESS });
           setIsModelCached(false);
           reset();
         } catch (err: unknown) {
           const errorMessage = err instanceof Error ? err.message : t('messages.removal_failed');
-          setLocalMessage(errorMessage);
+          setLocalMessage({ message: errorMessage, variant: AlertVariant.ERROR });
         } finally {
           setIsRemovingModel(false);
         }
@@ -205,12 +205,12 @@ const SidePanelContent: React.FC = () => {
           // Robust cleanup: stop all active engines before clearing storage
           await ProviderFactory.clearInstances();
           await WebLLMProvider.clearCache();
-          setLocalMessage(t('messages.cache_cleared'));
+          setLocalMessage({ message: t('messages.cache_cleared'), variant: AlertVariant.SUCCESS });
           setIsModelCached(false);
           reset();
         } catch (err: unknown) {
           const errorMessage = err instanceof Error ? err.message : t('messages.cache_failed');
-          setLocalMessage(errorMessage);
+          setLocalMessage({ message: errorMessage, variant: AlertVariant.ERROR });
         } finally {
           setIsDeleting(false);
         }
@@ -221,7 +221,7 @@ const SidePanelContent: React.FC = () => {
   const handleCopy = useCallback(() => {
     if (result?.corrected) {
       navigator.clipboard.writeText(result.corrected);
-      setLocalMessage(t('messages.copied'));
+      setLocalMessage({ message: t('messages.copied'), variant: AlertVariant.SUCCESS });
     }
   }, [result, t]);
 

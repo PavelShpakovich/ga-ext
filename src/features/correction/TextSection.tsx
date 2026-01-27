@@ -1,4 +1,5 @@
 import React from 'react';
+import clsx from 'clsx';
 import { FileText, X, Wand2, RefreshCw } from 'lucide-react';
 import { Card } from '@/shared/components/Card';
 import { IconButton, IconButtonVariant, IconButtonSize } from '@/shared/components/ui/IconButton';
@@ -33,13 +34,25 @@ export const TextSection: React.FC<TextSectionProps> = ({
 
   const handleKeyDown = React.useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      // Cmd+Enter (Mac) or Ctrl+Enter (Windows/Linux) to run correction
       if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && text && !isBusy) {
         e.preventDefault();
         onCorrect();
       }
     },
     [text, isBusy, onCorrect],
+  );
+
+  const hasText = Boolean(text && text.trim());
+
+  const wrapperClass = clsx(
+    'rounded-2xl overflow-hidden shadow-inner transition-all focus-within:ring-4 focus-within:ring-blue-500/5',
+    hasText
+      ? 'border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 focus-within:border-blue-500/50'
+      : 'border-2 border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/20 focus-within:border-blue-500/50 focus-within:border-solid',
+  );
+
+  const textareaClass = clsx(
+    'w-full bg-transparent p-5 text-sm leading-relaxed text-slate-800 dark:text-slate-200 min-h-40 resize-none outline-none overflow-y-auto custom-scrollbar [scrollbar-gutter:stable] pr-4',
   );
 
   return (
@@ -73,26 +86,17 @@ export const TextSection: React.FC<TextSectionProps> = ({
       }
     >
       <div className='relative group'>
-        {text ? (
+        <div className={wrapperClass} style={{ clipPath: 'inset(0 round 1rem)' }}>
           <textarea
-            className='w-full bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 text-sm leading-relaxed text-slate-800 dark:text-slate-200 min-h-40 focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500/50 outline-none transition-all resize-none shadow-inner custom-scrollbar'
+            className={textareaClass}
             value={text}
             onChange={(e) => onTextChange(e.target.value)}
             onKeyDown={handleKeyDown}
             disabled={isBusy}
-            placeholder={placeholder}
+            placeholder={hasText ? placeholder : emptyHint}
+            autoFocus={!hasText}
           />
-        ) : (
-          <textarea
-            className='w-full bg-slate-50/50 dark:bg-slate-900/20 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl p-5 text-sm leading-relaxed text-slate-800 dark:text-slate-200 min-h-50 focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500/50 focus:border-solid outline-none transition-all resize-none shadow-inner custom-scrollbar'
-            value={text}
-            onChange={(e) => onTextChange(e.target.value)}
-            onKeyDown={handleKeyDown}
-            disabled={isBusy}
-            placeholder={emptyHint}
-            autoFocus
-          />
-        )}
+        </div>
       </div>
     </Card>
   );

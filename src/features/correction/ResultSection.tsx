@@ -14,7 +14,7 @@ interface ResultSectionProps {
   showDebug: boolean;
   onToggleDebug: () => void;
   onClearCache: () => void;
-  localMessage: string | null;
+  localMessage: { message: string; variant: AlertVariant } | null;
   error: string | null;
   step: ExecutionStep;
   isBusy: boolean;
@@ -42,7 +42,7 @@ export const ResultSection: React.FC<ResultSectionProps> = ({
       <StatusIndicator step={step} isBusy={isBusy} />
 
       {error && <Alert variant={AlertVariant.ERROR}>{error}</Alert>}
-      {localMessage && !error && <Alert variant={AlertVariant.SUCCESS}>{localMessage}</Alert>}
+      {localMessage && !error && <Alert variant={localMessage.variant}>{localMessage.message}</Alert>}
 
       {result && (
         <Card

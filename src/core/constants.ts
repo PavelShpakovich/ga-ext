@@ -74,24 +74,6 @@ export const SUPPORTED_MODELS = [
     category: ModelCategory.FLASH,
     description: 'Instantaneous checks for typos and basic punctuation errors.',
   },
-  {
-    id: 'gemma-2-1.3b-it-q4f16_1-MLC',
-    name: 'Gemma 2 1.3B (Flash)',
-    family: 'Google',
-    size: '0.60GB',
-    speed: ModelSpeed.FAST,
-    category: ModelCategory.FLASH,
-    description: 'Small, efficient Gemma variant for very low-latency typo fixes and short corrections.',
-  },
-  {
-    id: 'Llama-3.2-1.4B-Instruct-q4f16_1-MLC',
-    name: 'Llama 3.2 1.4B (Flash)',
-    family: 'Meta',
-    size: '0.75GB',
-    speed: ModelSpeed.FAST,
-    category: ModelCategory.FLASH,
-    description: 'Lightweight Llama 3 variant optimized for quick JSON outputs and short-context corrections.',
-  },
 ] as const;
 
 export const STORAGE_KEYS = {
