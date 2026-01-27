@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.7] - 2026-01-27
+
+### Fixed
+
+- **Icon display issue** - Converted extension icons from JPEG to proper PNG format for Chrome compatibility
+- Icons now display correctly in Chrome toolbar, extension popup, and chrome://extensions page
+
 ## [0.1.6] - 2026-01-27
 
 ### Added
