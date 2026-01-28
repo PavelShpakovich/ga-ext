@@ -122,11 +122,8 @@
     "no_text_found": "No text found in image",
     "processing_failed": "Failed to process image",
     "upload_image": "Upload Image",
-    "paste_image": "Paste Image",
-    "extract_text": "Extract Text",
-    "drag_drop": "Drag & drop an image here, or click to select",
+    "upload_placeholder": "Drag & drop an image here, or click to select or press \u2318V (Mac) or Ctrl+V (Windows) to paste from clipboard",
     "supported_formats": "Supported: PNG, JPG, JPEG, BMP, WebP",
-    "file_size": "{{size}} MB",
-    "paste_shortcut_both": "or press \u2318V (Mac) or Ctrl+V (Windows) to paste from clipboard"
+    "file_size": "{{size}} MB"
   }
 }

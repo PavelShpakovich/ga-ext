@@ -86,10 +86,10 @@ export const ImageUpload: React.FC<ImageUploadProps> = React.memo(
             onDragOver={onDragOver}
             onDragLeave={onDragLeave}
             className={clsx(
-              'relative border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all',
+              'relative rounded-2xl overflow-hidden shadow-inner transition-all p-6 text-center cursor-pointer focus-within:ring-4 focus-within:ring-blue-500/5',
               dragOver
-                ? 'border-blue-400 bg-blue-50 dark:bg-blue-950/20'
-                : 'border-slate-300 dark:border-slate-600 hover:border-slate-400 dark:hover:border-slate-500',
+                ? 'border border-blue-400 bg-blue-50 dark:bg-blue-950/20'
+                : 'border-2 border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/20 hover:border-slate-400 dark:hover:border-slate-500',
               disabled && 'opacity-50 cursor-not-allowed',
             )}
           >
@@ -99,9 +99,10 @@ export const ImageUpload: React.FC<ImageUploadProps> = React.memo(
               </div>
               <div>
                 <p className='text-sm font-medium text-slate-700 dark:text-slate-300 mb-1'>{t('ocr.upload_image')}</p>
-                <p className='text-xs text-slate-500 dark:text-slate-400'>{t('ocr.drag_drop')}</p>
-                <p className='text-xs text-slate-400 dark:text-slate-500 mt-1'>{t('ocr.paste_shortcut_both')}</p>
-                <p className='text-xs text-slate-400 dark:text-slate-500 mt-1'>{t('ocr.supported_formats')}</p>
+                <p className='text-sm text-slate-400 dark:text-slate-500'>
+                  <span className='block mt-1'>{t('ocr.upload_placeholder')}</span>
+                  <span className='block mt-1'>{t('ocr.supported_formats')}</span>
+                </p>
               </div>
             </div>
           </div>
