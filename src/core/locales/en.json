@@ -42,9 +42,6 @@
   "settings": {
     "correction_style": "Correction Style"
   },
-  "actions": {
-    "recheck": "Re-check"
-  },
   "status": {
     "ready": "Ready",
     "busy": "Busy...",

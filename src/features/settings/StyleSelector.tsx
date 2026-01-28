@@ -8,7 +8,6 @@ import { useTranslation } from 'react-i18next';
 interface StyleSelectorProps {
   selected: CorrectionStyle;
   onChange: (style: CorrectionStyle) => void;
-  onRecheck?: () => void;
   disabled?: boolean;
 }
 
@@ -18,7 +17,7 @@ interface StyleOption {
   icon: LucideIcon;
 }
 
-export const StyleSelector: React.FC<StyleSelectorProps> = ({ selected, onChange, onRecheck, disabled = false }) => {
+export const StyleSelector: React.FC<StyleSelectorProps> = ({ selected, onChange, disabled = false }) => {
   const { t } = useTranslation();
 
   const styles: StyleOption[] = [
@@ -35,23 +34,9 @@ export const StyleSelector: React.FC<StyleSelectorProps> = ({ selected, onChange
         <h3 className='text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider'>
           {t('settings.correction_style')}
         </h3>
-        {onRecheck && (
-          <Button
-            variant={ButtonVariant.GHOST}
-            size={ButtonSize.SM}
-            onClick={onRecheck}
-            disabled={disabled}
-            className='text-[10px] text-blue-500 hover:text-blue-600 disabled:text-gray-400 px-2 py-0.5 h-auto font-bold uppercase tracking-tight'
-            aria-label={t('actions.recheck')}
-          >
-            {t('actions.recheck')}
-          </Button>
-        )}
-      </div>
-
-      {/* Selected style indicator - visible only on small screens */}
-      <div className='sm:hidden text-center text-xs font-semibold text-blue-600 dark:text-blue-400'>
-        {styles.find((s) => s.value === selected)?.label}
+        <div className='sm:hidden text-center text-xs font-semibold text-blue-600 dark:text-blue-400'>
+          {styles.find((s) => s.value === selected)?.label}
+        </div>
       </div>
 
       <div className='grid grid-cols-5 gap-1.5'>

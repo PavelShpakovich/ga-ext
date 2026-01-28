@@ -330,7 +330,6 @@ const SidePanelContent: React.FC = () => {
         <StyleSelector
           selected={settings.selectedStyle}
           onChange={handleStyleChange}
-          onRecheck={handleCorrect}
           disabled={isBusy || (!text.trim() && !!result)}
         />
 
