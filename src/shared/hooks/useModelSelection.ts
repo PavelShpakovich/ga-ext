@@ -16,8 +16,8 @@ export const useModelSelection = (): {
         return t('models.category.pro');
       case ModelCategory.STANDARD:
         return t('models.category.standard');
-      case ModelCategory.FLASH:
-        return t('models.category.flash');
+      case ModelCategory.REASONING:
+        return t('models.category.reasoning');
       default:
         return t('models.category.available');
     }

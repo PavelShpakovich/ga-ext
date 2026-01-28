@@ -28,7 +28,9 @@
     "remote": "Remote",
     "cancel_operation": "Cancel Operation",
     "confirm": "Confirm",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "text": "Text",
+    "ocr": "OCR"
   },
   "styles": {
     "standard": "Standard",
@@ -94,7 +96,7 @@
     "category": {
       "pro": "Professional (Large)",
       "standard": "Standard (Balanced)",
-      "flash": "Flash (Ultra-Fast)",
+      "reasoning": "DeepThink (Reasoning)",
       "available": "Available Models"
     },
     "speed": {
@@ -116,5 +118,18 @@
   },
   "errors": {
     "content_too_long": "Content too long. Please select specific text to correct."
+  },
+  "ocr": {
+    "initializing": "Initializing OCR...",
+    "processing": "Processing image...",
+    "no_text_found": "No text found in image",
+    "processing_failed": "Failed to process image",
+    "upload_image": "Upload Image",
+    "paste_image": "Paste Image",
+    "extract_text": "Extract Text",
+    "drag_drop": "Drag & drop an image here, or click to select",
+    "supported_formats": "Supported: PNG, JPG, JPEG, BMP, WebP",
+    "file_size": "{{size}} MB",
+    "paste_shortcut_both": "or press \u2318V (Mac) or Ctrl+V (Windows) to paste from clipboard"
   }
 }

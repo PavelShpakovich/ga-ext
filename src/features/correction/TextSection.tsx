@@ -1,9 +1,16 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import clsx from 'clsx';
-import { FileText, X, Wand2, RefreshCw } from 'lucide-react';
+import { FileText, X, Wand2, RefreshCw, Image, Loader2 } from 'lucide-react';
 import { Card } from '@/shared/components/Card';
 import { IconButton, IconButtonVariant, IconButtonSize } from '@/shared/components/ui/IconButton';
+import { ImageUpload } from '@/shared/components/ui/ImageUpload';
+import { Alert, AlertVariant } from '@/shared/components/ui/Alert';
+import { TabSelector, type TabOption } from '@/shared/components/ui/TabSelector';
+import { useOCR } from '@/shared/hooks/useOCR';
 import { useTranslation } from 'react-i18next';
+import { InputMode } from '@/shared/types';
+import { capitalize } from '@/shared/utils/helpers';
+import { OCRProgress } from '@/shared/components/ui/OCRProgress';
 
 interface TextSectionProps {
   text: string;
@@ -31,6 +38,66 @@ export const TextSection: React.FC<TextSectionProps> = ({
   emptyHint,
 }) => {
   const { t } = useTranslation();
+  const [inputMode, setInputMode] = useState<InputMode>(InputMode.TEXT);
+  const { processImage, isProcessing, progress, error, reset: resetOCR } = useOCR();
+
+  const tabOptions: TabOption[] = [
+    {
+      id: InputMode.TEXT,
+      label: t('ui.text'),
+      icon: FileText,
+    },
+    {
+      id: InputMode.OCR,
+      label: t('ui.ocr'),
+      icon: Image,
+    },
+  ];
+
+  const handleImageSelect = async (file: File) => {
+    const extractedText = await processImage(file);
+    if (extractedText) {
+      onTextChange(extractedText);
+      setInputMode(InputMode.TEXT); // Switch back to text mode after successful extraction
+    }
+  };
+
+  const handlePaste = React.useCallback(
+    async (e: ClipboardEvent) => {
+      if (inputMode !== InputMode.OCR || isProcessing || isBusy) return;
+
+      const items = e.clipboardData?.items;
+      if (!items) return;
+
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (item.type.indexOf('image') !== -1) {
+          e.preventDefault();
+          const file = item.getAsFile();
+          if (file) {
+            await handleImageSelect(file);
+          }
+          break;
+        }
+      }
+    },
+    [inputMode, isProcessing, isBusy, processImage, onTextChange, handleImageSelect],
+  );
+
+  const handleTabSelect = (id: string) => {
+    const mode = id as InputMode;
+    setInputMode(mode);
+    if (mode === InputMode.OCR) {
+      resetOCR();
+    }
+  };
+
+  useEffect(() => {
+    if (inputMode === InputMode.OCR) {
+      document.addEventListener('paste', handlePaste);
+      return () => document.removeEventListener('paste', handlePaste);
+    }
+  }, [inputMode, handlePaste]);
 
   const handleKeyDown = React.useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -85,19 +152,39 @@ export const TextSection: React.FC<TextSectionProps> = ({
         )
       }
     >
-      <div className='relative group'>
-        <div className={wrapperClass} style={{ clipPath: 'inset(0 round 1rem)' }}>
-          <textarea
-            className={textareaClass}
-            value={text}
-            onChange={(e) => onTextChange(e.target.value)}
-            onKeyDown={handleKeyDown}
-            disabled={isBusy}
-            placeholder={hasText ? placeholder : emptyHint}
-            autoFocus={!hasText}
-          />
+      <TabSelector
+        options={tabOptions}
+        selectedId={inputMode}
+        onSelect={handleTabSelect}
+        className='mb-4'
+        disabled={isBusy}
+      />
+
+      {inputMode === InputMode.TEXT ? (
+        <div className='relative group'>
+          <div className={wrapperClass} style={{ clipPath: 'inset(0 round 1rem)' }}>
+            <textarea
+              className={textareaClass}
+              value={text}
+              onChange={(e) => onTextChange(e.target.value)}
+              onKeyDown={handleKeyDown}
+              disabled={isBusy}
+              placeholder={hasText ? placeholder : emptyHint}
+              autoFocus={!hasText}
+            />
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className='space-y-4'>
+          <ImageUpload onImageSelect={handleImageSelect} disabled={isBusy || isProcessing} />
+
+          {isProcessing && progress && (
+            <OCRProgress status={capitalize(progress.status)} progress={progress.progress} />
+          )}
+
+          {error && <Alert variant={AlertVariant.ERROR}>{error}</Alert>}
+        </div>
+      )}
     </Card>
   );
 };

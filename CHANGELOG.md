@@ -17,6 +17,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Tightened prompt templates to require strict JSON outputs and added few-shot examples to improve small-model output quality.
 - Set default inference `temperature` to `0.0` in `WebLLMProvider` for deterministic outputs.
 
+## [0.2.0] - 2026-01-28
+
+### Added
+
+- OCR support using `tesseract.js`: `extractTextFromImage` helper, `useOCR` hook, `ImageUpload` and `OCRProgress` UI components, and `scripts/fetch-tessdata.sh` to prepare Tesseract assets.
+- `tesseract.js` dependency and associated `tesseract.js-core` assets are included; core/worker assets are exposed via `web_accessible_resources` in the extension manifest.
+
+### Changed
+
+- Refactored `src/shared/utils/helpers.ts` for clearer Tesseract composition and removed deprecated `worker.load` usage.
+- Replaced inline OCR progress UI with an atomic `OCRProgress` component and added `TabSelector`/`ImageUpload` UI for OCR mode in `TextSection`.
+
+### Dev
+
+- Bumped project version to `0.2.0`.
+
 ## [0.1.8] - 2026-01-27
 
 ### Fixed

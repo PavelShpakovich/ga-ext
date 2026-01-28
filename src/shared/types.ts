@@ -39,7 +39,7 @@ export enum ModelSpeed {
 export enum ModelCategory {
   PRO = 'pro',
   STANDARD = 'standard',
-  FLASH = 'flash',
+  REASONING = 'reasoning',
 }
 
 export interface ModelOption {
@@ -65,4 +65,9 @@ export interface Settings {
   selectedModel: string;
   selectedStyle: CorrectionStyle;
   language: 'en';
+}
+
+export enum InputMode {
+  TEXT = 'text',
+  OCR = 'ocr',
 }

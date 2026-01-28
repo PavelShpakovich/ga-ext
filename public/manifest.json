@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Grammar Assistant - Privacy-First AI That Runs Locally",
-  "version": "0.1.9",
+  "version": "0.2.0",
   "author": "Pavel Shpakovich",
   "description": "Free AI grammar correction that runs locally in your browser. Private, fast, and works offline.",
   "homepage_url": "https://github.com/PavelShpakovich/ext-ga",
@@ -36,6 +36,17 @@
   "side_panel": {
     "default_path": "sidepanel.html"
   },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "tesseract/core/worker.min.js",
+        "tesseract/core/tesseract-core.wasm.js",
+        "tesseract/core/tesseract-core.wasm",
+        "tesseract/core/tessdata/*.traineddata"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ],
   "commands": {
     "correct-text": {
       "suggested_key": {

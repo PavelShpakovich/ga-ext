@@ -59,6 +59,7 @@ module.exports = {
       patterns: [
         { from: 'public/manifest.json', to: 'manifest.json' },
         { from: 'public/icons', to: 'icons' },
+        { from: 'lib/tesseract', to: 'tesseract' },
       ],
     }),
   ],

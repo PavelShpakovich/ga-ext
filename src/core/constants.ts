@@ -17,16 +17,6 @@ export const SUPPORTED_MODELS = [
     description: 'Elite level rewrites and paragraph restructuring. Requires high VRAM.',
   },
   {
-    // Upgraded to Hermes-3 for better JSON adherence
-    id: 'Hermes-3-Llama-3.1-8B-q4f16_1-MLC',
-    name: 'Hermes 3 (Llama 8B)',
-    family: 'Meta/Nous',
-    size: '4.31GB',
-    speed: ModelSpeed.SLOW,
-    category: ModelCategory.PRO,
-    description: 'Highly obedient model; best for strict professional and formal styles.',
-  },
-  {
     id: 'Qwen2.5-7B-Instruct-q4f16_1-MLC',
     name: 'Qwen 2.5 7B (Pro)',
     family: 'Alibaba',
@@ -47,15 +37,34 @@ export const SUPPORTED_MODELS = [
     description: 'Balanced choice for fixing errors while preserving meaning.',
   },
 
-  // --- Ultra-Fast (Flash) ---
+  // --- Reasoning (DeepThink) ---
+
   {
-    id: 'Qwen2.5-1.5B-Instruct-q4f16_1-MLC',
-    name: 'Qwen 2.5 1.5B (Flash)',
+    id: 'Qwen3-4B-q4f16_1-MLC',
+    name: 'Qwen 3 4B (DeepThink)',
     family: 'Alibaba',
-    size: '0.83GB',
-    speed: ModelSpeed.FAST,
-    category: ModelCategory.FLASH,
-    description: 'Fastest multilingual check for simple errors.',
+    size: '2.27GB',
+    speed: ModelSpeed.MEDIUM,
+    category: ModelCategory.REASONING,
+    description: 'Advanced Qwen 3 reasoning model for complex analysis and sophisticated style refinement.',
+  },
+  {
+    id: 'Qwen3-8B-q4f16_1-MLC',
+    name: 'Qwen 3 8B (DeepThink)',
+    family: 'Alibaba',
+    size: '4.55GB',
+    speed: ModelSpeed.SLOW,
+    category: ModelCategory.REASONING,
+    description: 'Elite Qwen 3 reasoning model for advanced linguistic analysis and comprehensive corrections.',
+  },
+  {
+    id: 'DeepSeek-R1-Distill-Llama-8B-q4f16_1-MLC',
+    name: 'DeepSeek R1 Llama 8B (DeepThink)',
+    family: 'DeepSeek',
+    size: '4.31GB',
+    speed: ModelSpeed.MEDIUM,
+    category: ModelCategory.REASONING,
+    description: 'Powerful reasoning capabilities for nuanced grammar and style improvements.',
   },
 ] as const;
 
@@ -68,3 +77,9 @@ export const STORAGE_KEYS = {
 } as const;
 
 export const MAX_TEXT_LENGTH = 12000; // ~3000 tokens
+
+// OCR constants
+export const OCR_LANGUAGE = 'eng';
+export const SUPPORTED_IMAGE_TYPES = ['image/png', 'image/jpg', 'image/jpeg', 'image/bmp', 'image/webp'] as const;
+// Relative path under `public/` where tesseract core and tessdata are expected.
+export const OCR_ASSETS_PATH = '/tesseract/core';
