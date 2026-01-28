@@ -49,15 +49,6 @@ export const SUPPORTED_MODELS = [
     description: 'Advanced Qwen 3 reasoning model for complex analysis and sophisticated style refinement.',
   },
   {
-    id: 'Qwen3-8B-q4f16_1-MLC',
-    name: 'Qwen 3 8B (DeepThink)',
-    family: 'Alibaba',
-    size: '4.55GB',
-    speed: ModelSpeed.SLOW,
-    category: ModelCategory.REASONING,
-    description: 'Elite Qwen 3 reasoning model for advanced linguistic analysis and comprehensive corrections.',
-  },
-  {
     id: 'DeepSeek-R1-Distill-Llama-8B-q4f16_1-MLC',
     name: 'DeepSeek R1 Llama 8B (DeepThink)',
     family: 'DeepSeek',
