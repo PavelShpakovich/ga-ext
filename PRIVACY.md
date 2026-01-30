@@ -39,6 +39,7 @@ To function, the extension must download AI model weights from **Hugging Face** 
 - **activeTab/contextMenus:** Used only to capture the specific text selection you wish to correct.
 - **sidePanel:** Used to display corrections in a user-friendly interface.
 - **storage:** Used strictly to remember your settings and model status on your device.
+- **offscreen:** Used to run OCR (Optical Character Recognition) processing via Tesseract.js in a background context. This allows the extension to extract text from images and process it locally on your device without sending any data to external servers.
 
 ## 6. Contact
 
