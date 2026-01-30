@@ -53,7 +53,29 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
   const normalizedProgress = downloadProgress ? normalizeDownloadProgress(downloadProgress.progress) : 0;
 
   return (
-    <Card title={title} icon={<SettingsIcon className='w-3.5 h-3.5' />}>
+    <Card
+      title={title}
+      icon={<SettingsIcon className='w-3.5 h-3.5' />}
+      collapsible={true}
+      defaultCollapsed={isModelCached && !isCheckingCache}
+      badge={
+        isCheckingCache ? (
+          <div className='flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 animate-in fade-in zoom-in duration-300'>
+            <Loader2 className='w-3 h-3 animate-spin text-blue-500' />
+            <span className='text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-tight'>
+              {t('ui.checking')}
+            </span>
+          </div>
+        ) : isModelCached ? (
+          <div className='flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 animate-in fade-in duration-500'>
+            <Check className='w-3 h-3 text-emerald-500' />
+            <span className='text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-tight'>
+              {t('ui.ready')}
+            </span>
+          </div>
+        ) : null
+      }
+    >
       <div className='space-y-4'>
         <Select
           value={selectedModel}
