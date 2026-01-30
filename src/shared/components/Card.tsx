@@ -25,20 +25,10 @@ export const Card: React.FC<CardProps> = ({
   defaultCollapsed = false,
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(collapsible ? defaultCollapsed : false);
-  const [hasInteracted, setHasInteracted] = useState(false);
-
-  // Auto-collapse if the model becomes cached after initial load
-  // but only if the user hasn't manually toggled it yet
-  React.useEffect(() => {
-    if (collapsible && !hasInteracted) {
-      setIsCollapsed(defaultCollapsed);
-    }
-  }, [defaultCollapsed, collapsible, hasInteracted]);
 
   const toggleCollapse = useCallback(() => {
     if (collapsible) {
       setIsCollapsed((prev) => !prev);
-      setHasInteracted(true);
     }
   }, [collapsible]);
 
@@ -64,7 +54,7 @@ export const Card: React.FC<CardProps> = ({
             )}
           </div>
           <div className='flex items-center gap-2'>
-            {badge && <div className='animate-in fade-in duration-500'>{badge}</div>}
+            {badge && isCollapsed && <div className='animate-in fade-in duration-500'>{badge}</div>}
             <div className='flex items-center gap-1'>
               {actions && <div className='flex items-center gap-1'>{actions}</div>}
               {collapsible && (

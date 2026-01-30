@@ -11,6 +11,7 @@
     "syncing": "Synchronisation...",
     "loading": "Chargement...",
     "checking": "Vérification...",
+    "ready": "Prêt",
     "optimized_ready": "Optimisé et prêt",
     "cache_offline": "Enregistrer pour mode hors ligne",
     "flush_cache": "Vider le cache des modèles",

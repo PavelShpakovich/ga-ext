@@ -76,39 +76,35 @@ export class WebLLMProvider extends AIProvider {
 
   static async isModelCached(modelId: string): Promise<boolean> {
     try {
-      // Try exact match first
+      // EXACT match only - prevent cross-model matches
+      const exactRecord = prebuiltAppConfig.model_list.find((m) => m.model_id.toLowerCase() === modelId.toLowerCase());
+
       const config = {
         model_list: prebuiltAppConfig.model_list,
         useIndexedDBCache: true,
       };
 
-      let result = await hasModelInCache(modelId, config);
-
-      if (!result) {
-        // If not found, try to find the canonical ID from the prebuilt config
-        const modelRecord = prebuiltAppConfig.model_list.find(
-          (m) => m.model_id.toLowerCase() === modelId.toLowerCase(),
-        );
-
-        if (modelRecord && modelRecord.model_id !== modelId) {
-          result = await hasModelInCache(modelRecord.model_id, config);
-        }
-
-        if (!result) {
-          // Final attempt: TitleCase
-          const titleCaseId = modelId.charAt(0).toUpperCase() + modelId.slice(1);
-          if (titleCaseId !== modelId && titleCaseId !== (modelRecord?.model_id || '')) {
-            result = await hasModelInCache(titleCaseId, config);
-          }
-        }
+      // Try with exact match first
+      if (exactRecord) {
+        const result = await hasModelInCache(exactRecord.model_id, config);
+        return result;
       }
 
-      return result;
+      // Fallback: try the provided ID directly
+      try {
+        const result = await hasModelInCache(modelId, config);
+        return result;
+      } catch (innerError) {
+        // If the direct ID fails with "Cannot find model record",
+        // it means the model isn't in our prebuilt list at all
+        if (innerError instanceof Error && innerError.message.includes('Cannot find model record')) {
+          Logger.debug('WebLLMProvider', `Model ${modelId} not in prebuilt list, assuming not cached`);
+          return false;
+        }
+        throw innerError;
+      }
     } catch (error) {
-      // Only log if it's not a expected missing record
-      if (!(error instanceof Error && error.message.includes('Cannot find model record'))) {
-        Logger.error('WebLLMProvider', 'Cache check failed', error);
-      }
+      Logger.error('WebLLMProvider', 'Cache check failed for model', { modelId, error });
       return false;
     }
   }
@@ -529,12 +525,46 @@ export class WebLLMProvider extends AIProvider {
 
   static async deleteModel(modelId: string): Promise<void> {
     try {
-      Logger.info('WebLLMProvider', `Deleting model ${modelId} from cache`);
-      await deleteModelAllInfoInCache(modelId, {
+      // EXACT match only - prevent accidental deletion of wrong models
+      const exactRecord = prebuiltAppConfig.model_list.find((m) => m.model_id.toLowerCase() === modelId.toLowerCase());
+      const targetId = exactRecord ? exactRecord.model_id : modelId;
+
+      Logger.info('WebLLMProvider', `Deleting model ${targetId} from cache`);
+      await deleteModelAllInfoInCache(targetId, {
         ...prebuiltAppConfig,
         useIndexedDBCache: true,
       });
-      Logger.info('WebLLMProvider', `Successfully deleted model ${modelId}`);
+
+      // Critical: Force a cache check immediately to ensure deletion completed
+      // WebLLM may cache metadata, so we verify it's actually gone
+      let verifyDeleted = false;
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          const stillCached = await hasModelInCache(targetId, {
+            model_list: prebuiltAppConfig.model_list,
+            useIndexedDBCache: true,
+          });
+          if (!stillCached) {
+            verifyDeleted = true;
+            break;
+          }
+        } catch (e) {
+          // If hasModelInCache throws, the model is definitely gone
+          verifyDeleted = true;
+          break;
+        }
+
+        // Exponential backoff: 50ms, 100ms, 200ms
+        if (attempt < 2) {
+          await new Promise((resolve) => setTimeout(resolve, 50 * Math.pow(2, attempt)));
+        }
+      }
+
+      if (!verifyDeleted) {
+        Logger.warn('WebLLMProvider', `Model ${targetId} deletion verification failed, may still be cached`);
+      } else {
+        Logger.info('WebLLMProvider', `Successfully verified model ${targetId} deleted from cache`);
+      }
     } catch (error) {
       Logger.error('WebLLMProvider', `Failed to delete model ${modelId}`, error);
       throw error;

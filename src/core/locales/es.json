@@ -11,6 +11,7 @@
     "syncing": "Sincronizando...",
     "loading": "Cargando...",
     "checking": "Verificando...",
+    "ready": "Listo",
     "optimized_ready": "Optimizado y listo",
     "cache_offline": "Guardar para uso local",
     "flush_cache": "Limpiar caché de modelos",

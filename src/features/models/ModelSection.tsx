@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Settings as SettingsIcon, Download, Check, Loader2, Trash2 } from 'lucide-react';
 import { Card } from '@/shared/components/Card';
 import { Select } from '@/shared/components/ui/Select';
@@ -31,6 +31,20 @@ interface ModelSectionProps {
   title: string;
 }
 
+enum CacheStateEnum {
+  CHECKING = 'checking',
+  READY = 'ready',
+  DOWNLOAD = 'download',
+  SYNCING = 'syncing',
+  LOADING = 'loading',
+}
+
+interface StateConfig {
+  type: 'display' | 'button';
+  icon: React.ReactNode;
+  label: string;
+}
+
 export const ModelSection: React.FC<ModelSectionProps> = ({
   selectedModel,
   onModelChange,
@@ -52,29 +66,109 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
   const { settings } = useSettings();
   const normalizedProgress = downloadProgress ? normalizeDownloadProgress(downloadProgress.progress) : 0;
 
+  // Derive cache state from conditions
+  const cacheState = useMemo<CacheStateEnum>(() => {
+    if (isCheckingCache) return CacheStateEnum.CHECKING;
+    if (isPrefetching) return CacheStateEnum.SYNCING;
+    if (step === ExecutionStep.PREPARING_MODEL) return CacheStateEnum.LOADING;
+    if (isModelCached) return CacheStateEnum.READY;
+    return CacheStateEnum.DOWNLOAD;
+  }, [isCheckingCache, isPrefetching, step, isModelCached]);
+
+  // Unified state configuration
+  const stateConfig = useMemo<StateConfig>(() => {
+    switch (cacheState) {
+      case CacheStateEnum.CHECKING:
+        return {
+          type: 'display',
+          icon: <Loader2 className='w-4 h-4 animate-spin text-blue-500' />,
+          label: t('ui.checking'),
+        };
+      case CacheStateEnum.READY:
+        return {
+          type: 'display',
+          icon: <Check className='w-4 h-4 text-green-500' />,
+          label: t('ui.optimized_ready'),
+        };
+      case CacheStateEnum.SYNCING:
+        return {
+          type: 'button',
+          icon: <Loader2 className='w-4 h-4 animate-spin' />,
+          label: t('ui.syncing'),
+        };
+      case CacheStateEnum.LOADING:
+        return {
+          type: 'button',
+          icon: <Loader2 className='w-4 h-4 animate-spin' />,
+          label: t('ui.loading'),
+        };
+      case CacheStateEnum.DOWNLOAD:
+      default:
+        return {
+          type: 'button',
+          icon: <Download className='w-4 h-4 transition-transform group-hover:translate-y-0.5' />,
+          label: t('ui.cache_offline'),
+        };
+    }
+  }, [cacheState, t]);
+
+  const badge = useMemo(() => {
+    if (cacheState === CacheStateEnum.CHECKING) {
+      return (
+        <div className='flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 animate-in fade-in zoom-in duration-300'>
+          {stateConfig.icon}
+          <span className='text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-tight'>
+            {stateConfig.label}
+          </span>
+        </div>
+      );
+    }
+    if (cacheState === CacheStateEnum.READY) {
+      return (
+        <div className='flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 animate-in fade-in duration-500'>
+          {stateConfig.icon}
+          <span className='text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-tight'>
+            {stateConfig.label}
+          </span>
+        </div>
+      );
+    }
+    return null;
+  }, [cacheState, stateConfig]);
+
+  const renderActionArea = () => {
+    const { type, icon, label } = stateConfig;
+
+    if (type === 'display') {
+      return (
+        <div className='flex-1 h-11 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 text-slate-600 dark:text-slate-300 flex items-center justify-center gap-2 text-sm font-semibold selection:bg-transparent'>
+          {icon}
+          <span className='text-slate-500 dark:text-slate-400'>{label}</span>
+        </div>
+      );
+    }
+
+    return (
+      <Button
+        onClick={onPrefetch}
+        disabled={isBusy}
+        variant={isModelCached ? ButtonVariant.SECONDARY : ButtonVariant.PRIMARY}
+        className='flex-1 group'
+        aria-busy={isPrefetching || step === ExecutionStep.PREPARING_MODEL}
+      >
+        {icon}
+        {label}
+      </Button>
+    );
+  };
+
   return (
     <Card
       title={title}
       icon={<SettingsIcon className='w-3.5 h-3.5' />}
       collapsible={true}
-      defaultCollapsed={isModelCached && !isCheckingCache}
-      badge={
-        isCheckingCache ? (
-          <div className='flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 animate-in fade-in zoom-in duration-300'>
-            <Loader2 className='w-3 h-3 animate-spin text-blue-500' />
-            <span className='text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-tight'>
-              {t('ui.checking')}
-            </span>
-          </div>
-        ) : isModelCached ? (
-          <div className='flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 animate-in fade-in duration-500'>
-            <Check className='w-3 h-3 text-emerald-500' />
-            <span className='text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-tight'>
-              {t('ui.ready')}
-            </span>
-          </div>
-        ) : null
-      }
+      defaultCollapsed={true}
+      badge={badge}
     >
       <div className='space-y-4'>
         <Select
@@ -102,42 +196,7 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
         )}
 
         <div className='flex gap-3'>
-          {isCheckingCache ? (
-            <div className='flex-1 h-11 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 text-slate-600 dark:text-slate-300 flex items-center justify-center gap-2 text-sm font-semibold selection:bg-transparent'>
-              <Loader2 className='w-4 h-4 animate-spin text-blue-500' />
-              <span className='text-slate-500 dark:text-slate-400'>{t('ui.checking')}</span>
-            </div>
-          ) : isModelCached && !isPrefetching && step !== ExecutionStep.PREPARING_MODEL ? (
-            <div className='flex-1 h-11 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 text-slate-600 dark:text-slate-300 flex items-center justify-center gap-2 text-sm font-semibold selection:bg-transparent'>
-              <Check className='w-4 h-4 text-green-500' />
-              {t('ui.optimized_ready')}
-            </div>
-          ) : (
-            <Button
-              onClick={onPrefetch}
-              disabled={isBusy}
-              variant={isModelCached ? ButtonVariant.SECONDARY : ButtonVariant.PRIMARY}
-              className='flex-1 group'
-              aria-busy={isPrefetching || step === ExecutionStep.PREPARING_MODEL}
-            >
-              {isPrefetching ? (
-                <>
-                  <Loader2 className='w-4 h-4 animate-spin' />
-                  {t('ui.syncing')}
-                </>
-              ) : step === ExecutionStep.PREPARING_MODEL ? (
-                <>
-                  <Loader2 className='w-4 h-4 animate-spin' />
-                  {t('ui.loading')}
-                </>
-              ) : (
-                <>
-                  <Download className='w-4 h-4 transition-transform group-hover:translate-y-0.5' />
-                  {t('ui.cache_offline')}
-                </>
-              )}
-            </Button>
-          )}
+          {renderActionArea()}
           {isModelCached && (
             <IconButton
               icon={<Trash2 />}

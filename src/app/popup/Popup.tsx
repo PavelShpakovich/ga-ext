@@ -5,9 +5,11 @@ import { Alert, AlertVariant } from '@/shared/components/ui/Alert';
 import { Badge, BadgeVariant } from '@/shared/components/ui/Badge';
 import { isWebGPUAvailable } from '@/shared/utils/helpers';
 import { useTranslation } from 'react-i18next';
+import { useSettings } from '@/shared/hooks/useSettings';
 
 const Popup: React.FC = () => {
   const { t } = useTranslation();
+  const { settings } = useSettings();
   const [hasWebGPU, setHasWebGPU] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
 

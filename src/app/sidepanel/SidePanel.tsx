@@ -60,6 +60,37 @@ const SidePanelContent: React.FC = () => {
     isVisible: false,
   });
 
+  const hideToast = useCallback(() => {
+    setToast((prev) => ({ ...prev, isVisible: false }));
+  }, []);
+
+  const handleTextChange = useCallback((val: string) => {
+    setText(val);
+    shouldAutoRunRef.current = false;
+
+    if (!val.trim()) {
+      setMismatchDetected(null);
+      confirmedLanguageRef.current = null;
+    }
+  }, []);
+
+  // Unified language mismatch detection
+  useEffect(() => {
+    const trimmed = text.trim();
+    if (!trimmed) {
+      setMismatchDetected(null);
+      confirmedLanguageRef.current = null;
+      return;
+    }
+
+    const detected = detectDominantLanguage(trimmed);
+    if (detected && detected !== settings.correctionLanguage && confirmedLanguageRef.current !== detected) {
+      setMismatchDetected(detected);
+    } else {
+      setMismatchDetected(null);
+    }
+  }, [settings.correctionLanguage, text]);
+
   const showToast = useCallback(
     (
       message: string,
@@ -70,10 +101,6 @@ const SidePanelContent: React.FC = () => {
     },
     [],
   );
-
-  const hideToast = useCallback(() => {
-    setToast((prev) => ({ ...prev, isVisible: false }));
-  }, []);
   const { selectGroups, allModels, getModelInfo } = useModelSelection();
   const { downloadProgress, stopDownload } = useDownloadProgress();
   const { runCorrection, step, error, result, partialResult, reset } = useAI();
@@ -90,25 +117,20 @@ const SidePanelContent: React.FC = () => {
 
   const isResultStale = useMemo(() => {
     if (!result || !text.trim()) return false;
-    return (
-      lastAutoRunKey.current !==
-      generateCacheKey(selectedModel, text, settings.selectedStyle, settings.correctionLanguage)
-    );
+    // Account for confirmed language override in staleness check
+    const effectiveLanguage = confirmedLanguageRef.current || settings.correctionLanguage;
+    return lastAutoRunKey.current !== generateCacheKey(selectedModel, text, settings.selectedStyle, effectiveLanguage);
   }, [result, selectedModel, text, settings.selectedStyle, settings.correctionLanguage]);
 
+  // Clear mismatch warning and confirmation when the target language is changed manually
+  // Also invalidate the last auto-run key to allow re-running with new language
   useEffect(() => {
-    if (!text.trim()) {
-      setMismatchDetected(null);
-      confirmedLanguageRef.current = null;
-    }
-  }, [text]);
-
-  // Clear mismatch warning if user manually switches to the correct language in the header
-  useEffect(() => {
+    confirmedLanguageRef.current = null;
+    lastAutoRunKey.current = null; // Force cache key refresh on language change
     if (mismatchDetected && mismatchDetected === settings.correctionLanguage) {
       setMismatchDetected(null);
     }
-  }, [mismatchDetected, settings.correctionLanguage]);
+  }, [settings.correctionLanguage]);
 
   const modelOptions = selectGroups.length
     ? selectGroups
@@ -119,51 +141,41 @@ const SidePanelContent: React.FC = () => {
         },
       ];
 
-  const handleTextChange = useCallback(
-    (val: string) => {
-      setText(val);
-      shouldAutoRunRef.current = false;
-
-      if (!val.trim()) {
-        setMismatchDetected(null);
-        confirmedLanguageRef.current = null;
-        return;
-      }
-
-      // Propose language switch if detected mismatch
-      const detected = detectDominantLanguage(val);
-      if (detected && detected !== settings.correctionLanguage && confirmedLanguageRef.current !== detected) {
-        setMismatchDetected(detected);
-      } else {
-        setMismatchDetected(null);
-      }
-    },
-    [settings.correctionLanguage],
-  );
-
   const handleModelChange = useCallback(
     async (id: string) => {
       if (isBusy) return; // prevent changing model while busy
       if (id === selectedModel) return;
+
       // Immediately stop download and clear progress to prevent flashing
       if (downloadProgress) {
         stopDownload();
       }
-      // Reset cache checking state to show loading on new model
+
+      // 1. Reset states IMMEDIATELY and CLEAR the engine
       setIsCheckingCache(true);
       setIsModelCached(false);
+      // Clear language override context when switching models to avoid carrying over user's previous choice
+      confirmedLanguageRef.current = null;
+      // Clear the cache key to prevent stale result comparisons from previous model
+      lastAutoRunKey.current = null;
+      reset();
+
       try {
-        updateSettings({ selectedModel: id });
+        // 2. Perform engine cleanup first
         await ProviderFactory.clearInstances();
-        lastAutoRunKey.current = null;
+
+        // 3. Update settings (this triggers re-render and useEffect)
+        await updateSettings({ selectedModel: id });
+
         shouldAutoRunRef.current = false;
+
+        // Note: isCheckingCache and isModelCached will be finalized by the useEffect triggered by selectedModel change
       } catch (err) {
         Logger.error('SidePanel', 'Failed to change model', err);
-      } finally {
         setIsCheckingCache(false);
       }
     },
-    [updateSettings, selectedModel, downloadProgress, stopDownload, isBusy],
+    [updateSettings, selectedModel, downloadProgress, stopDownload, isBusy, reset],
   );
 
   const handleStyleChange = useCallback(
@@ -188,25 +200,23 @@ const SidePanelContent: React.FC = () => {
 
       // Basic language check to warn about potential mismatch
       const detected = detectDominantLanguage(trimmed);
-      if (
-        !ignoreMismatch &&
-        detected &&
-        detected !== settings.correctionLanguage &&
-        confirmedLanguageRef.current !== detected
-      ) {
+      const targetLang = langOverride || settings.correctionLanguage;
+
+      if (!ignoreMismatch && detected && detected !== targetLang && confirmedLanguageRef.current !== detected) {
         setMismatchDetected(detected);
         return;
       }
 
       // Reset mismatch state if we're proceeding or it matches
       setMismatchDetected(null);
-      confirmedLanguageRef.current = null;
 
       try {
         const usedLang = langOverride || settings.correctionLanguage;
         await runCorrection(trimmed, selectedModel, settings.selectedStyle, usedLang);
         lastAutoRunKey.current = generateCacheKey(selectedModel, trimmed, settings.selectedStyle, usedLang);
         shouldAutoRunRef.current = false;
+        // Clear the confirmed language override after successful correction
+        confirmedLanguageRef.current = null;
         const cached = await WebLLMProvider.isModelCached(selectedModel);
         setIsModelCached(cached);
         showToast(t('messages.correction_success'), 'success');
@@ -250,7 +260,10 @@ const SidePanelContent: React.FC = () => {
       onConfirm: async () => {
         setIsRemovingModel(true);
         try {
+          // deleteModel now includes its own verification logic
           await WebLLMProvider.deleteModel(selectedModel);
+          await ProviderFactory.clearInstances();
+
           setLocalMessage({ message: t('messages.model_removed'), variant: AlertVariant.SUCCESS });
           setIsModelCached(false);
           reset();
@@ -372,6 +385,7 @@ const SidePanelContent: React.FC = () => {
   useEffect(() => {
     let mounted = true;
     setIsCheckingCache(true);
+    setIsModelCached(false); // Reset cache state for the new model
 
     // Safety timeout for IndexedDB access (sometimes hangs in Chrome if another tab is locking it)
     const timeoutId = setTimeout(() => {
