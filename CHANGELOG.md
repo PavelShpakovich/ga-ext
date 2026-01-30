@@ -5,6 +5,39 @@ All notable changes to Grammar Assistant will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.1] - 2026-01-30
+
+### Added
+
+- **ResponseValidator service**: Comprehensive JSON parsing with 5 progressive recovery strategies to handle malformed LLM responses.
+  - Strategy 1: Direct JSON parsing with field name normalization
+  - Strategy 2: JSON repair (fixes unescaped newlines, trailing commas, backslashes, field name variations)
+  - Strategy 3: Extract JSON from markdown code blocks
+  - Strategy 4: Aggressive extraction (find first `{` and last `}`)
+  - Strategy 5: Field-by-field extraction (last resort for severely malformed responses)
+- **ModelCapabilityRegistry service**: Tracks model JSON output reliability, records parse success/failure rates, and identifies models with known JSON issues.
+- **Streaming response validation**: Incremental bracket balance checking during streaming to detect malformed responses early.
+- **Error categorization**: Detailed parse error classification (missing_field, invalid_type, malformed_json, schema_mismatch, unknown) with severity levels.
+- **Comprehensive test suite**: 51 tests covering JSON repair, code block extraction, field extraction, real-world scenarios (URLs, Markdown, Unicode), and edge cases.
+
+### Changed
+
+- Enhanced prompt templates with stricter JSON formatting requirements and explicit field name specifications.
+- Improved `WebLLMProvider.parseResponse()` to use new `ResponseValidator` and telemetry system.
+- Added `ResponseValidator` and `ModelCapabilityRegistry` to service exports in `src/core/services/index.ts`.
+- Prompt system instruction now explicitly requires lowercase field names and proper newline escaping.
+
+### Fixed
+
+- Improved resilience to model-specific JSON format deviations (corrected_text, correctedText, explanations variations).
+- Better handling of malformed JSON from weaker models with fallback to original text.
+- Added model capability tracking to enable future intelligent model selection and fallback strategies.
+
+### Dev
+
+- Bumped project version to `0.2.1`.
+- All tests passing (51 tests), build succeeds with 0 errors, lint reports 0 errors.
+
 ## [0.1.9] - 2026-01-27
 
 ### Fixed
@@ -63,7 +96,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Toast notification system** - User-friendly error messages displayed in bottom-right corner with 4 variants (success/error/warning/info)
-- **Text length validation** - Added `MAX_TEXT_LENGTH` constant (12,000 characters ~3,000 tokens) enforced at all entry points
+- **Text length validation** - Added `MAX_TEXT_LENGTH` constant (6,000 characters ~1,500 tokens) enforced at all entry points
 - **Unit test infrastructure** - Implemented Vitest with React Testing Library, 14 passing tests covering Logger, StorageService, and ProviderFactory
 - **Chrome API mocks** - Comprehensive test setup with proper type assertions for storage, runtime, tabs, and other Chrome APIs
 - Added `PENDING_ERROR` storage key for error propagation from content script to sidepanel

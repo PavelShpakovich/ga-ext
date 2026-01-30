@@ -16,7 +16,7 @@ import {
   ModelSpeed,
   ModelCategory,
 } from '@/shared/types';
-import { Logger } from '@/core/services/Logger';
+import { Logger, ResponseValidator, ModelCapabilityRegistry } from '@/core/services';
 import { DEFAULT_MODEL_ID, SUPPORTED_MODELS } from '@/core/constants';
 import { isWebGPUAvailable } from '@/shared/utils/helpers';
 
@@ -24,7 +24,7 @@ const MAX_INIT_ATTEMPTS = 2;
 const INITIAL_PROGRESS = 0;
 const COMPLETED_PROGRESS = 1;
 const DEFAULT_TEMPERATURE = 0.0;
-const MAX_TOKENS = 4096;
+const MAX_TOKENS = 1024;
 
 // WebGPU type declarations
 declare global {
@@ -176,8 +176,10 @@ export class WebLLMProvider extends AIProvider {
             // Assign engine IMMEDIATELY so stopDownload can call unload() if needed during reload
             this.engine = engine;
 
-            // Start model loading
-            await this.engine.reload(exactModelId);
+            // Start model loading with optimized config for lower VRAM usage
+            await this.engine.reload(exactModelId, {
+              context_window_size: 2048,
+            });
 
             if (this.cancelled) {
               await this.engine.unload();
@@ -328,7 +330,11 @@ export class WebLLMProvider extends AIProvider {
     await this.initialize();
   }
 
-  async correct(text: string, style: CorrectionStyle = CorrectionStyle.FORMAL): Promise<CorrectionResult> {
+  async correct(
+    text: string,
+    style: CorrectionStyle = CorrectionStyle.FORMAL,
+    onPartialText?: (text: string) => void,
+  ): Promise<CorrectionResult> {
     await this.ensureReady();
     if (!this.engine) {
       throw new Error('Model not ready');
@@ -340,62 +346,110 @@ export class WebLLMProvider extends AIProvider {
       { role: 'user', content: prompt },
     ];
 
-    const response = await this.engine.chat.completions.create({
+    const completion = await this.engine.chat.completions.create({
       messages,
       temperature: DEFAULT_TEMPERATURE,
       max_tokens: MAX_TOKENS,
+      stream: true,
     });
 
-    const content = response.choices[0]?.message?.content || '';
-    return this.parseResponse(content, text);
-  }
+    let fullContent = '';
+    let lastCorrectedText = '';
 
-  private parseResponse(raw: string, original: string): CorrectionResult {
-    const tryParse = (value: string) => {
-      const textToParse = value.trim();
-      if (!textToParse) return null;
+    for await (const chunk of completion) {
+      const delta = chunk.choices[0]?.delta?.content || '';
+      fullContent += delta;
 
-      try {
-        const parsed = JSON.parse(textToParse);
-        const hasCorrected = 'corrected' in parsed || 'corrected_text' in parsed || 'correctedText' in parsed;
-        return parsed && typeof parsed === 'object' && hasCorrected ? parsed : null;
-      } catch {
-        // If standard parse fails, try to fix common LLM JSON errors
-        try {
-          const fixed = textToParse
-            // 1. Replace literal newlines within quotes with \n
-            .replace(/"([^"]*)"/g, (match) => match.replace(/\n/g, '\\n'))
-            // 2. Fix potential trailing commas
-            .replace(/,\s*([}\]])/g, '$1')
-            // 3. Fix unescaped backslashes (but not valid escapes)
-            .replace(/\\(?!["\\/bfnrtu])/g, '\\\\');
+      // Validate streaming response incrementally for early error detection
+      this.validateStreamingChunk(fullContent);
 
-          const parsed = JSON.parse(fixed);
-          const hasCorrected = 'corrected' in parsed || 'corrected_text' in parsed || 'correctedText' in parsed;
-          return parsed && typeof parsed === 'object' && hasCorrected ? parsed : null;
-        } catch {
-          return null;
+      if (onPartialText) {
+        // Simple heuristic to extract text from "corrected": "..." in partial JSON
+        // We look for the start of the "corrected" field and take everything until the next quote or end
+        const correctedPrefix = '"corrected":';
+        const index = fullContent.indexOf(correctedPrefix);
+        if (index !== -1) {
+          const startSearch = index + correctedPrefix.length;
+          const firstQuote = fullContent.indexOf('"', startSearch);
+          if (firstQuote !== -1) {
+            const nextQuote = fullContent.indexOf('"', firstQuote + 1);
+            const partial =
+              nextQuote !== -1
+                ? fullContent.substring(firstQuote + 1, nextQuote)
+                : fullContent.substring(firstQuote + 1);
+
+            if (partial !== lastCorrectedText) {
+              lastCorrectedText = partial;
+              onPartialText(lastCorrectedText);
+            }
+          }
         }
       }
-    };
-
-    // 1. Try treating the whole response as JSON
-    const directParsed = tryParse(raw);
-    if (directParsed) return this.formatResult(directParsed, original, raw);
-
-    // 2. Try extracting from markdown code blocks
-    const codeBlockMatch = raw.match(/```(?:json)?\s*([\s\S]*?)```/);
-    if (codeBlockMatch) {
-      const parsed = tryParse(codeBlockMatch[1]);
-      if (parsed) return this.formatResult(parsed, original, raw);
     }
 
-    // 3. Last ditch: find first '{' and last '}'
-    // Use a non-greedy search for the first { and greedy for the last }
-    const lastDitchMatch = raw.match(/{[\s\S]*}/);
-    if (lastDitchMatch) {
-      const parsed = tryParse(lastDitchMatch[0]);
-      if (parsed) return this.formatResult(parsed, original, raw);
+    return this.parseResponse(fullContent, text, style);
+  }
+
+  /**
+   * Validates streaming response chunks for basic JSON structure integrity
+   */
+  private validateStreamingChunk(chunk: string): void {
+    // Track bracket balance to detect malformed JSON early
+    let braceDepth = 0;
+    let bracketDepth = 0;
+    let inString = false;
+    let escaped = false;
+
+    for (let i = 0; i < chunk.length; i++) {
+      const char = chunk[i];
+
+      if (escaped) {
+        escaped = false;
+        continue;
+      }
+
+      if (char === '\\' && inString) {
+        escaped = true;
+        continue;
+      }
+
+      if (char === '"' && !escaped) {
+        inString = !inString;
+        continue;
+      }
+
+      if (!inString) {
+        if (char === '{') braceDepth++;
+        if (char === '}') braceDepth--;
+        if (char === '[') bracketDepth++;
+        if (char === ']') bracketDepth--;
+      }
+    }
+
+    // Log warning if brackets are severely mismatched (likely malformed)
+    if (braceDepth < -2 || bracketDepth < -2) {
+      Logger.warn('WebLLMProvider', 'Streaming response shows bracket imbalance', {
+        braceDepth,
+        bracketDepth,
+        chunkLength: chunk.length,
+      });
+    }
+  }
+
+  private parseResponse(raw: string, original: string, style: CorrectionStyle): CorrectionResult {
+    // Use enhanced validator with recovery strategies
+    const validation = ResponseValidator.validate(raw, original);
+
+    if (validation.isValid && validation.parsed) {
+      ModelCapabilityRegistry.recordParseSuccess(this.modelId, style);
+      return this.formatResult(validation.parsed, original, raw);
+    }
+
+    // Record failure and categorize error
+    ModelCapabilityRegistry.recordParseFailure(this.modelId, style);
+
+    if (validation.errorCategory) {
+      ResponseValidator.logParseError(validation.errorCategory, this.modelId, style, validation.recoveryAttempt);
     }
 
     return {

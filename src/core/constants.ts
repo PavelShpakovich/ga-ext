@@ -67,7 +67,7 @@ export const STORAGE_KEYS = {
   PENDING_AUTO_CORRECT: 'pendingAutoCorrect',
 } as const;
 
-export const MAX_TEXT_LENGTH = 12000; // ~3000 tokens
+export const MAX_TEXT_LENGTH = 6000; // ~1500 tokens (aligned with 2048 context window)
 
 // OCR constants
 export const OCR_LANGUAGE = 'eng';

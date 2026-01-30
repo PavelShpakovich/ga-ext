@@ -1,15 +1,19 @@
-import React from 'react';
-import { ArrowRight, Copy, Info, X } from 'lucide-react';
+import React, { useState } from 'react';
+import { ArrowRight, Copy, Info, X, Diff } from 'lucide-react';
 import { Card } from '@/shared/components/Card';
+import clsx from 'clsx';
 import { Button, ButtonVariant } from '@/shared/components/Button';
 import { Alert, AlertVariant } from '@/shared/components/ui/Alert';
 import { TextButton, TextButtonVariant } from '@/shared/components/ui/TextButton';
 import { CorrectionResult, ExecutionStep } from '@/shared/types';
 import { StatusIndicator } from '@/features/models/StatusIndicator';
 import { useTranslation } from 'react-i18next';
+import { getDiff } from '@/shared/utils/diff';
+import { IconButton, IconButtonVariant, IconButtonSize } from '@/shared/components/ui';
 
 interface ResultSectionProps {
   result: CorrectionResult | null;
+  partialResult: string | null;
   onCopy: () => void;
   showDebug: boolean;
   onToggleDebug: () => void;
@@ -24,6 +28,7 @@ interface ResultSectionProps {
 
 export const ResultSection: React.FC<ResultSectionProps> = ({
   result,
+  partialResult,
   onCopy,
   showDebug,
   onToggleDebug,
@@ -36,6 +41,9 @@ export const ResultSection: React.FC<ResultSectionProps> = ({
   reasoningLabel,
 }) => {
   const { t } = useTranslation();
+  const [showDiff, setShowDiff] = useState(false);
+
+  const diffParts = result ? getDiff(result.original, result.corrected) : [];
 
   return (
     <div className='space-y-4'>
@@ -44,11 +52,29 @@ export const ResultSection: React.FC<ResultSectionProps> = ({
       {error && <Alert variant={AlertVariant.ERROR}>{error}</Alert>}
       {localMessage && !error && <Alert variant={localMessage.variant}>{localMessage.message}</Alert>}
 
+      {!result && partialResult && (
+        <Card title={title} icon={<ArrowRight className='w-3.5 h-3.5' />} className='animate-pulse'>
+          <div className='bg-blue-50/10 dark:bg-blue-500/5 border border-blue-100/20 dark:border-blue-500/5 rounded-2xl p-5 text-sm text-slate-500 dark:text-slate-400 whitespace-pre-wrap leading-loose shadow-sm selection:bg-blue-200 dark:selection:bg-blue-700 min-h-25'>
+            {partialResult}
+            <span className='inline-block w-1.5 h-4 ml-1 bg-blue-400 dark:bg-blue-600 animate-pulse align-middle' />
+          </div>
+        </Card>
+      )}
+
       {result && (
         <Card
           title={title}
           icon={<ArrowRight className='w-3.5 h-3.5' />}
           className='animate-in fade-in slide-in-from-bottom-3 duration-500'
+          actions={
+            <IconButton
+              icon={<Diff className='w-4 h-4' />}
+              onClick={() => setShowDiff(!showDiff)}
+              title={showDiff ? t('ui.show_corrected') : t('ui.show_diff')}
+              variant={showDiff ? IconButtonVariant.PRIMARY : IconButtonVariant.GHOST}
+              size={IconButtonSize.SM}
+            />
+          }
         >
           <div className='space-y-6'>
             {result.parseError ? (
@@ -67,6 +93,22 @@ export const ResultSection: React.FC<ResultSectionProps> = ({
                 <div className='bg-slate-50/50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 text-sm text-slate-400 dark:text-slate-500 italic whitespace-pre-wrap leading-loose'>
                   {result.original}
                 </div>
+              </div>
+            ) : showDiff ? (
+              <div className='bg-blue-50/30 dark:bg-blue-500/5 border border-blue-100/30 dark:border-blue-500/10 rounded-2xl p-5 text-sm text-slate-800 dark:text-slate-100 whitespace-pre-wrap leading-loose shadow-sm selection:bg-blue-200 dark:selection:bg-blue-700 min-h-25 overflow-y-auto custom-scrollbar'>
+                {diffParts.map((part, i) => (
+                  <span
+                    key={i}
+                    className={clsx({
+                      'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-xs px-0.5':
+                        part.added,
+                      'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 line-through rounded-xs px-0.5':
+                        part.removed,
+                    })}
+                  >
+                    {part.value}
+                  </span>
+                ))}
               </div>
             ) : (
               <div className='bg-blue-50/30 dark:bg-blue-500/5 border border-blue-100/30 dark:border-blue-500/10 rounded-2xl p-5 text-sm text-slate-800 dark:text-slate-100 whitespace-pre-wrap leading-loose shadow-sm selection:bg-blue-200 dark:selection:bg-blue-700 min-h-25 overflow-y-auto custom-scrollbar'>

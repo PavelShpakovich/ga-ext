@@ -10,12 +10,14 @@ export const useAI = (): {
   step: ExecutionStep;
   error: string | null;
   result: CorrectionResult | null;
+  partialResult: string | null;
   reset: () => void;
 } => {
   const { t } = useTranslation();
   const [step, setStep] = useState<ExecutionStep>(ExecutionStep.IDLE);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<CorrectionResult | null>(null);
+  const [partialResult, setPartialResult] = useState<string | null>(null);
 
   const runCorrection = useCallback(
     async (
@@ -30,6 +32,7 @@ export const useAI = (): {
       setStep(ExecutionStep.PREPARING_MODEL);
       setError(null);
       setResult(null);
+      setPartialResult(null);
 
       try {
         const aiProvider = ProviderFactory.createProvider(modelId);
@@ -45,7 +48,9 @@ export const useAI = (): {
         }
 
         setStep(ExecutionStep.CORRECTING);
-        const correctionResult = await aiProvider.correct(text, style);
+        const correctionResult = await aiProvider.correct(text, style, (partial) => {
+          setPartialResult(partial);
+        });
         setResult(correctionResult);
         setStep(ExecutionStep.DONE);
 
@@ -70,6 +75,7 @@ export const useAI = (): {
     setStep(ExecutionStep.IDLE);
     setError(null);
     setResult(null);
+    setPartialResult(null);
   }, []);
 
   return {
@@ -77,6 +83,7 @@ export const useAI = (): {
     step,
     error,
     result,
+    partialResult,
     reset,
   };
 };

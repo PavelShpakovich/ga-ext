@@ -18,11 +18,13 @@ Operational Rules:
 2. POLISH: If text is high-quality, perform subtle refinements to improve naturalness and flow.
 3. CONSTRAINTS: Avoid unnecessary verbosity or creative rewriting. Maintain the original length (±20%).
 4. OUTPUT: Return ONLY valid JSON. No commentary, no markdown code fences, no introductory text.
+5. JSON FORMATTING: Ensure all strings are properly escaped. No literal newlines inside string values. Use \\n for line breaks.
+6. FIELD NAMES: Use lowercase "corrected" for the improved text field. Use lowercase "explanation" for the improvements array.
 
-JSON Schema:
+JSON Schema (STRICTLY FOLLOW):
 {
-  "corrected": "string (the improved text)",
-  "explanation": ["string (brief, objective change description 1)", "..."]
+  "corrected": "string (the improved text, all newlines must be escaped as \\\\n)",
+  "explanation": ["string (brief, objective change description 1)", "string (change 2)", "..."]
 }`,
 
     user: `### Task

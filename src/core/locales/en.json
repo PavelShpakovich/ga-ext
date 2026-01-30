@@ -30,7 +30,9 @@
     "confirm": "Confirm",
     "cancel": "Cancel",
     "text": "Text",
-    "ocr": "OCR"
+    "ocr": "OCR",
+    "show_diff": "Show changes",
+    "show_corrected": "Show result"
   },
   "styles": {
     "standard": "Standard",

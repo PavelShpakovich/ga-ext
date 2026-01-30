@@ -63,13 +63,43 @@ export class StorageService {
       const errorMessage = (error as Error)?.message || '';
       if (errorMessage.includes('QUOTA') || errorMessage.includes('quota')) {
         Logger.warn('StorageService', `Storage quota exceeded when setting ${key}. Value not saved.`);
-        // Swallow error to prevent app crash, but data is lost.
-        // potentially could try to clear other keys here.
         return;
       }
       Logger.error('StorageService', `Failed to set key: ${key}`, error);
       throw error;
     }
+  }
+
+  /**
+   * Remove one or more values from storage
+   * @param keys The key or keys to remove
+   */
+  public async remove(keys: StorageKey | StorageKey[]): Promise<void> {
+    try {
+      await chrome.storage.local.remove(keys);
+      Logger.debug('StorageService', `Removed keys: ${Array.isArray(keys) ? keys.join(', ') : keys}`);
+    } catch (error) {
+      Logger.error('StorageService', `Failed to remove keys: ${keys}`, error);
+    }
+  }
+
+  /**
+   * Subscribe to storage changes for a specific key
+   * @param key The key to watch
+   * @param callback Function to call when value changes
+   * @returns Unsubscribe function
+   */
+  public subscribe<K extends StorageKey>(
+    key: K,
+    callback: (newValue: K extends keyof StorageSchema ? StorageSchema[K] : any) => void,
+  ): () => void {
+    const listener = (changes: { [key: string]: chrome.storage.StorageChange }, areaName: string) => {
+      if (areaName === 'local' && changes[key]) {
+        callback(changes[key].newValue);
+      }
+    };
+    chrome.storage.onChanged.addListener(listener);
+    return () => chrome.storage.onChanged.removeListener(listener);
   }
 
   /**

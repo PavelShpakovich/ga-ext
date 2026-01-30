@@ -2,6 +2,7 @@
 
 import { CorrectionResult, CorrectionStyle } from '@/shared/types';
 import { PROMPTS } from '@/core/prompt-templates';
+import { ModelCapabilityRegistry } from '@/core/services';
 
 export enum ProviderStatus {
   READY = 'ready',
@@ -22,12 +23,23 @@ export abstract class AIProvider {
 
   constructor(config: ProviderConfig = {}) {
     this.config = config;
+    // Initialize capability registry on first provider instance
+    ModelCapabilityRegistry.initialize().catch(() => {
+      // Silently ignore initialization errors
+    });
   }
 
   /**
    * Correct the given text with the specified style
+   * @param text Original text
+   * @param style Preferred writing style
+   * @param onPartialText Optional callback for streaming partial results
    */
-  abstract correct(text: string, style: CorrectionStyle): Promise<CorrectionResult>;
+  abstract correct(
+    text: string,
+    style: CorrectionStyle,
+    onPartialText?: (text: string) => void,
+  ): Promise<CorrectionResult>;
 
   /**
    * Unload the model to free up resources

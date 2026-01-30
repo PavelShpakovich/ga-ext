@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react';
-import { extractTextFromImage, OCRProgress } from '@/shared/utils/helpers';
+import { useState, useCallback, useEffect } from 'react';
+import { OCRProgress } from '@/shared/utils/helpers';
 import { Logger } from '@/core/services/Logger';
 import { useTranslation } from 'react-i18next';
 
@@ -9,6 +9,18 @@ export const useOCR = () => {
   const [progress, setProgress] = useState<OCRProgress | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // Listen for progress updates from offscreen
+  useEffect(() => {
+    const handleMessage = (message: any) => {
+      if (message.action === 'ocr-progress') {
+        setProgress(message.payload);
+      }
+    };
+
+    chrome.runtime.onMessage.addListener(handleMessage);
+    return () => chrome.runtime.onMessage.removeListener(handleMessage);
+  }, []);
+
   const processImage = useCallback(
     async (imageSource: File | string): Promise<string | null> => {
       setIsProcessing(true);
@@ -16,9 +28,28 @@ export const useOCR = () => {
       setProgress({ status: t('ocr.initializing'), progress: 0 });
 
       try {
-        const text = await extractTextFromImage(imageSource, (ocrProgress) => {
-          setProgress(ocrProgress);
+        let imageData = imageSource;
+
+        // If it's a File object, we need to convert to data URL for stable cross-process transmission
+        if (imageSource instanceof File) {
+          imageData = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(imageSource);
+          });
+        }
+
+        const response = await chrome.runtime.sendMessage({
+          action: 'run-ocr',
+          image: imageData,
         });
+
+        if (response.error) {
+          throw new Error(response.error);
+        }
+
+        const text = response.text;
 
         if (!text) {
           setError(t('ocr.no_text_found'));

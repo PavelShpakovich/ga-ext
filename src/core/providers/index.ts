@@ -9,10 +9,25 @@ export class ProviderFactory {
   // Switching models requires unloading the previous one first.
   private static activeInstance: WebLLMProvider | null = null;
   private static activeModelId: string | null = null;
+  private static idleTimer: ReturnType<typeof setTimeout> | null = null;
+  private static readonly IDLE_TIMEOUT = 10 * 60 * 1000; // 10 minutes
+
+  private static resetIdleTimer() {
+    if (this.idleTimer) {
+      clearTimeout(this.idleTimer);
+    }
+    this.idleTimer = setTimeout(async () => {
+      Logger.info('ProviderFactory', 'Idle timeout reached, unloading model to save memory');
+      await this.clearInstances();
+    }, this.IDLE_TIMEOUT);
+  }
 
   static createProvider(model?: string): WebLLMProvider {
     // If no model provided, use the constant default
     const targetModelId = model || DEFAULT_MODEL_ID;
+
+    // Reset idle timer on any request for a provider
+    this.resetIdleTimer();
 
     // Check if we already have this model active
     if (this.activeInstance && this.activeModelId === targetModelId) {

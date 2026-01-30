@@ -1,5 +1,6 @@
 import { Logger } from '@/core/services/Logger';
 import { STORAGE_KEYS } from '@/core/constants';
+import { Storage } from '@/core/services/StorageService';
 import i18n from '@/core/i18n';
 
 Logger.info('Background', 'Service worker started');
@@ -24,7 +25,7 @@ chrome.runtime.onInstalled.addListener(() => {
 });
 
 // Handle context menu clicks
-chrome.contextMenus.onClicked.addListener((info, tab) => {
+chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   if (info.menuItemId === 'grammar-assistant-correct' && tab?.id) {
     const selectedText = info.selectionText || '';
     Logger.debug('Background', 'Context menu clicked', { length: selectedText.length });
@@ -33,10 +34,10 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
     chrome.sidePanel.open({ tabId: tab.id });
 
     // Send selected text to side panel and flag auto-correct
-    chrome.storage.local.set({
-      [STORAGE_KEYS.PENDING_TEXT]: selectedText,
-      [STORAGE_KEYS.PENDING_AUTO_CORRECT]: true,
-    });
+    await Promise.all([
+      Storage.set(STORAGE_KEYS.PENDING_TEXT, selectedText),
+      Storage.set(STORAGE_KEYS.PENDING_AUTO_CORRECT, true),
+    ]);
   }
 });
 
@@ -46,7 +47,7 @@ chrome.commands.onCommand.addListener((command, tab) => {
     Logger.debug('Background', 'Keyboard shortcut triggered');
 
     // Request selected text from content script
-    chrome.tabs.sendMessage(tab.id, { action: 'getSelectedText' }, (response) => {
+    chrome.tabs.sendMessage(tab.id, { action: 'getSelectedText' }, async (response) => {
       // Always open SidePanel for better UX, even if no text selected
       if (tab.id) {
         chrome.sidePanel.open({ tabId: tab.id });
@@ -54,19 +55,17 @@ chrome.commands.onCommand.addListener((command, tab) => {
 
       if (response?.error === 'TOO_LONG') {
         Logger.debug('Background', 'Text too long, sending error to SidePanel');
-        chrome.storage.local.set({
-          [STORAGE_KEYS.PENDING_ERROR]: 'TOO_LONG',
-        });
+        await Storage.set(STORAGE_KEYS.PENDING_ERROR, 'TOO_LONG');
         return;
       }
 
       const text = response?.text;
 
       if (text) {
-        chrome.storage.local.set({
-          [STORAGE_KEYS.PENDING_TEXT]: text,
-          [STORAGE_KEYS.PENDING_AUTO_CORRECT]: true,
-        });
+        await Promise.all([
+          Storage.set(STORAGE_KEYS.PENDING_TEXT, text),
+          Storage.set(STORAGE_KEYS.PENDING_AUTO_CORRECT, true),
+        ]);
       } else {
         // Optional: Could send a message to the sidepanel to show "Select text first" hint
         Logger.debug('Background', 'No text selected from content script', response);
@@ -79,15 +78,35 @@ chrome.commands.onCommand.addListener((command, tab) => {
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   Logger.debug('Background', 'Message received', { action: message.action, fromTab: !!sender.tab });
 
+  if (message.action === 'run-ocr') {
+    (async () => {
+      try {
+        await setupOffscreen();
+        const response = await chrome.runtime.sendMessage({
+          action: 'ocr',
+          image: message.image,
+        });
+        sendResponse(response);
+      } catch (error) {
+        Logger.error('Background', 'OCR through offscreen failed', error);
+        sendResponse({ error: (error as Error).message });
+      }
+    })();
+    return true;
+  }
+
   if (message.action === 'openSidePanel') {
     // If message comes from a tab (content script), use that tab ID
     if (sender.tab?.id) {
       chrome.sidePanel.open({ tabId: sender.tab.id });
       if (message.text !== undefined) {
-        chrome.storage.local.set({
-          [STORAGE_KEYS.PENDING_TEXT]: message.text,
-          [STORAGE_KEYS.PENDING_AUTO_CORRECT]: !!message.autoRun,
+        Promise.all([
+          Storage.set(STORAGE_KEYS.PENDING_TEXT, message.text),
+          Storage.set(STORAGE_KEYS.PENDING_AUTO_CORRECT, !!message.autoRun),
+        ]).then(() => {
+          sendResponse({ success: true });
         });
+        return true;
       }
       sendResponse({ success: true });
     } else {
@@ -96,10 +115,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         if (tabs[0]?.id) {
           chrome.sidePanel.open({ tabId: tabs[0].id });
           if (message.text !== undefined) {
-            chrome.storage.local.set({
-              [STORAGE_KEYS.PENDING_TEXT]: message.text,
-              [STORAGE_KEYS.PENDING_AUTO_CORRECT]: !!message.autoRun,
+            Promise.all([
+              Storage.set(STORAGE_KEYS.PENDING_TEXT, message.text),
+              Storage.set(STORAGE_KEYS.PENDING_AUTO_CORRECT, !!message.autoRun),
+            ]).then(() => {
+              sendResponse({ success: true });
             });
+            return true;
           }
         }
         sendResponse({ success: true });
@@ -114,12 +136,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
     if (sender.tab?.id) {
       chrome.sidePanel.open({ tabId: sender.tab.id });
-      chrome.storage.local.set({ [STORAGE_KEYS.PENDING_MODEL_DOWNLOAD]: modelId });
+      Storage.set(STORAGE_KEYS.PENDING_MODEL_DOWNLOAD, modelId);
     } else {
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         if (tabs[0]?.id) {
           chrome.sidePanel.open({ tabId: tabs[0].id });
-          chrome.storage.local.set({ [STORAGE_KEYS.PENDING_MODEL_DOWNLOAD]: modelId });
+          Storage.set(STORAGE_KEYS.PENDING_MODEL_DOWNLOAD, modelId);
         }
       });
     }
@@ -127,3 +149,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   return true; // Keep channel open for async response
 });
+
+async function setupOffscreen() {
+  const OFFSCREEN_PATH = 'offscreen.html';
+
+  if (await chrome.offscreen.hasDocument()) {
+    return;
+  }
+
+  await chrome.offscreen.createDocument({
+    url: OFFSCREEN_PATH,
+    reasons: [chrome.offscreen.Reason.DOM_PARSER],
+    justification: 'Perform OCR tasks using Tesseract.js in a background-like environment',
+  });
+}

@@ -1,7 +1,6 @@
 import React from 'react';
 import { FileText, LucideIcon, Zap, FileCheck, GraduationCap, Coffee } from 'lucide-react';
 import { CorrectionStyle } from '@/shared/types';
-import { Button, ButtonVariant, ButtonSize } from '@/shared/components/Button';
 import { StyleButton } from '@/shared/components/ui';
 import { useTranslation } from 'react-i18next';
 

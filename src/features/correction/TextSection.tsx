@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import clsx from 'clsx';
-import { FileText, X, Wand2, RefreshCw, Image, Loader2 } from 'lucide-react';
+import { FileText, X, Wand2, RefreshCw, Image } from 'lucide-react';
 import { Card } from '@/shared/components/Card';
 import { IconButton, IconButtonVariant, IconButtonSize } from '@/shared/components/ui/IconButton';
 import { ImageUpload } from '@/shared/components/ui/ImageUpload';

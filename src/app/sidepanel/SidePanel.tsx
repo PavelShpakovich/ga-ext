@@ -68,7 +68,7 @@ const SidePanelContent: React.FC = () => {
   }, []);
   const { selectGroups, allModels, getModelInfo } = useModelSelection();
   const { downloadProgress, stopDownload } = useDownloadProgress();
-  const { runCorrection, step, error, result, reset } = useAI();
+  const { runCorrection, step, error, result, partialResult, reset } = useAI();
 
   const selectedModel = settings.selectedModel;
   const modelInfo = useMemo(() => getModelInfo(selectedModel), [selectedModel, getModelInfo]);
@@ -79,8 +79,6 @@ const SidePanelContent: React.FC = () => {
     isDeleting ||
     isRemovingModel ||
     isCheckingCache;
-
-  const isModelLoading = !!(downloadProgress || isPrefetching || step === ExecutionStep.PREPARING_MODEL);
 
   const isResultStale = useMemo(() => {
     if (!result || !text.trim()) return false;
@@ -356,6 +354,7 @@ const SidePanelContent: React.FC = () => {
           title={t('ui.result_section')}
           reasoningLabel={t('ui.reasoning_label')}
           result={result}
+          partialResult={partialResult}
           onCopy={handleCopy}
           showDebug={showDebug}
           onToggleDebug={() => setShowDebug(!showDebug)}

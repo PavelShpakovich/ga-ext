@@ -8,6 +8,7 @@ module.exports = {
     'content-script': './src/app/content/index.ts',
     popup: './src/app/popup/index.tsx',
     sidepanel: './src/app/sidepanel/index.tsx',
+    offscreen: './src/app/offscreen/index.ts',
   },
   output: {
     path: path.resolve(__dirname, 'dist'),
@@ -54,6 +55,11 @@ module.exports = {
       template: './src/app/sidepanel/sidepanel.html',
       filename: 'sidepanel.html',
       chunks: ['sidepanel'],
+    }),
+    new HtmlWebpackPlugin({
+      template: './src/app/offscreen/offscreen.html',
+      filename: 'offscreen.html',
+      chunks: ['offscreen'],
     }),
     new CopyWebpackPlugin({
       patterns: [
