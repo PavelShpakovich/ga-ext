@@ -223,6 +223,7 @@ const SidePanelContent: React.FC = () => {
       } catch (err: unknown) {
         const errorMessage = err instanceof Error ? err.message : String(err);
         Logger.error('SidePanel', 'Correction error', { error: errorMessage });
+        showToast(errorMessage, 'error');
       }
     },
     [text, isBusy, t, settings.correctionLanguage, showToast, runCorrection, selectedModel, settings.selectedStyle],

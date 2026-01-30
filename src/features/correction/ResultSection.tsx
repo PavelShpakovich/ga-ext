@@ -54,7 +54,7 @@ export const ResultSection: React.FC<ResultSectionProps> = ({
 
       {!result && partialResult && (
         <Card title={title} icon={<ArrowRight className='w-3.5 h-3.5' />} className='animate-pulse'>
-          <div className='bg-blue-50/10 dark:bg-blue-500/5 border border-blue-100/20 dark:border-blue-500/5 rounded-2xl p-5 text-sm text-slate-500 dark:text-slate-400 whitespace-pre-wrap leading-loose shadow-sm selection:bg-blue-200 dark:selection:bg-blue-700 min-h-25'>
+          <div className='bg-blue-50/10 dark:bg-blue-500/5 border border-blue-100/20 dark:border-blue-500/5 rounded-2xl p-5 text-sm text-slate-500 dark:text-slate-400 whitespace-pre-wrap leading-loose shadow-sm selection:bg-blue-200 dark:selection:bg-blue-700 min-h-25 max-h-96 overflow-y-auto custom-scrollbar'>
             {partialResult}
             <span className='inline-block w-1.5 h-4 ml-1 bg-blue-400 dark:bg-blue-600 animate-pulse align-middle' />
           </div>
@@ -95,7 +95,7 @@ export const ResultSection: React.FC<ResultSectionProps> = ({
                 </div>
               </div>
             ) : showDiff ? (
-              <div className='bg-blue-50/30 dark:bg-blue-500/5 border border-blue-100/30 dark:border-blue-500/10 rounded-2xl p-5 text-sm text-slate-800 dark:text-slate-100 whitespace-pre-wrap leading-loose shadow-sm selection:bg-blue-200 dark:selection:bg-blue-700 min-h-25 overflow-y-auto custom-scrollbar'>
+              <div className='bg-blue-50/30 dark:bg-blue-500/5 border border-blue-100/30 dark:border-blue-500/10 rounded-2xl p-5 text-sm text-slate-800 dark:text-slate-100 whitespace-pre-wrap leading-loose shadow-sm selection:bg-blue-200 dark:selection:bg-blue-700 min-h-25 max-h-96 overflow-y-auto custom-scrollbar'>
                 {diffParts.map((part, i) => (
                   <span
                     key={i}
@@ -111,7 +111,7 @@ export const ResultSection: React.FC<ResultSectionProps> = ({
                 ))}
               </div>
             ) : (
-              <div className='bg-blue-50/30 dark:bg-blue-500/5 border border-blue-100/30 dark:border-blue-500/10 rounded-2xl p-5 text-sm text-slate-800 dark:text-slate-100 whitespace-pre-wrap leading-loose shadow-sm selection:bg-blue-200 dark:selection:bg-blue-700 min-h-25 overflow-y-auto custom-scrollbar'>
+              <div className='bg-blue-50/30 dark:bg-blue-500/5 border border-blue-100/30 dark:border-blue-500/10 rounded-2xl p-5 text-sm text-slate-800 dark:text-slate-100 whitespace-pre-wrap leading-loose shadow-sm selection:bg-blue-200 dark:selection:bg-blue-700 min-h-25 max-h-96 overflow-y-auto custom-scrollbar'>
                 {result.corrected}
               </div>
             )}

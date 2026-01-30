@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { LanguageSelector, LanguageSelectorVariant } from './LanguageSelector';
 import { ThemeSelector } from '@/shared/components/ui';
 import { useTheme } from '@/shared/hooks/useTheme';
@@ -10,12 +10,8 @@ interface SidebarHeaderProps {
 }
 
 export const SidebarHeader: React.FC<SidebarHeaderProps> = ({ title, subtitle, isBusy = false }) => {
-  const { getEffectiveTheme } = useTheme();
-
-  const iconSrc = useMemo(() => {
-    const isLight = getEffectiveTheme() === 'light';
-    return chrome.runtime.getURL(`icons/icon128${isLight ? '-light' : ''}.png`);
-  }, [getEffectiveTheme]);
+  const { resolvedTheme } = useTheme();
+  const iconSrc = chrome.runtime.getURL(`icons/icon128${resolvedTheme === 'light' ? '-light' : ''}.png`);
 
   return (
     <header className='px-4 py-3 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-10 flex items-center justify-between transition-colors duration-500'>

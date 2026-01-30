@@ -165,7 +165,7 @@ export const TextSection: React.FC<TextSectionProps> = ({
 
       {inputMode === InputMode.TEXT ? (
         <div className='relative group'>
-          <div className={clsx(wrapperClass, 'overflow-hidden rounded-4xl')}>
+          <div className={clsx(wrapperClass, 'overflow-hidden rounded-2xl')}>
             <textarea
               className={textareaClass}
               value={text}

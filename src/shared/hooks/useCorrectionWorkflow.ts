@@ -95,6 +95,7 @@ export const useCorrectionWorkflow = (
       } catch (err: unknown) {
         const errorMessage = err instanceof Error ? err.message : String(err);
         Logger.error('CorrectionWorkflow', 'Correction error', { error: errorMessage });
+        callbacks.showToast(errorMessage, 'error');
       }
     },
     [text, selectedModel, settings, runCorrection, callbacks, refs, t],

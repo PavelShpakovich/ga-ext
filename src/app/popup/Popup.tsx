@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState, useMemo } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Sparkles, ShieldCheck, Zap } from 'lucide-react';
 import { Button, ButtonVariant } from '@/shared/components/Button';
 import { Alert, AlertVariant } from '@/shared/components/ui/Alert';
@@ -9,14 +9,10 @@ import { useTheme } from '@/shared/hooks/useTheme';
 
 const Popup: React.FC = () => {
   const { t } = useTranslation();
-  const { getEffectiveTheme } = useTheme();
+  const { resolvedTheme } = useTheme();
   const [hasWebGPU, setHasWebGPU] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
-
-  const iconSrc = useMemo(() => {
-    const isLight = getEffectiveTheme() === 'light';
-    return chrome.runtime.getURL(`icons/icon128${isLight ? '-light' : ''}.png`);
-  }, [getEffectiveTheme]);
+  const iconSrc = chrome.runtime.getURL(`icons/icon128${resolvedTheme === 'light' ? '-light' : ''}.png`);
 
   useEffect(() => {
     isWebGPUAvailable().then(setHasWebGPU);

@@ -23,8 +23,13 @@ Operational Rules:
    - Use \\n for line breaks (never literal newlines)
    - Never use unescaped single or double quotes within JSON string values
 6. FIELD NAMES: Use lowercase "corrected" for the improved text field. Use lowercase "explanation" for the improvements array.
-7. COMPACTNESS: Provide at most 5-6 major improvements in the explanation array to avoid verbosity.
-8. VALIDATION: Your response MUST be valid JSON that can be parsed by JSON.parse().
+7. EXPLANATION BREVITY: Each explanation item MUST be 1-2 sentences maximum (10-20 words). Be extremely concise.
+   - Bad: "Changed 'I don't' to 'I don't' (contraction)" - too wordy
+   - Good: "Added contraction: I don't"
+   - Bad: "Changed 'why are you comparing' to 'why you're comparing' (contraction)" - repetitive
+   - Good: "Contraction: 'why you're'"
+8. COMPACTNESS: Provide at most 5-6 major improvements in the explanation array to avoid verbosity.
+9. VALIDATION: Your response MUST be valid JSON that can be parsed by JSON.parse().
 
 JSON Schema (STRICTLY FOLLOW):
 {
@@ -81,8 +86,9 @@ Apply the following style guideline: {style}
    - Никогда не используйте неэкранированные кавычки внутри значений JSON
 6. НАЗВАНИЯ ПОЛЕЙ: Используйте строчные "corrected" и "explanation".
 7. ЯЗЫК: ВЕСЬ ТЕКСТ внутри JSON (включая объяснения) должен быть на РУССКОМ языке.
-8. ЛАКОНИЧНОСТЬ: Ограничьтесь максимум 5-6 пунктами в массиве explanation. Избегайте повторений.
-9. ВАЛИДАЦИЯ: Ваш ответ ДОЛЖЕН быть валидным JSON, парсируемым JSON.parse().
+8. КРАТКОСТЬ ОБЪЯСНЕНИЙ: Каждое объяснение МАКСИМУМ 1-2 предложения (10-20 слов). Избегайте пояснений в скобках и повторений.
+9. ЛАКОНИЧНОСТЬ: Ограничьтесь максимум 5-6 пунктами в массиве explanation. Избегайте повторений.
+10. ВАЛИДАЦИЯ: Ваш ответ ДОЛЖЕН быть валидным JSON, парсируемым JSON.parse().
 
 JSON Schema (СТРОГО СЛЕДОВАТЬ):
 {
@@ -139,8 +145,9 @@ Reglas Operacionales:
    - Nunca uses comillas sin escapar dentro de valores JSON
 6. NOMBRES DE CAMPOS: Usa minúsculas "corrected" y "explanation".
 7. IDIOMA: TODO el contenido del JSON (incluyendo explicaciones) debe estar en ESPAÑOL.
-8. CONCISIÓN: Limita el array de "explanation" a un máximo de 5-6 puntos clave para evitar verbosidad.
-9. VALIDACIÓN: Tu respuesta DEBE ser JSON válido que pueda ser parseado por JSON.parse().
+8. BREVEDAD DE EXPLICACIONES: Cada explicación MÁXIMO 1-2 oraciones (10-20 palabras). Evita paréntesis y repeticiones.
+9. CONCISIÓN: Limita el array de "explanation" a un máximo de 5-6 puntos clave para evitar verbosidad.
+10. VALIDACIÓN: Tu respuesta DEBE ser JSON válido que pueda ser parseado por JSON.parse().
 
 JSON Schema (SEGUIR ESTRICTAMENTE):
 {
@@ -197,8 +204,9 @@ Betriebsregeln:
    - Nie unescapedquotes innerhalb von JSON-Werten
 6. FELDNAMEN: Verwende Kleinbuchstaben "corrected" und "explanation".
 7. SPRACHE: Der GESAMTE Inhalt des JSON (inklusive Erklärungen) muss auf DEUTSCH sein.
-8. PRÄGNANZ: Begrenzen Sie das "explanation" Array auf maximal 5-6 Punkte. Vermeiden Sie Wiederholungen.
-9. VALIDIERUNG: Ihre Antwort MUSS gültiges JSON sein, das von JSON.parse() geparst werden kann.
+8. KÜRZE DER ERKLÄRUNGEN: Jede Erklärung MAXIMAL 1-2 Sätze (10-20 Wörter). Keine Klammern oder Wiederholungen.
+9. PRÄGNANZ: Begrenzen Sie das "explanation" Array auf maximal 5-6 Punkte. Vermeiden Sie Wiederholungen.
+10. VALIDIERUNG: Ihre Antwort MUSS gültiges JSON sein, das von JSON.parse() geparst werden kann.
 
 JSON Schema (STRENG EINHALTEN):
 {
@@ -250,6 +258,14 @@ Règles Opérationnelles:
 3. CONTRAINTES: Évitez la verbosité inutile. Conservez la longueur originale (±20%).
 4. SORTIE: Retournez UNIQUEMENT du JSON valide. Pas de commentaires, pas de blocs de code markdown.
 5. FORMATAGE JSON: Toutes les chaînes correctement échappées:
+   - Échappez les guillemets doubles internes comme \\"
+   - Utilisez \\n pour les sauts de ligne (jamais littéraux)
+   - Ne jamais utiliser de guillemets non échappés dans les valeurs JSON
+6. NOMS DE CHAMPS: Utilisez des minuscules "corrected" et "explanation".
+7. LANGUE: TOUT le contenu du JSON (y compris les explications) doit être en FRANÇAIS.
+8. BRIÈVETÉ DES EXPLICATIONS: Chaque explication MAXIMUM 1-2 phrases (10-20 mots). Évitez les parenthèses et répétitions.
+9. CONCISION: Limitez le tableau "explanation" à 5-6 points maximum pour éviter la verbosité.
+10. VALIDATION: Votre réponse DOIT être du JSON valide qui peut être analysé par JSON.parse().
    - Échappez les guillemets doubles internes comme \\"
    - Utilisez \\n pour les sauts de ligne (jamais littéraux)
    - Ne jamais utiliser de guillemets non échappés dans les valeurs JSON

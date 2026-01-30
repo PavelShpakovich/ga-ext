@@ -72,8 +72,8 @@ export const STORAGE_KEYS = {
   PENDING_AUTO_CORRECT: 'pendingAutoCorrect',
 } as const;
 
-export const MAX_TEXT_LENGTH = 6000; // ~1500 tokens (aligned with 2048 context window)
-export const DIFF_MAX_TEXT_LENGTH = 10000; // Skip diff for very large texts for performance
+export const MAX_TEXT_LENGTH = 10000; // ~2500 tokens (aligned with 4096+ context window, leaves room for corrections + explanations)
+export const DIFF_MAX_TEXT_LENGTH = 15000; // Skip diff for very large texts for performance
 
 // Timeout constants
 export const AUTO_HIDE_MESSAGE_DELAY = 3500;
