@@ -18,6 +18,7 @@ const DEFAULT_SETTINGS: Settings = {
   selectedModel: DEFAULT_MODEL_ID,
   selectedStyle: CorrectionStyle.STANDARD,
   language: DEFAULT_LANGUAGE,
+  correctionLanguage: DEFAULT_LANGUAGE,
 };
 
 export class StorageService {

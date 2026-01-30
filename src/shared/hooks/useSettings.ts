@@ -13,6 +13,7 @@ export const useSettings = (): {
     selectedModel: DEFAULT_MODEL_ID,
     selectedStyle: CorrectionStyle.STANDARD,
     language: DEFAULT_LANGUAGE,
+    correctionLanguage: DEFAULT_LANGUAGE,
   });
   const [isLoading, setIsLoading] = useState(true);
 

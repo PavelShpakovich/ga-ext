@@ -1,0 +1,156 @@
+import { Language } from '@/shared/types';
+
+/**
+ * Compatibility level indicator for model language support
+ * - excellent: Native or near-native support
+ * - good: Strong support with minor issues
+ * - fair: Adequate support but may miss nuances
+ * - limited: Weak support, not recommended
+ */
+export enum CompatibilityLevel {
+  EXCELLENT = 'excellent',
+  GOOD = 'good',
+  FAIR = 'fair',
+  LIMITED = 'limited',
+}
+
+export interface ModelLanguageCompatibility {
+  modelId: string;
+  language: Language;
+  level: CompatibilityLevel;
+  notes?: string;
+}
+
+/**
+ * Compatibility level color values for UI display
+ * Matches Tailwind color palette
+ */
+const COMPATIBILITY_COLORS = {
+  [CompatibilityLevel.EXCELLENT]: '#10b981', // emerald-500
+  [CompatibilityLevel.GOOD]: '#3b82f6',      // blue-500
+  [CompatibilityLevel.FAIR]: '#f59e0b',      // amber-500
+  [CompatibilityLevel.LIMITED]: '#ef4444',   // red-500
+} as const;
+
+/**
+ * Language compatibility matrix for different models
+ * Based on model training data and multilingual capabilities
+ */
+const COMPATIBILITY_MATRIX: readonly ModelLanguageCompatibility[] = [
+  // Qwen2.5-7B-Instruct - Best overall multilingual support
+  { modelId: 'Qwen2.5-7B-Instruct-q4f16_1-MLC', language: Language.EN, level: CompatibilityLevel.EXCELLENT, notes: 'Native English support' },
+  { modelId: 'Qwen2.5-7B-Instruct-q4f16_1-MLC', language: Language.RU, level: CompatibilityLevel.EXCELLENT, notes: 'Excellent Russian grammar support' },
+  { modelId: 'Qwen2.5-7B-Instruct-q4f16_1-MLC', language: Language.ES, level: CompatibilityLevel.EXCELLENT, notes: 'Strong Spanish support' },
+  { modelId: 'Qwen2.5-7B-Instruct-q4f16_1-MLC', language: Language.DE, level: CompatibilityLevel.EXCELLENT, notes: 'Strong German cases/grammar' },
+  { modelId: 'Qwen2.5-7B-Instruct-q4f16_1-MLC', language: Language.FR, level: CompatibilityLevel.GOOD, notes: 'Good French support' },
+  { modelId: 'Qwen2.5-7B-Instruct-q4f16_1-MLC', language: Language.JA, level: CompatibilityLevel.GOOD, notes: 'Decent Japanese support' },
+
+  // Qwen2.5-3B-Instruct - Good multilingual
+  { modelId: 'Qwen2.5-3B-Instruct-q4f16_1-MLC', language: Language.EN, level: CompatibilityLevel.EXCELLENT, notes: 'Strong English' },
+  { modelId: 'Qwen2.5-3B-Instruct-q4f16_1-MLC', language: Language.RU, level: CompatibilityLevel.GOOD, notes: 'Good Russian support' },
+  { modelId: 'Qwen2.5-3B-Instruct-q4f16_1-MLC', language: Language.ES, level: CompatibilityLevel.GOOD, notes: 'Good Spanish support' },
+  { modelId: 'Qwen2.5-3B-Instruct-q4f16_1-MLC', language: Language.DE, level: CompatibilityLevel.GOOD, notes: 'Good German support' },
+  { modelId: 'Qwen2.5-3B-Instruct-q4f16_1-MLC', language: Language.FR, level: CompatibilityLevel.FAIR, notes: 'Adequate French' },
+  { modelId: 'Qwen2.5-3B-Instruct-q4f16_1-MLC', language: Language.JA, level: CompatibilityLevel.FAIR, notes: 'Limited Japanese' },
+
+  // Qwen3-4B - Best reasoning
+  { modelId: 'Qwen3-4B-q4f16_1-MLC', language: Language.EN, level: CompatibilityLevel.EXCELLENT, notes: 'Excellent reasoning' },
+  { modelId: 'Qwen3-4B-q4f16_1-MLC', language: Language.RU, level: CompatibilityLevel.GOOD, notes: 'Good with complex grammar' },
+  { modelId: 'Qwen3-4B-q4f16_1-MLC', language: Language.ES, level: CompatibilityLevel.GOOD, notes: 'Good Spanish' },
+  { modelId: 'Qwen3-4B-q4f16_1-MLC', language: Language.DE, level: CompatibilityLevel.GOOD, notes: 'Good German' },
+  { modelId: 'Qwen3-4B-q4f16_1-MLC', language: Language.FR, level: CompatibilityLevel.FAIR, notes: 'Fair French' },
+  { modelId: 'Qwen3-4B-q4f16_1-MLC', language: Language.JA, level: CompatibilityLevel.FAIR, notes: 'Limited Japanese' },
+
+  // DeepSeek-R1-Distill-Llama-8B - Large model
+  { modelId: 'DeepSeek-R1-Distill-Llama-8B-q4f16_1-MLC', language: Language.EN, level: CompatibilityLevel.EXCELLENT, notes: 'Excellent reasoning' },
+  { modelId: 'DeepSeek-R1-Distill-Llama-8B-q4f16_1-MLC', language: Language.RU, level: CompatibilityLevel.GOOD, notes: 'Good Russian' },
+  { modelId: 'DeepSeek-R1-Distill-Llama-8B-q4f16_1-MLC', language: Language.ES, level: CompatibilityLevel.GOOD, notes: 'Good Spanish' },
+  { modelId: 'DeepSeek-R1-Distill-Llama-8B-q4f16_1-MLC', language: Language.DE, level: CompatibilityLevel.GOOD, notes: 'Good German' },
+  { modelId: 'DeepSeek-R1-Distill-Llama-8B-q4f16_1-MLC', language: Language.FR, level: CompatibilityLevel.FAIR, notes: 'Fair French' },
+  { modelId: 'DeepSeek-R1-Distill-Llama-8B-q4f16_1-MLC', language: Language.JA, level: CompatibilityLevel.FAIR, notes: 'Limited Japanese' },
+
+  // Gemma-2-9B-it - Large model, English-focused
+  { modelId: 'gemma-2-9b-it-q4f16_1-MLC', language: Language.EN, level: CompatibilityLevel.EXCELLENT, notes: 'Native English' },
+  { modelId: 'gemma-2-9b-it-q4f16_1-MLC', language: Language.RU, level: CompatibilityLevel.FAIR, notes: 'Limited Russian' },
+  { modelId: 'gemma-2-9b-it-q4f16_1-MLC', language: Language.ES, level: CompatibilityLevel.FAIR, notes: 'Limited Spanish' },
+  { modelId: 'gemma-2-9b-it-q4f16_1-MLC', language: Language.DE, level: CompatibilityLevel.FAIR, notes: 'Limited German' },
+  { modelId: 'gemma-2-9b-it-q4f16_1-MLC', language: Language.FR, level: CompatibilityLevel.FAIR, notes: 'Limited French' },
+  { modelId: 'gemma-2-9b-it-q4f16_1-MLC', language: Language.JA, level: CompatibilityLevel.LIMITED, notes: 'Weak Japanese' },
+];
+
+/**
+ * Registry for model-language compatibility information
+ * Provides methods to query compatibility levels, colors, and labels for different model-language pairs
+ * 
+ * @example
+ * const level = LanguageCompatibilityRegistry.getCompatibility('modelId', Language.EN);
+ * const color = LanguageCompatibilityRegistry.getCompatibilityColor(level);
+ */
+export class LanguageCompatibilityRegistry {
+  /**
+   * Get compatibility level for a specific model and language
+   */
+  static getCompatibility(modelId: string, language: Language): CompatibilityLevel {
+    const compat = COMPATIBILITY_MATRIX.find(
+      (c) => c.modelId === modelId && c.language === language
+    );
+    return compat?.level || CompatibilityLevel.FAIR;
+  }
+
+  /**
+   * Get all compatibility info for a language
+   */
+  static getLanguageCompatibilities(language: Language): ModelLanguageCompatibility[] {
+    return COMPATIBILITY_MATRIX.filter((c) => c.language === language).sort(
+      (a, b) => {
+        const levelOrder = {
+          [CompatibilityLevel.EXCELLENT]: 0,
+          [CompatibilityLevel.GOOD]: 1,
+          [CompatibilityLevel.FAIR]: 2,
+          [CompatibilityLevel.LIMITED]: 3,
+        };
+        return levelOrder[a.level] - levelOrder[b.level];
+      }
+    );
+  }
+
+  /**
+   * Get best models for a specific language (excellent + good)
+   */
+  static getBestModelsForLanguage(language: Language): string[] {
+    return COMPATIBILITY_MATRIX.filter(
+      (c) => c.language === language && (c.level === CompatibilityLevel.EXCELLENT || c.level === CompatibilityLevel.GOOD)
+    )
+      .map((c) => c.modelId)
+      .filter((id, idx, arr) => arr.indexOf(id) === idx);
+  }
+
+  /**
+   * Get notes for model-language combination
+   */
+  static getCompatibilityNotes(modelId: string, language: Language): string | undefined {
+    return COMPATIBILITY_MATRIX.find(
+      (c) => c.modelId === modelId && c.language === language
+    )?.notes;
+  }
+
+  /**
+   * Get color for compatibility badge
+   */
+  static getCompatibilityColor(level: CompatibilityLevel): string {
+    return COMPATIBILITY_COLORS[level] || '#6b7280';
+  }
+
+  /**
+   * Get label for compatibility level
+   */
+  static getCompatibilityLabel(level: CompatibilityLevel): string {
+    const labels: Record<CompatibilityLevel, string> = {
+      [CompatibilityLevel.EXCELLENT]: 'Excellent',
+      [CompatibilityLevel.GOOD]: 'Good',
+      [CompatibilityLevel.FAIR]: 'Fair',
+      [CompatibilityLevel.LIMITED]: 'Limited',
+    };
+    return labels[level] || 'Unknown';
+  }
+}

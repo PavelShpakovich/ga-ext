@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { ProviderFactory } from '@/core/providers';
-import { CorrectionResult, CorrectionStyle, ExecutionStep, Language } from '@/shared/types';
+import { CorrectionResult, CorrectionStyle, ExecutionStep } from '@/shared/types';
 import { Logger } from '@/core/services';
 import { useTranslation } from 'react-i18next';
 import { isWebGPUAvailable } from '@/shared/utils/helpers';
@@ -53,7 +53,7 @@ export const useAI = (): {
         const correctionResult = await aiProvider.correct(
           text,
           style,
-          settings.language,
+          settings.correctionLanguage,
           (partial) => {
             setPartialResult(partial);
           },

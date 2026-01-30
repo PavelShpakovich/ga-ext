@@ -45,7 +45,7 @@ export const useOCR = () => {
         const response = await chrome.runtime.sendMessage({
           action: 'run-ocr',
           image: imageData,
-          language: settings.language,
+          language: settings.correctionLanguage,
         });
 
         if (response.error) {
@@ -71,7 +71,7 @@ export const useOCR = () => {
         setProgress(null);
       }
     },
-    [t, settings.language],
+    [t, settings.correctionLanguage],
   );
 
   const reset = useCallback(() => {

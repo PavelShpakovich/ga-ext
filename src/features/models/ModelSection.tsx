@@ -10,6 +10,8 @@ import { TextButton, TextButtonVariant } from '@/shared/components/ui/TextButton
 import { normalizeDownloadProgress } from '@/shared/utils/helpers';
 import { ModelOption, ExecutionStep, ModelProgress } from '@/shared/types';
 import { useTranslation } from 'react-i18next';
+import { useSettings } from '@/shared/hooks/useSettings';
+import { LanguageCompatibilityBadge } from '@/features/models/LanguageCompatibilityBadge';
 
 interface ModelSectionProps {
   selectedModel: string;
@@ -47,6 +49,7 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
   title,
 }) => {
   const { t } = useTranslation();
+  const { settings } = useSettings();
   const normalizedProgress = downloadProgress ? normalizeDownloadProgress(downloadProgress.progress) : 0;
 
   return (
@@ -60,7 +63,19 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
           className='text-sm font-medium py-3 rounded-xl'
         />
 
-        {modelInfo && <ModelInfoCard model={modelInfo} />}
+        {modelInfo && (
+          <div className='space-y-3'>
+            <ModelInfoCard model={modelInfo} />
+            <div className='flex items-center justify-between px-1'>
+              <span className='text-xs font-semibold text-slate-600 dark:text-slate-400'>Language Support</span>
+              <LanguageCompatibilityBadge
+                modelId={selectedModel}
+                language={settings.correctionLanguage}
+                showLabel={true}
+              />
+            </div>
+          </div>
+        )}
 
         <div className='flex gap-3'>
           {isCheckingCache ? (

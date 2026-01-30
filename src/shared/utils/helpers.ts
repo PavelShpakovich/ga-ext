@@ -83,7 +83,7 @@ const preflightAssets = async (paths: AssetPaths): Promise<void> => {
   await check(paths.trainedDataUrl);
 };
 
-const createTesseractWorker = async (paths: AssetPaths, _onProgress?: (m: OCRProgress) => void) => {
+const createTesseractWorker = async (_paths: AssetPaths, _onProgress?: (m: OCRProgress) => void) => {
   throw new Error('OCR processing has moved to offscreen document. Use useOCR hook instead.');
 };
 

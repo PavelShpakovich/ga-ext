@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { Language } from '@/shared/types';
 import { LANGUAGE_CONFIG } from '@/core/constants';
 import { Select } from '@/shared/components/ui/Select';
@@ -7,19 +6,20 @@ import { changeLanguage } from '@/core/i18n';
 import { useSettings } from '@/shared/hooks/useSettings';
 
 export const LanguageSelector: React.FC = () => {
-  const { t } = useTranslation();
   const { settings, updateSettings, isLoading } = useSettings();
-  const [selectedLanguage, setSelectedLanguage] = useState<Language>(Language.EN);
+  const [uiLanguage, setUiLanguage] = useState<Language>(Language.EN);
+  const [correctionLanguage, setCorrectionLanguage] = useState<Language>(Language.EN);
 
   useEffect(() => {
     if (!isLoading) {
-      setSelectedLanguage(settings.language);
+      setUiLanguage(settings.language);
+      setCorrectionLanguage(settings.correctionLanguage);
     }
-  }, [settings.language, isLoading]);
+  }, [settings.language, settings.correctionLanguage, isLoading]);
 
-  const handleLanguageChange = async (language: string) => {
+  const handleUiLanguageChange = async (language: string) => {
     const newLanguage = language as Language;
-    setSelectedLanguage(newLanguage);
+    setUiLanguage(newLanguage);
 
     try {
       // Update i18n
@@ -28,9 +28,23 @@ export const LanguageSelector: React.FC = () => {
       // Update settings which will be persisted
       await updateSettings({ language: newLanguage });
     } catch (error) {
-      console.error('Failed to change language:', error);
+      console.error('Failed to change UI language:', error);
       // Revert on error
-      setSelectedLanguage(settings.language);
+      setUiLanguage(settings.language);
+    }
+  };
+
+  const handleCorrectionLanguageChange = async (language: string) => {
+    const newLanguage = language as Language;
+    setCorrectionLanguage(newLanguage);
+
+    try {
+      // Update settings which will be persisted
+      await updateSettings({ correctionLanguage: newLanguage });
+    } catch (error) {
+      console.error('Failed to change correction language:', error);
+      // Revert on error
+      setCorrectionLanguage(settings.correctionLanguage);
     }
   };
 
@@ -44,12 +58,26 @@ export const LanguageSelector: React.FC = () => {
   }));
 
   return (
-    <Select
-      options={languageOptions}
-      value={selectedLanguage}
-      onChange={handleLanguageChange}
-      className="w-full"
-    />
+    <div className="space-y-4">
+      <div>
+        <label className="block text-sm font-medium mb-2">UI Language</label>
+        <Select
+          options={languageOptions}
+          value={uiLanguage}
+          onChange={handleUiLanguageChange}
+          className="w-full"
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium mb-2">Text Correction Language</label>
+        <Select
+          options={languageOptions}
+          value={correctionLanguage}
+          onChange={handleCorrectionLanguageChange}
+          className="w-full"
+        />
+      </div>
+    </div>
   );
 };
 

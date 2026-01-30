@@ -74,7 +74,8 @@ export interface CorrectionResult {
 export interface Settings {
   selectedModel: string;
   selectedStyle: CorrectionStyle;
-  language: Language;
+  language: Language; // UI language
+  correctionLanguage: Language; // Language of text being corrected
 }
 
 export enum InputMode {
