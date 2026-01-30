@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import clsx from 'clsx';
+import { ChevronDown } from 'lucide-react';
+import { IconButton, IconButtonVariant, IconButtonSize } from './ui/IconButton';
 
 interface CardProps {
   children: React.ReactNode;
@@ -8,18 +10,51 @@ interface CardProps {
   badge?: React.ReactNode;
   icon?: React.ReactNode;
   actions?: React.ReactNode;
+  collapsible?: boolean;
+  defaultCollapsed?: boolean;
 }
 
-export const Card: React.FC<CardProps> = ({ children, className, title, badge, icon, actions }) => {
+export const Card: React.FC<CardProps> = ({
+  children,
+  className,
+  title,
+  badge,
+  icon,
+  actions,
+  collapsible,
+  defaultCollapsed = false,
+}) => {
+  const [isCollapsed, setIsCollapsed] = useState(collapsible ? defaultCollapsed : false);
+  const [hasInteracted, setHasInteracted] = useState(false);
+
+  // Auto-collapse if the model becomes cached after initial load
+  // but only if the user hasn't manually toggled it yet
+  React.useEffect(() => {
+    if (collapsible && !hasInteracted) {
+      setIsCollapsed(defaultCollapsed);
+    }
+  }, [defaultCollapsed, collapsible, hasInteracted]);
+
+  const toggleCollapse = useCallback(() => {
+    if (collapsible) {
+      setIsCollapsed((prev) => !prev);
+      setHasInteracted(true);
+    }
+  }, [collapsible]);
+
   return (
     <div
       className={clsx(
-        'bg-white dark:bg-gray-850 rounded-2xl p-4 shadow-sm border border-gray-200 dark:border-gray-800 transition-all duration-200',
+        'bg-white dark:bg-gray-850 rounded-2xl p-4 shadow-sm border border-gray-200 dark:border-gray-800 transition-all duration-300',
         className,
       )}
     >
-      {(title || badge || icon || actions) && (
-        <div className='flex justify-between items-center mb-3 px-0.5'>
+      {(title || badge || icon || actions || collapsible) && (
+        <div
+          className={clsx('flex justify-between items-center px-0.5', !isCollapsed && 'mb-3')}
+          onClick={collapsible ? toggleCollapse : undefined}
+          style={{ cursor: collapsible ? 'pointer' : 'default' }}
+        >
           <div className='flex items-center gap-2.5'>
             {icon && <div className='text-gray-400 dark:text-gray-500'>{icon}</div>}
             {title && (
@@ -28,13 +63,39 @@ export const Card: React.FC<CardProps> = ({ children, className, title, badge, i
               </h3>
             )}
           </div>
-          <div className='flex items-center gap-1'>
+          <div className='flex items-center gap-2'>
             {badge && <div className='animate-in fade-in duration-500'>{badge}</div>}
-            {actions && <div className='flex items-center gap-1'>{actions}</div>}
+            <div className='flex items-center gap-1'>
+              {actions && <div className='flex items-center gap-1'>{actions}</div>}
+              {collapsible && (
+                <IconButton
+                  icon={
+                    <ChevronDown
+                      size={14}
+                      className={clsx('transition-transform duration-300', isCollapsed && '-rotate-90')}
+                    />
+                  }
+                  variant={IconButtonVariant.GHOST}
+                  size={IconButtonSize.XS}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleCollapse();
+                  }}
+                  className='text-slate-400'
+                />
+              )}
+            </div>
           </div>
         </div>
       )}
-      <div className='relative'>{children}</div>
+      <div
+        className={clsx(
+          'relative transition-all duration-300 overflow-hidden',
+          isCollapsed ? 'max-h-0 opacity-0' : 'max-h-screen opacity-100',
+        )}
+      >
+        {children}
+      </div>
     </div>
   );
 };
