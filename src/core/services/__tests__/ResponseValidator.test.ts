@@ -294,7 +294,8 @@ Line 2",
 
       const result = ResponseValidator.validate(withLongText, 'original');
       expect(result.isValid).toBe(true);
-      expect(result.parsed?.corrected?.length).toBe(5000);
+      expect(typeof result.parsed?.corrected).toBe('string');
+      expect((result.parsed?.corrected as string).length).toBe(5000);
     });
 
     it('should handle user error message format from the issue', () => {

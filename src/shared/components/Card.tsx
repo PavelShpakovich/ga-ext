@@ -35,20 +35,23 @@ export const Card: React.FC<CardProps> = ({
   return (
     <div
       className={clsx(
-        'bg-white dark:bg-gray-850 rounded-2xl p-4 shadow-sm border border-gray-200 dark:border-gray-800 transition-all duration-300',
+        'bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-800 transition-all duration-300',
         className,
       )}
     >
       {(title || badge || icon || actions || collapsible) && (
         <div
-          className={clsx('flex justify-between items-center px-0.5', !isCollapsed && 'mb-3')}
+          className={clsx(
+            'flex justify-between items-center px-0.5',
+            !isCollapsed && 'mb-3',
+            collapsible ? 'cursor-pointer' : 'cursor-default',
+          )}
           onClick={collapsible ? toggleCollapse : undefined}
-          style={{ cursor: collapsible ? 'pointer' : 'default' }}
         >
           <div className='flex items-center gap-2.5'>
-            {icon && <div className='text-gray-400 dark:text-gray-500'>{icon}</div>}
+            {icon && <div className='text-slate-400 dark:text-slate-500'>{icon}</div>}
             {title && (
-              <h3 className='text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest'>
+              <h3 className='text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest'>
                 {title}
               </h3>
             )}

@@ -22,9 +22,9 @@ export const TextButton: React.FC<TextButtonProps> = ({
 
   const variantStyles: Record<TextButtonVariant, string> = {
     [TextButtonVariant.DEFAULT]:
-      'text-slate-400 hover:text-blue-500 dark:hover:text-blue-400 focus-visible:ring-blue-500/30',
+      'text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 focus-visible:ring-blue-500/30',
     [TextButtonVariant.DANGER]:
-      'text-slate-300 hover:text-red-500 dark:hover:text-red-400 focus-visible:ring-red-500/30',
+      'text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 focus-visible:ring-red-500/30',
   };
 
   return (

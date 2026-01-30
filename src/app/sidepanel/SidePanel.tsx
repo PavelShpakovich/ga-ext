@@ -130,7 +130,7 @@ const SidePanelContent: React.FC = () => {
     if (mismatchDetected && mismatchDetected === settings.correctionLanguage) {
       setMismatchDetected(null);
     }
-  }, [settings.correctionLanguage]);
+  }, [settings.correctionLanguage, mismatchDetected]);
 
   const modelOptions = selectGroups.length
     ? selectGroups

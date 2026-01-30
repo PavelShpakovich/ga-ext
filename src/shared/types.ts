@@ -1,5 +1,12 @@
 // Core types for the simplified grammar assistant
 
+// Theme preference (light/dark/system)
+export enum Theme {
+  LIGHT = 'light',
+  DARK = 'dark',
+  SYSTEM = 'system',
+}
+
 // Supported languages for correction and UI
 export enum Language {
   EN = 'en',

@@ -25,6 +25,15 @@ export const SUPPORTED_MODELS = [
     category: ModelCategory.PRO,
     description: 'Top-tier for technical documentation and non-English text.',
   },
+  {
+    id: 'Hermes-3-Llama-3.1-8B-q4f16_1-MLC',
+    name: 'Hermes 3 8B (Pro)',
+    family: 'Meta/NousResearch',
+    size: '4.76GB',
+    speed: ModelSpeed.MEDIUM,
+    category: ModelCategory.PRO,
+    description: 'Optimized for structured text correction with detailed reasoning.',
+  },
 
   // --- Balanced (Standard) ---
   {
@@ -36,26 +45,14 @@ export const SUPPORTED_MODELS = [
     category: ModelCategory.STANDARD,
     description: 'Balanced choice for fixing errors while preserving meaning.',
   },
-
-  // --- Reasoning (DeepThink) ---
-
   {
-    id: 'Qwen3-4B-q4f16_1-MLC',
-    name: 'Qwen 3 4B (DeepThink)',
-    family: 'Alibaba',
-    size: '2.27GB',
-    speed: ModelSpeed.MEDIUM,
-    category: ModelCategory.REASONING,
-    description: 'Advanced Qwen 3 reasoning model for complex analysis and sophisticated style refinement.',
-  },
-  {
-    id: 'DeepSeek-R1-Distill-Llama-8B-q4f16_1-MLC',
-    name: 'DeepSeek R1 Llama 8B (DeepThink)',
-    family: 'DeepSeek',
-    size: '4.31GB',
-    speed: ModelSpeed.MEDIUM,
-    category: ModelCategory.REASONING,
-    description: 'Powerful reasoning capabilities for nuanced grammar and style improvements.',
+    id: 'Mistral-7B-Instruct-v0.2-q4f16_1-MLC',
+    name: 'Mistral 7B (Standard)',
+    family: 'Mistral',
+    size: '4.46GB',
+    speed: ModelSpeed.FAST,
+    category: ModelCategory.STANDARD,
+    description: 'Fast and efficient model balancing speed and quality.',
   },
 ] as const;
 

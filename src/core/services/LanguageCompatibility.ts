@@ -35,8 +35,43 @@ const COMPATIBILITY_COLORS = {
 /**
  * Language compatibility matrix for different models
  * Based on model training data and multilingual capabilities
+ * Updated to match SUPPORTED_MODELS from constants.ts
  */
 const COMPATIBILITY_MATRIX: readonly ModelLanguageCompatibility[] = [
+  // --- PRO MODELS ---
+
+  // Gemma-2-9B-it - Large model, English-focused
+  {
+    modelId: 'gemma-2-9b-it-q4f16_1-MLC',
+    language: Language.EN,
+    level: CompatibilityLevel.EXCELLENT,
+    notes: 'Native English - elite quality',
+  },
+  {
+    modelId: 'gemma-2-9b-it-q4f16_1-MLC',
+    language: Language.RU,
+    level: CompatibilityLevel.FAIR,
+    notes: 'Limited Russian support',
+  },
+  {
+    modelId: 'gemma-2-9b-it-q4f16_1-MLC',
+    language: Language.ES,
+    level: CompatibilityLevel.FAIR,
+    notes: 'Limited Spanish support',
+  },
+  {
+    modelId: 'gemma-2-9b-it-q4f16_1-MLC',
+    language: Language.DE,
+    level: CompatibilityLevel.FAIR,
+    notes: 'Limited German support',
+  },
+  {
+    modelId: 'gemma-2-9b-it-q4f16_1-MLC',
+    language: Language.FR,
+    level: CompatibilityLevel.FAIR,
+    notes: 'Limited French support',
+  },
+
   // Qwen2.5-7B-Instruct - Best overall multilingual support
   {
     modelId: 'Qwen2.5-7B-Instruct-q4f16_1-MLC',
@@ -60,7 +95,7 @@ const COMPATIBILITY_MATRIX: readonly ModelLanguageCompatibility[] = [
     modelId: 'Qwen2.5-7B-Instruct-q4f16_1-MLC',
     language: Language.DE,
     level: CompatibilityLevel.EXCELLENT,
-    notes: 'Strong German cases/grammar',
+    notes: 'Strong German cases and grammar',
   },
   {
     modelId: 'Qwen2.5-7B-Instruct-q4f16_1-MLC',
@@ -69,12 +104,46 @@ const COMPATIBILITY_MATRIX: readonly ModelLanguageCompatibility[] = [
     notes: 'Good French support',
   },
 
+  // Hermes-3-Llama-3.1-8B - Structured text optimization
+  {
+    modelId: 'Hermes-3-Llama-3.1-8B-q4f16_1-MLC',
+    language: Language.EN,
+    level: CompatibilityLevel.EXCELLENT,
+    notes: 'Excellent for structured English text',
+  },
+  {
+    modelId: 'Hermes-3-Llama-3.1-8B-q4f16_1-MLC',
+    language: Language.RU,
+    level: CompatibilityLevel.GOOD,
+    notes: 'Good Russian support with reasoning',
+  },
+  {
+    modelId: 'Hermes-3-Llama-3.1-8B-q4f16_1-MLC',
+    language: Language.ES,
+    level: CompatibilityLevel.GOOD,
+    notes: 'Good Spanish support',
+  },
+  {
+    modelId: 'Hermes-3-Llama-3.1-8B-q4f16_1-MLC',
+    language: Language.DE,
+    level: CompatibilityLevel.GOOD,
+    notes: 'Good German support',
+  },
+  {
+    modelId: 'Hermes-3-Llama-3.1-8B-q4f16_1-MLC',
+    language: Language.FR,
+    level: CompatibilityLevel.FAIR,
+    notes: 'Fair French support',
+  },
+
+  // --- STANDARD MODELS ---
+
   // Qwen2.5-3B-Instruct - Good multilingual
   {
     modelId: 'Qwen2.5-3B-Instruct-q4f16_1-MLC',
     language: Language.EN,
     level: CompatibilityLevel.EXCELLENT,
-    notes: 'Strong English',
+    notes: 'Strong English - recommended',
   },
   {
     modelId: 'Qwen2.5-3B-Instruct-q4f16_1-MLC',
@@ -98,88 +167,39 @@ const COMPATIBILITY_MATRIX: readonly ModelLanguageCompatibility[] = [
     modelId: 'Qwen2.5-3B-Instruct-q4f16_1-MLC',
     language: Language.FR,
     level: CompatibilityLevel.FAIR,
-    notes: 'Adequate French',
+    notes: 'Fair French support',
   },
 
-  // Qwen3-4B - Best reasoning
+  // Mistral-7B-Instruct - Efficient multilingual
   {
-    modelId: 'Qwen3-4B-q4f16_1-MLC',
+    modelId: 'Mistral-7B-Instruct-v0.2-q4f16_1-MLC',
     language: Language.EN,
     level: CompatibilityLevel.EXCELLENT,
-    notes: 'Excellent reasoning',
+    notes: 'Strong English',
   },
   {
-    modelId: 'Qwen3-4B-q4f16_1-MLC',
+    modelId: 'Mistral-7B-Instruct-v0.2-q4f16_1-MLC',
     language: Language.RU,
     level: CompatibilityLevel.GOOD,
-    notes: 'Good with complex grammar',
-  },
-  { modelId: 'Qwen3-4B-q4f16_1-MLC', language: Language.ES, level: CompatibilityLevel.GOOD, notes: 'Good Spanish' },
-  { modelId: 'Qwen3-4B-q4f16_1-MLC', language: Language.DE, level: CompatibilityLevel.GOOD, notes: 'Good German' },
-  { modelId: 'Qwen3-4B-q4f16_1-MLC', language: Language.FR, level: CompatibilityLevel.FAIR, notes: 'Fair French' },
-
-  // DeepSeek-R1-Distill-Llama-8B - Large model
-  {
-    modelId: 'DeepSeek-R1-Distill-Llama-8B-q4f16_1-MLC',
-    language: Language.EN,
-    level: CompatibilityLevel.EXCELLENT,
-    notes: 'Excellent reasoning',
+    notes: 'Good Russian support',
   },
   {
-    modelId: 'DeepSeek-R1-Distill-Llama-8B-q4f16_1-MLC',
-    language: Language.RU,
-    level: CompatibilityLevel.GOOD,
-    notes: 'Good Russian',
-  },
-  {
-    modelId: 'DeepSeek-R1-Distill-Llama-8B-q4f16_1-MLC',
+    modelId: 'Mistral-7B-Instruct-v0.2-q4f16_1-MLC',
     language: Language.ES,
-    level: CompatibilityLevel.GOOD,
-    notes: 'Good Spanish',
+    level: CompatibilityLevel.EXCELLENT,
+    notes: 'Strong Spanish support',
   },
   {
-    modelId: 'DeepSeek-R1-Distill-Llama-8B-q4f16_1-MLC',
+    modelId: 'Mistral-7B-Instruct-v0.2-q4f16_1-MLC',
     language: Language.DE,
     level: CompatibilityLevel.GOOD,
-    notes: 'Good German',
+    notes: 'Good German support',
   },
   {
-    modelId: 'DeepSeek-R1-Distill-Llama-8B-q4f16_1-MLC',
+    modelId: 'Mistral-7B-Instruct-v0.2-q4f16_1-MLC',
     language: Language.FR,
-    level: CompatibilityLevel.FAIR,
-    notes: 'Fair French',
-  },
-
-  // Gemma-2-9B-it - Large model, English-focused
-  {
-    modelId: 'gemma-2-9b-it-q4f16_1-MLC',
-    language: Language.EN,
-    level: CompatibilityLevel.EXCELLENT,
-    notes: 'Native English',
-  },
-  {
-    modelId: 'gemma-2-9b-it-q4f16_1-MLC',
-    language: Language.RU,
-    level: CompatibilityLevel.FAIR,
-    notes: 'Limited Russian',
-  },
-  {
-    modelId: 'gemma-2-9b-it-q4f16_1-MLC',
-    language: Language.ES,
-    level: CompatibilityLevel.FAIR,
-    notes: 'Limited Spanish',
-  },
-  {
-    modelId: 'gemma-2-9b-it-q4f16_1-MLC',
-    language: Language.DE,
-    level: CompatibilityLevel.FAIR,
-    notes: 'Limited German',
-  },
-  {
-    modelId: 'gemma-2-9b-it-q4f16_1-MLC',
-    language: Language.FR,
-    level: CompatibilityLevel.FAIR,
-    notes: 'Limited French',
+    level: CompatibilityLevel.GOOD,
+    notes: 'Good French support',
   },
 ];
 

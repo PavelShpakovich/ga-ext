@@ -5,6 +5,33 @@ All notable changes to Grammar Assistant will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-01-31
+
+### Added
+
+- **Theme System**: Implemented light/dark/system theme switching with localStorage persistence and cross-tab synchronization
+- **Theme-Aware Icons**: Added light variant icon (`icon128-light.png`) for light theme display in header and popup
+- **Single-Button Theme Selector**: Created cycle-based theme toggle button in header for seamless theme switching
+- **Enhanced Dark Mode Support**: Comprehensive dark mode styling across all UI components (Toast, TextButton, Card, etc.)
+- **Language Compatibility Matrix**: Expanded and aligned compatibility data for all 5 supported models
+
+### Changed
+
+- **Model Lineup**: Removed Llama 3.2 1B model - now focused on 5 high-quality models (3 Pro, 2 Standard)
+- **JSON Output Validation**: Strengthened prompt templates with explicit escaping rules to prevent JSON parsing errors
+- **Language Compatibility**: Updated compatibility levels for remaining models based on real-world performance data
+- **Prompt Templates**: Enhanced all 5 language prompts (EN, RU, ES, DE, FR) with stricter JSON validation guidelines
+- **Icon Selection**: Dynamic icon selection based on theme preference in both header and popup
+
+### Removed
+
+- **Llama 3.2 1B Model**: Removed from constants, locale files, and compatibility matrix due to lower output quality
+
+### Fixed
+
+- **Dark Mode Text Contrast**: Fixed TextButton and Toast dark mode visibility issues
+- **Card Dark Colors**: Corrected invalid Tailwind colors (gray-850 → slate-900)
+
 ## [0.3.0] - 2026-01-30
 
 ### Added

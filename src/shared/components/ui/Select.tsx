@@ -38,6 +38,8 @@ export const Select: React.FC<SelectProps> = ({
       disabled={disabled}
       title={title}
       className={`w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 rounded-2xl focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/10 focus-visible:border-blue-500 transition-all dark:text-slate-100 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-[13px] font-medium appearance-none ${className}`}
+      // Note: SVG background is necessary here since native <select> elements cannot use Tailwind background-image
+      // This is the recommended approach for styling native select dropdowns
       style={{
         backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
         backgroundRepeat: 'no-repeat',

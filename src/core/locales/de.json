@@ -1,4 +1,13 @@
 {
+  "theme": {
+    "light": "Hell",
+    "dark": "Dunkel",
+    "system": "System",
+    "toggle": "Design wechseln"
+  },
+  "common": {
+    "click_to_cycle": "Klicken zum Wechseln"
+  },
   "ui": {
     "title": "Grammatik-Assistent",
     "subtitle": "Lokale Ausführung (WebGPU)",
@@ -105,17 +114,9 @@
     "unparseable_output_detail": "Das Modell hat ein fehlerhaftes Format geliefert. Versuchen Sie ein anderes Modell oder einen anderen Stil."
   },
   "models": {
-    "language_support": "Sprachunterstützung",
-    "compatibility": {
-      "excellent": "Exzellent",
-      "good": "Gut",
-      "fair": "Mittel",
-      "limited": "Begrenzt"
-    },
     "category": {
       "pro": "Professional (Leistungsstark)",
       "standard": "Standard (Ausgewogen)",
-      "reasoning": "DeepThink (Logik)",
       "available": "Verfügbare Modelle"
     },
     "speed": {
@@ -126,9 +127,17 @@
     "descriptions": {
       "gemma-2-9b-it-q4f16_1-MLC": "Ideal für komplexe Umschreibungen und tiefe strukturelle Änderungen.",
       "Qwen2.5-7B-Instruct-q4f16_1-MLC": "Spezialist für mehrsprachige Grammatik und technische Dokumente.",
+      "Hermes-3-Llama-3.1-8B-q4f16_1-MLC": "Experte bei der Befolgung von Anweisungen und strukturierten Korrektionen.",
       "Qwen2.5-3B-Instruct-q4f16_1-MLC": "Ausgewogene Wahl: Fehlerkorrektur bei Beibehaltung Ihres Stils.",
-      "Qwen3-4B-q4f16_1-MLC": "Erweitertes Logikmodell für komplexe Analysen und Stilverbesserungen.",
-      "DeepSeek-R1-Distill-Llama-8B-q4f16_1-MLC": "Starke Analysefähigkeiten für nuancierte Grammatikkorrekturen."
+      "Mistral-7B-Instruct-v0.2-q4f16_1-MLC": "Schnelles und fähiges Modell für alltägliche Korrektionen."
+    },
+    "language_support": "Sprachunterstützung",
+    "compatibility": {
+      "excellent": "Exzellent",
+      "good": "Gut",
+      "fair": "Mittel",
+      "limited": "Begrenzt",
+      "unknown": "Unbekannt"
     }
   },
   "errors": {

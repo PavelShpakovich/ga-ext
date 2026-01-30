@@ -18,14 +18,18 @@ Operational Rules:
 2. POLISH: If text is high-quality, perform subtle refinements to improve naturalness and flow.
 3. CONSTRAINTS: Avoid unnecessary verbosity or creative rewriting. Maintain the original length (±20%).
 4. OUTPUT: Return ONLY valid JSON. No commentary, no markdown code fences, no introductory text.
-5. JSON FORMATTING: Ensure all strings are properly escaped. No literal newlines inside string values. Use \\n for line breaks.
+5. JSON FORMATTING: Ensure all strings are properly escaped:
+   - Escape double quotes inside strings as \\"
+   - Use \\n for line breaks (never literal newlines)
+   - Never use unescaped single or double quotes within JSON string values
 6. FIELD NAMES: Use lowercase "corrected" for the improved text field. Use lowercase "explanation" for the improvements array.
 7. COMPACTNESS: Provide at most 5-6 major improvements in the explanation array to avoid verbosity.
+8. VALIDATION: Your response MUST be valid JSON that can be parsed by JSON.parse().
 
 JSON Schema (STRICTLY FOLLOW):
 {
-  "corrected": "string (the improved text, all newlines must be escaped as \\\\n)",
-  "explanation": ["string (brief, objective change description 1)", "string (change 2)", "..."]
+  "corrected": "string with all quotes properly escaped",
+  "explanation": ["brief change 1", "brief change 2", "..."]
 }`,
 
     user: `### Task
@@ -71,15 +75,19 @@ Apply the following style guideline: {style}
 2. ПОЛИРОВКА: Если текст высокого качества, выполните тонкие улучшения для естественности потока.
 3. ОГРАНИЧЕНИЯ: Избегайте ненужного многословия. Сохраняйте исходную длину (±20%).
 4. ВЫВОД: Возвращайте ТОЛЬКО валидный JSON. Без комментариев, без markdown блоков кода.
-5. JSON ФОРМАТИРОВАНИЕ: Все строки должны быть корректно экранированы. Буквальные переносы строк внутри значений запрещены. Используйте \\n для разрывов строк.
+5. JSON ФОРМАТИРОВАНИЕ: Все строки должны быть корректно экранированы:
+   - Экранируйте двойные кавычки внутри строк как \\"
+   - Используйте \\n для разрывов строк (никогда буквальные переносы)
+   - Никогда не используйте неэкранированные кавычки внутри значений JSON
 6. НАЗВАНИЯ ПОЛЕЙ: Используйте строчные "corrected" и "explanation".
 7. ЯЗЫК: ВЕСЬ ТЕКСТ внутри JSON (включая объяснения) должен быть на РУССКОМ языке.
 8. ЛАКОНИЧНОСТЬ: Ограничьтесь максимум 5-6 пунктами в массиве explanation. Избегайте повторений.
+9. ВАЛИДАЦИЯ: Ваш ответ ДОЛЖЕН быть валидным JSON, парсируемым JSON.parse().
 
 JSON Schema (СТРОГО СЛЕДОВАТЬ):
 {
-  "corrected": "string (улучшенный текст, переносы как \\\\n)",
-  "explanation": ["string (краткое описание изменения 1)", "string (изменение 2)", "..."]
+  "corrected": "string со всеми правильно экранированными кавычками",
+  "explanation": ["краткое описание изменения 1", "краткое описание изменения 2", "..."]
 }`,
 
     user: `### Задача
@@ -125,15 +133,19 @@ Reglas Operacionales:
 2. PULIR: Si el texto es de alta calidad, realiza refinamientos sutiles para mejorar naturalidad y fluidez.
 3. RESTRICCIONES: Evita verbosidad innecesaria. Mantén la longitud original (±20%).
 4. SALIDA: Retorna SOLO JSON válido. Sin comentarios, sin bloques de código markdown.
-5. FORMATO JSON: Todas las cadenas escapadas correctamente. Sin saltos de línea literales dentro de valores. Usa \\n.
+5. FORMATO JSON: Todas las cadenas escapadas correctamente:
+   - Escapa las comillas dobles dentro de cadenas como \\"
+   - Usa \\n para saltos de línea (nunca literales)
+   - Nunca uses comillas sin escapar dentro de valores JSON
 6. NOMBRES DE CAMPOS: Usa minúsculas "corrected" y "explanation".
 7. IDIOMA: TODO el contenido del JSON (incluyendo explicaciones) debe estar en ESPAÑOL.
 8. CONCISIÓN: Limita el array de "explanation" a un máximo de 5-6 puntos clave para evitar verbosidad.
+9. VALIDACIÓN: Tu respuesta DEBE ser JSON válido que pueda ser parseado por JSON.parse().
 
 JSON Schema (SEGUIR ESTRICTAMENTE):
 {
-  "corrected": "string (texto mejorado, saltos de línea como \\\\n)",
-  "explanation": ["string (descripción breve de cambio 1)", "string (cambio 2)", "..."]
+  "corrected": "string con todas las comillas correctamente escapadas",
+  "explanation": ["descripción breve de cambio 1", "descripción breve de cambio 2", "..."]
 }`,
 
     user: `### Tarea
@@ -179,15 +191,19 @@ Betriebsregeln:
 2. OPTIMIEREN: Wenn Text hochwertig ist, führe subtile Verbesserungen für Natürlichkeit und Fluss durch.
 3. EINSCHRÄNKUNGEN: Vermeidung unnötiger Weitschweifigkeit. Behalte die ursprüngliche Länge bei (±20%).
 4. AUSGABE: Gib NUR gültiges JSON zurück. Keine Kommentare, keine Markdown-Codeblöcke.
-5. JSON-FORMATIERUNG: Stellen Sie sicher, dass alle Zeichenketten korrekt escaped sind. Keine wörtlichen Zeilenumbrüche in Werten. Nutze \\n für Zeilenumbrüche.
+5. JSON-FORMATIERUNG: Alle Zeichenketten korrekt escaped:
+   - Escapezeichenketten innere Anführungszeichen als \\"
+   - Nutze \\n für Zeilenumbrüche (nie wörtliche)
+   - Nie unescapedquotes innerhalb von JSON-Werten
 6. FELDNAMEN: Verwende Kleinbuchstaben "corrected" und "explanation".
 7. SPRACHE: Der GESAMTE Inhalt des JSON (inklusive Erklärungen) muss auf DEUTSCH sein.
 8. PRÄGNANZ: Begrenzen Sie das "explanation" Array auf maximal 5-6 Punkte. Vermeiden Sie Wiederholungen.
+9. VALIDIERUNG: Ihre Antwort MUSS gültiges JSON sein, das von JSON.parse() geparst werden kann.
 
 JSON Schema (STRENG EINHALTEN):
 {
-  "corrected": "string (verbesserter Text, Umbrüche als \\\\n)",
-  "explanation": ["string (kurze Beschreibung der Änderung 1)", "string (Änderung 2)", "..."]
+  "corrected": "string mit allen korrekt escapedten Anführungszeichen",
+  "explanation": ["kurze Beschreibung der Änderung 1", "kurze Beschreibung der Änderung 2", "..."]
 }`,
 
     user: `### Aufgabe
@@ -233,15 +249,19 @@ Règles Opérationnelles:
 2. POLIR: Si le texte est de haute qualité, effectuez des raffinements subtils pour améliorer la fluidité.
 3. CONTRAINTES: Évitez la verbosité inutile. Conservez la longueur originale (±20%).
 4. SORTIE: Retournez UNIQUEMENT du JSON valide. Pas de commentaires, pas de blocs de code markdown.
-5. FORMATAGE JSON: Assurez-vous que toutes les chaînes sont correctement échappées. Pas de sauts de ligne littéraux dans les valeurs. Utilisez \\n pour les sauts de ligne.
+5. FORMATAGE JSON: Toutes les chaînes correctement échappées:
+   - Échappez les guillemets doubles internes comme \\"
+   - Utilisez \\n pour les sauts de ligne (jamais littéraux)
+   - Ne jamais utiliser de guillemets non échappés dans les valeurs JSON
 6. NOMS DE CHAMPS: Utilisez des minuscules "corrected" et "explanation".
 7. LANGUE: TOUT le contenu du JSON (y compris les explications) doit être en FRANÇAIS.
 8. CONCISION: Limitez le tableau "explanation" à 5-6 points maximum pour éviter la verbosité.
+9. VALIDATION: Votre réponse DOIT être du JSON valide qui peut être analysé par JSON.parse().
 
 JSON Schema (SUIVRE STRICTEMENT):
 {
-  "corrected": "string (texte amélioré, sauts de ligne en tant que \\\\n)",
-  "explanation": ["string (description brève du changement 1)", "string (changement 2)", "..."]
+  "corrected": "string avec tous les guillemets correctement échappés",
+  "explanation": ["description brève du changement 1", "description brève du changement 2", "..."]
 }`,
 
     user: `### Tâche

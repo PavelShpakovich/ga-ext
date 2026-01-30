@@ -1,17 +1,22 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import { Sparkles, ShieldCheck, Zap } from 'lucide-react';
 import { Button, ButtonVariant } from '@/shared/components/Button';
 import { Alert, AlertVariant } from '@/shared/components/ui/Alert';
 import { Badge, BadgeVariant } from '@/shared/components/ui/Badge';
 import { isWebGPUAvailable } from '@/shared/utils/helpers';
 import { useTranslation } from 'react-i18next';
-import { useSettings } from '@/shared/hooks/useSettings';
+import { useTheme } from '@/shared/hooks/useTheme';
 
 const Popup: React.FC = () => {
   const { t } = useTranslation();
-  const { settings } = useSettings();
+  const { getEffectiveTheme } = useTheme();
   const [hasWebGPU, setHasWebGPU] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+
+  const iconSrc = useMemo(() => {
+    const isLight = getEffectiveTheme() === 'light';
+    return chrome.runtime.getURL(`icons/icon128${isLight ? '-light' : ''}.png`);
+  }, [getEffectiveTheme]);
 
   useEffect(() => {
     isWebGPUAvailable().then(setHasWebGPU);
@@ -68,11 +73,7 @@ const Popup: React.FC = () => {
       <header className='px-5 py-4 flex items-center justify-between'>
         <div className='flex items-center gap-2.5'>
           <div className='w-9 h-9 rounded-lg flex items-center justify-center overflow-hidden shadow-lg shadow-blue-500/10 border border-white dark:border-slate-800 transition-all'>
-            <img
-              src={chrome.runtime.getURL('icons/icon128.png')}
-              alt='Icon'
-              className='w-full h-full object-contain rounded-lg'
-            />
+            <img src={iconSrc} alt='Icon' className='w-full h-full object-contain rounded-lg' />
           </div>
           <div>
             <h1 className='text-[15px] font-bold tracking-tight text-slate-800 dark:text-white leading-none'>

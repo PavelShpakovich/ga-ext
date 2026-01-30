@@ -17,10 +17,11 @@ export interface ToastProps {
 }
 
 const variantStyles = {
-  success: 'bg-green-50 border-green-200 text-green-800',
-  error: 'bg-red-50 border-red-200 text-red-800',
-  warning: 'bg-yellow-50 border-yellow-200 text-yellow-800',
-  info: 'bg-blue-50 border-blue-200 text-blue-800',
+  success: 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-800 dark:text-green-300',
+  error: 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-800 dark:text-red-300',
+  warning:
+    'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800 text-yellow-800 dark:text-yellow-300',
+  info: 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-300',
 };
 
 const icons = {
@@ -67,14 +68,17 @@ export const Toast: React.FC<ToastProps> = ({
                 action.onClick();
                 onClose();
               }}
-              className='text-xs font-bold uppercase tracking-wider text-left hover:underline opacity-80'
+              className='text-xs font-bold uppercase tracking-wider text-left hover:underline opacity-80 dark:opacity-90'
             >
               {action.label}
             </button>
           )}
         </div>
-        <button onClick={onClose} className='p-1 hover:bg-black/5 rounded-full transition-colors cursor-pointer'>
-          <X className='w-4 h-4 opacity-60' />
+        <button
+          onClick={onClose}
+          className='p-1 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors cursor-pointer'
+        >
+          <X className='w-4 h-4 opacity-60 dark:opacity-70' />
         </button>
       </div>
     </div>,

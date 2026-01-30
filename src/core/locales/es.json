@@ -1,4 +1,13 @@
 {
+  "theme": {
+    "light": "Claro",
+    "dark": "Oscuro",
+    "system": "Sistema",
+    "toggle": "Cambiar tema"
+  },
+  "common": {
+    "click_to_cycle": "Haga clic para cambiar"
+  },
   "ui": {
     "title": "Asistente de Gramática",
     "subtitle": "Sesión local (WebGPU)",
@@ -105,17 +114,9 @@
     "unparseable_output_detail": "El modelo devolvió un formato incorrecto. Intenta con otro modelo o cambia el estilo."
   },
   "models": {
-    "language_support": "Soporte de idioma",
-    "compatibility": {
-      "excellent": "Excelente",
-      "good": "Bueno",
-      "fair": "Regular",
-      "limited": "Limitado"
-    },
     "category": {
       "pro": "Profesional (Avanzado)",
       "standard": "Estándar (Equilibrado)",
-      "reasoning": "DeepThink (Lógica)",
       "available": "Modelos disponibles"
     },
     "speed": {
@@ -126,9 +127,17 @@
     "descriptions": {
       "gemma-2-9b-it-q4f16_1-MLC": "Ideal para reescrituras complejas y cambios de estructura profunda.",
       "Qwen2.5-7B-Instruct-q4f16_1-MLC": "Especialista en gramática multilingüe y documentos técnicos.",
+      "Hermes-3-Llama-3.1-8B-q4f16_1-MLC": "Experto en seguimiento de instrucciones y correcciones estructuradas.",
       "Qwen2.5-3B-Instruct-q4f16_1-MLC": "Equilibrio entre corrección y fidelidad al sentido original.",
-      "Qwen3-4B-q4f16_1-MLC": "Modelo lógico avanzado para análisis complejo y mejoras de estilo.",
-      "DeepSeek-R1-Distill-Llama-8B-q4f16_1-MLC": "Gran capacidad de razonamiento para estructuras gramaticales complejas."
+      "Mistral-7B-Instruct-v0.2-q4f16_1-MLC": "Modelo rápido y capaz para correcciones cotidianas."
+    },
+    "language_support": "Soporte de idioma",
+    "compatibility": {
+      "excellent": "Excelente",
+      "good": "Bueno",
+      "fair": "Regular",
+      "limited": "Limitado",
+      "unknown": "Desconocido"
     }
   },
   "errors": {

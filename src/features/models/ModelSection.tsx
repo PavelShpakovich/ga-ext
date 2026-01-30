@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { Settings as SettingsIcon, Download, Check, Loader2, Trash2 } from 'lucide-react';
+import clsx from 'clsx';
 import { Card } from '@/shared/components/Card';
 import { Select } from '@/shared/components/ui/Select';
 import { Button, ButtonVariant } from '@/shared/components/Button';
@@ -113,27 +114,48 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
   }, [cacheState, t]);
 
   const badge = useMemo(() => {
-    if (cacheState === CacheStateEnum.CHECKING) {
-      return (
-        <div className='flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 animate-in fade-in zoom-in duration-300'>
-          {stateConfig.icon}
-          <span className='text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-tight'>
-            {stateConfig.label}
-          </span>
-        </div>
-      );
+    const badgeClasses: Record<CacheStateEnum, string> = {
+      [CacheStateEnum.CHECKING]: 'bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800',
+      [CacheStateEnum.READY]: 'bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800',
+      [CacheStateEnum.SYNCING]: 'bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800',
+      [CacheStateEnum.LOADING]: 'bg-orange-50 dark:bg-orange-900/20 border border-orange-100 dark:border-orange-800',
+      [CacheStateEnum.DOWNLOAD]: '',
+    };
+
+    const textClasses: Record<CacheStateEnum, string> = {
+      [CacheStateEnum.CHECKING]: 'text-blue-600 dark:text-blue-400',
+      [CacheStateEnum.READY]: 'text-emerald-600 dark:text-emerald-400',
+      [CacheStateEnum.SYNCING]: 'text-amber-600 dark:text-amber-400',
+      [CacheStateEnum.LOADING]: 'text-orange-600 dark:text-orange-400',
+      [CacheStateEnum.DOWNLOAD]: '',
+    };
+
+    const animationClasses: Record<CacheStateEnum, string> = {
+      [CacheStateEnum.CHECKING]: 'animate-in fade-in zoom-in duration-300',
+      [CacheStateEnum.READY]: 'animate-in fade-in duration-500',
+      [CacheStateEnum.SYNCING]: 'animate-in fade-in duration-300',
+      [CacheStateEnum.LOADING]: 'animate-in fade-in duration-300',
+      [CacheStateEnum.DOWNLOAD]: '',
+    };
+
+    if (cacheState === CacheStateEnum.DOWNLOAD) {
+      return null;
     }
-    if (cacheState === CacheStateEnum.READY) {
-      return (
-        <div className='flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 animate-in fade-in duration-500'>
-          {stateConfig.icon}
-          <span className='text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-tight'>
-            {stateConfig.label}
-          </span>
-        </div>
-      );
-    }
-    return null;
+
+    return (
+      <div
+        className={clsx(
+          'flex items-center gap-1.5 px-2 py-0.5 rounded-full',
+          badgeClasses[cacheState],
+          animationClasses[cacheState],
+        )}
+      >
+        {stateConfig.icon}
+        <span className={clsx('text-[10px] font-bold uppercase tracking-tight', textClasses[cacheState])}>
+          {stateConfig.label}
+        </span>
+      </div>
+    );
   }, [cacheState, stateConfig]);
 
   const renderActionArea = () => {
