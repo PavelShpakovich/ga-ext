@@ -1,6 +1,6 @@
 // Abstract AI Provider Interface
 
-import { CorrectionResult, CorrectionStyle } from '@/shared/types';
+import { CorrectionResult, CorrectionStyle, Language } from '@/shared/types';
 import { PROMPTS } from '@/core/prompt-templates';
 import { ModelCapabilityRegistry } from '@/core/services';
 
@@ -33,11 +33,13 @@ export abstract class AIProvider {
    * Correct the given text with the specified style
    * @param text Original text
    * @param style Preferred writing style
+   * @param language Language for context-specific corrections
    * @param onPartialText Optional callback for streaming partial results
    */
   abstract correct(
     text: string,
     style: CorrectionStyle,
+    language: Language,
     onPartialText?: (text: string) => void,
   ): Promise<CorrectionResult>;
 
@@ -68,8 +70,8 @@ export abstract class AIProvider {
   /**
    * Build the prompt for the AI model
    */
-  protected buildPrompt(text: string, style: CorrectionStyle): string {
-    const promptSet = PROMPTS.en;
+  protected buildPrompt(text: string, style: CorrectionStyle, language: Language): string {
+    const promptSet = PROMPTS[language] || PROMPTS[Language.EN];
     const styleStr = promptSet.styleInstructions[style] || promptSet.styleInstructions[CorrectionStyle.STANDARD];
 
     return promptSet.user.replace(/{style}/g, styleStr).replace(/{text}/g, text);
@@ -78,8 +80,8 @@ export abstract class AIProvider {
   /**
    * Get system prompt for the AI model
    */
-  protected getSystemPrompt(): string {
-    const promptSet = PROMPTS.en;
+  protected getSystemPrompt(language: Language): string {
+    const promptSet = PROMPTS[language] || PROMPTS[Language.EN];
 
     return promptSet.system;
   }

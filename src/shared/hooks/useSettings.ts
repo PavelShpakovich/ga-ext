@@ -50,14 +50,15 @@ export const useSettings = (): {
         loadedSettings.selectedStyle = CorrectionStyle.STANDARD;
       }
 
-      // Force English
-      loadedSettings.language = DEFAULT_LANGUAGE;
+      if (!loadedSettings.language) {
+        loadedSettings.language = DEFAULT_LANGUAGE;
+      }
 
       await Storage.updateSettings(loadedSettings);
 
       // Apply language to i18n
-      if (i18n.language !== DEFAULT_LANGUAGE) {
-        i18n.changeLanguage(DEFAULT_LANGUAGE);
+      if (i18n.language !== loadedSettings.language) {
+        await i18n.changeLanguage(loadedSettings.language);
       }
 
       setSettings(loadedSettings);
@@ -73,9 +74,9 @@ export const useSettings = (): {
     const prevSettings = settings;
     const newSettings = { ...settings, ...updates };
 
-    // Apply language change immediately if present
+    // Apply language change immediately to i18n if present
     if (updates.language && updates.language !== i18n.language) {
-      i18n.changeLanguage(updates.language);
+      await i18n.changeLanguage(updates.language);
     }
 
     setSettings(newSettings);
@@ -85,9 +86,9 @@ export const useSettings = (): {
       Logger.debug('useSettings', 'Settings updated', updates);
     } catch (error) {
       Logger.error('useSettings', 'Failed to save settings', error);
-      // Revert local state on failure
-      if (prevSettings.language && prevSettings.language !== i18n.language) {
-        i18n.changeLanguage(prevSettings.language);
+      // Revert local state and i18n on failure
+      if (prevSettings.language && updates.language && prevSettings.language !== i18n.language) {
+        await i18n.changeLanguage(prevSettings.language);
       }
       setSettings(prevSettings);
     }

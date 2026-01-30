@@ -10,6 +10,7 @@ import i18n from 'i18next';
 import {
   CorrectionResult,
   CorrectionStyle,
+  Language,
   ModelOption,
   ModelProgress,
   ModelProgressState,
@@ -333,6 +334,7 @@ export class WebLLMProvider extends AIProvider {
   async correct(
     text: string,
     style: CorrectionStyle = CorrectionStyle.FORMAL,
+    language: Language = Language.EN,
     onPartialText?: (text: string) => void,
   ): Promise<CorrectionResult> {
     await this.ensureReady();
@@ -340,9 +342,9 @@ export class WebLLMProvider extends AIProvider {
       throw new Error('Model not ready');
     }
 
-    const prompt = this.buildPrompt(text, style);
+    const prompt = this.buildPrompt(text, style, language);
     const messages: ChatCompletionMessageParam[] = [
-      { role: 'system', content: this.getSystemPrompt() },
+      { role: 'system', content: this.getSystemPrompt(language) },
       { role: 'user', content: prompt },
     ];
 

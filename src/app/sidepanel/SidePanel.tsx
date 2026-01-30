@@ -11,6 +11,7 @@ import { MAX_TEXT_LENGTH } from '@/core/constants';
 import { Logger } from '@/core/services/Logger';
 import { SidebarHeader } from '@/features/settings/SidebarHeader';
 import { StyleSelector } from '@/features/settings/StyleSelector';
+import { LanguageSelector } from '@/features/settings/LanguageSelector';
 import { ModelSection } from '@/features/models/ModelSection';
 import { TextSection } from '@/features/correction/TextSection';
 import { ResultSection } from '@/features/correction/ResultSection';
@@ -330,6 +331,8 @@ const SidePanelContent: React.FC = () => {
           onChange={handleStyleChange}
           disabled={isBusy || (!text.trim() && !!result)}
         />
+
+        <LanguageSelector />
 
         <TextSection
           title={t('ui.text_section')}

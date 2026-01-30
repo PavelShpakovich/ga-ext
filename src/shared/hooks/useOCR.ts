@@ -2,9 +2,11 @@ import { useState, useCallback, useEffect } from 'react';
 import { OCRProgress } from '@/shared/utils/helpers';
 import { Logger } from '@/core/services/Logger';
 import { useTranslation } from 'react-i18next';
+import { useSettings } from './useSettings';
 
 export const useOCR = () => {
   const { t } = useTranslation();
+  const { settings } = useSettings();
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState<OCRProgress | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -43,6 +45,7 @@ export const useOCR = () => {
         const response = await chrome.runtime.sendMessage({
           action: 'run-ocr',
           image: imageData,
+          language: settings.language,
         });
 
         if (response.error) {
@@ -68,7 +71,7 @@ export const useOCR = () => {
         setProgress(null);
       }
     },
-    [t],
+    [t, settings.language],
   );
 
   const reset = useCallback(() => {

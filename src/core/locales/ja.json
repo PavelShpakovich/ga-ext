@@ -1,0 +1,128 @@
+{
+  "ui": {
+    "title": "文法アシスタント",
+    "subtitle": "ローカル WebGPU セッション",
+    "model_section": "AI モデル",
+    "text_section": "ソーステキスト",
+    "result_section": "修正結果",
+    "text_placeholder": "入力開始またはコンテンツを貼り付け... (Cmd+Enter または Ctrl+Enter で実行)",
+    "empty_text_hint": "ここにテキストを貼り付けるか入力して開始します。Cmd+Enter (Mac) または Ctrl+Enter (Windows) を押して AI 修正を実行します。",
+    "reasoning_label": "改善と理由",
+    "syncing": "同期中...",
+    "loading": "読み込み中...",
+    "checking": "チェック中...",
+    "optimized_ready": "最適化完了",
+    "cache_offline": "オフライン用にキャッシュ",
+    "flush_cache": "モデルキャッシュをクリア",
+    "copy_result": "結果をコピー",
+    "mask_output": "エンジン出力を非表示",
+    "view_output": "エンジン出力を表示",
+    "context_menu_title": "文法アシスタントで修正",
+    "clear_all": "すべてクリア",
+    "update_results": "結果を更新",
+    "run_ai": "AI 修正を実行",
+    "purge_storage": "ストレージをすべて消去",
+    "engine_trace": "エンジン トレース",
+    "fault": "エラー",
+    "local": "ローカル",
+    "remote": "リモート",
+    "cancel_operation": "操作をキャンセル",
+    "confirm": "確認",
+    "cancel": "キャンセル",
+    "text": "テキスト",
+    "ocr": "OCR",
+    "show_diff": "変更を表示",
+    "show_corrected": "結果を表示"
+  },
+  "styles": {
+    "standard": "標準",
+    "formal": "正式",
+    "academic": "学術的",
+    "simple": "シンプル",
+    "casual": "カジュアル"
+  },
+  "settings": {
+    "correction_style": "修正スタイル",
+    "language": "言語"
+  },
+  "status": {
+    "ready": "準備完了",
+    "busy": "処理中...",
+    "analysing": "テキストを分析中...",
+    "preparing": "モデルを準備中...",
+    "downloading": "ダウンロード中...",
+    "halting": "実行停止",
+    "processing": "処理中...",
+    "syncing": "同期中..."
+  },
+  "messages": {
+    "model_synced": "モデルが同期されました",
+    "sync_failed": "同期に失敗しました",
+    "model_removed": "モデルが削除されました",
+    "removal_failed": "削除に失敗しました",
+    "cache_cleared": "キャッシュがクリアされました",
+    "cache_failed": "キャッシュのクリアに失敗しました",
+    "copied": "クリップボードにコピー",
+    "download_cancelled": "ダウンロードがキャンセルされました",
+    "provide_text": "修正するテキストを入力してください。",
+    "model_failed_load": "モデルの読み込みに失敗しました。再度ダウンロードしてください。",
+    "correction_failed": "修正に失敗しました",
+    "confirm_remove_model": "このモデルをローカルディスクから削除しますか？",
+    "confirm_clear_cache": "これによってダウンロード済みの すべてのモデルが削除されます。続行しますか？",
+    "no_engine_trace": "利用可能なトレースはありません",
+    "webgpu_not_available": "WebGPU は利用できません。ローカル AI を使用するには、ブラウザの設定でハードウェアアクセラレーションを有効にしてください。",
+    "privacy_note": "プライバシー第一 • サーバーにデータが送信されません",
+    "no_changes": "変更は不要です"
+  },
+  "popup": {
+    "local_session": "ローカル セッション",
+    "webgpu": "WebGPU",
+    "launch": "アシスタントを起動",
+    "privacy_title": "テキストはプライベートのままです",
+    "privacy_description": "データはデバイスを離れません。すべてブラウザ内でローカルに実行されます。",
+    "speed_title": "超高速",
+    "speed_description": "GPU で高速化され、インターネットなしで瞬時に修正します。"
+  },
+  "error": {
+    "something_wrong": "問題が発生しました",
+    "unexpected": "予期しないエラーが発生しました。",
+    "reload": "拡張機能をリロード",
+    "model_not_ready": "モデルの準備ができていません",
+    "invalid_json": "無効な JSON レスポンス",
+    "could_not_parse": "モデルの出力形式を解析できませんでした。",
+    "unparseable_output_detail": "選択したモデルが無効な形式を返しました。これは小さなモデルまたは特定のスタイルでよく発生します。リストから別のモデルを選択してください。"
+  },
+  "models": {
+    "category": {
+      "pro": "プロフェッショナル (大規模)",
+      "standard": "標準 (バランス型)",
+      "reasoning": "DeepThink (推論)",
+      "available": "利用可能なモデル"
+    },
+    "speed": {
+      "fast": "高速",
+      "medium": "中速",
+      "slow": "低速"
+    },
+    "descriptions": {
+      "gemma-2-9b-it-q4f16_1-MLC": "複雑な言い換え、深いスタイル変更、段落の再構成に最適。",
+      "Qwen2.5-7B-Instruct-q4f16_1-MLC": "多言語文法と技術ドキュメントの専門家。",
+      "Qwen2.5-3B-Instruct-q4f16_1-MLC": "元の意味を保持しながらエラーを修正するバランス型オプション。",
+      "Qwen3-4B-q4f16_1-MLC": "複雑な分析とニュアンスのあるスタイル改善のための高度な推論モデル。",
+      "DeepSeek-R1-Distill-Llama-8B-q4f16_1-MLC": "ニュアンスのある文法とスタイルの改善のための強力な推論機能。"
+    }
+  },
+  "errors": {
+    "content_too_long": "コンテンツが長すぎます。修正する特定のテキストを選択してください。"
+  },
+  "ocr": {
+    "initializing": "OCR を初期化中...",
+    "processing": "画像を処理中...",
+    "no_text_found": "画像にテキストが見つかりません",
+    "processing_failed": "画像の処理に失敗しました",
+    "upload_image": "画像をアップロード",
+    "upload_placeholder": "ここに画像をドラッグしてドロップするか、クリックして選択するか、⌘V (Mac) または Ctrl+V (Windows) を押してクリップボードから貼り付けます",
+    "supported_formats": "対応形式: PNG、JPG、JPEG、BMP、WebP",
+    "file_size": "{{size}} MB"
+  }
+}

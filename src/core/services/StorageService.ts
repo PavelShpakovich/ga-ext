@@ -1,4 +1,4 @@
-import { STORAGE_KEYS, DEFAULT_MODEL_ID } from '@/core/constants';
+import { STORAGE_KEYS, DEFAULT_MODEL_ID, DEFAULT_LANGUAGE } from '@/core/constants';
 import { Settings, CorrectionStyle } from '@/shared/types';
 import { Logger } from '@/core/services/Logger';
 
@@ -17,7 +17,7 @@ type StorageKey = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS];
 const DEFAULT_SETTINGS: Settings = {
   selectedModel: DEFAULT_MODEL_ID,
   selectedStyle: CorrectionStyle.STANDARD,
-  language: 'en',
+  language: DEFAULT_LANGUAGE,
 };
 
 export class StorageService {

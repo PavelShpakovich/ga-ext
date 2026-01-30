@@ -1,9 +1,9 @@
-import { ModelSpeed, ModelCategory } from '@/shared/types';
+import { ModelSpeed, ModelCategory, Language } from '@/shared/types';
 
 // Global constants for the simplified flow
 
 export const DEFAULT_MODEL_ID = 'Qwen2.5-3B-Instruct-q4f16_1-MLC';
-export const DEFAULT_LANGUAGE = 'en';
+export const DEFAULT_LANGUAGE = Language.EN;
 
 export const SUPPORTED_MODELS = [
   // --- High-Quality (Pro) ---
@@ -59,6 +59,15 @@ export const SUPPORTED_MODELS = [
   },
 ] as const;
 
+export const LANGUAGE_CONFIG = {
+  [Language.EN]: { name: 'English', tesseractCode: 'eng' },
+  [Language.RU]: { name: 'Русский', tesseractCode: 'rus' },
+  [Language.ES]: { name: 'Español', tesseractCode: 'spa' },
+  [Language.DE]: { name: 'Deutsch', tesseractCode: 'deu' },
+  [Language.FR]: { name: 'Français', tesseractCode: 'fra' },
+  [Language.JA]: { name: '日本語', tesseractCode: 'jpn' },
+} as const;
+
 export const STORAGE_KEYS = {
   SETTINGS: 'grammar_assistant_settings',
   PENDING_TEXT: 'pendingText',
@@ -70,7 +79,6 @@ export const STORAGE_KEYS = {
 export const MAX_TEXT_LENGTH = 6000; // ~1500 tokens (aligned with 2048 context window)
 
 // OCR constants
-export const OCR_LANGUAGE = 'eng';
 export const SUPPORTED_IMAGE_TYPES = ['image/png', 'image/jpg', 'image/jpeg', 'image/bmp', 'image/webp'] as const;
 // Relative path under `public/` where tesseract core and tessdata are expected.
 export const OCR_ASSETS_PATH = '/tesseract/core';

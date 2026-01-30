@@ -85,6 +85,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         const response = await chrome.runtime.sendMessage({
           action: 'ocr',
           image: message.image,
+          language: message.language,
         });
         sendResponse(response);
       } catch (error) {

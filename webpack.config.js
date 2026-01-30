@@ -66,6 +66,7 @@ module.exports = {
         { from: 'public/manifest.json', to: 'manifest.json' },
         { from: 'public/icons', to: 'icons' },
         { from: 'lib/tesseract', to: 'tesseract' },
+        { from: 'public/tesseract', to: 'tesseract' },
       ],
     }),
   ],

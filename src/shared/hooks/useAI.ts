@@ -1,9 +1,10 @@
 import { useState, useCallback } from 'react';
 import { ProviderFactory } from '@/core/providers';
-import { CorrectionResult, CorrectionStyle, ExecutionStep } from '@/shared/types';
+import { CorrectionResult, CorrectionStyle, ExecutionStep, Language } from '@/shared/types';
 import { Logger } from '@/core/services';
 import { useTranslation } from 'react-i18next';
 import { isWebGPUAvailable } from '@/shared/utils/helpers';
+import { useSettings } from './useSettings';
 
 export const useAI = (): {
   runCorrection: (text: string, modelId: string, style?: CorrectionStyle) => Promise<CorrectionResult>;
@@ -14,6 +15,7 @@ export const useAI = (): {
   reset: () => void;
 } => {
   const { t } = useTranslation();
+  const { settings } = useSettings();
   const [step, setStep] = useState<ExecutionStep>(ExecutionStep.IDLE);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<CorrectionResult | null>(null);
@@ -48,9 +50,14 @@ export const useAI = (): {
         }
 
         setStep(ExecutionStep.CORRECTING);
-        const correctionResult = await aiProvider.correct(text, style, (partial) => {
-          setPartialResult(partial);
-        });
+        const correctionResult = await aiProvider.correct(
+          text,
+          style,
+          settings.language,
+          (partial) => {
+            setPartialResult(partial);
+          },
+        );
         setResult(correctionResult);
         setStep(ExecutionStep.DONE);
 
@@ -68,7 +75,7 @@ export const useAI = (): {
         throw new Error(errorMessage);
       }
     },
-    [t],
+    [t, settings.language],
   );
 
   const reset = useCallback(() => {

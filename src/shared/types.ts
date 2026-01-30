@@ -1,5 +1,15 @@
 // Core types for the simplified grammar assistant
 
+// Supported languages for correction and UI
+export enum Language {
+  EN = 'en',
+  RU = 'ru',
+  ES = 'es',
+  DE = 'de',
+  FR = 'fr',
+  JA = 'ja',
+}
+
 // We keep style as a simple enum even though the UI defaults to a single option,
 // which leaves room for future tone tweaks without widening the surface area elsewhere.
 export enum CorrectionStyle {
@@ -64,7 +74,7 @@ export interface CorrectionResult {
 export interface Settings {
   selectedModel: string;
   selectedStyle: CorrectionStyle;
-  language: 'en';
+  language: Language;
 }
 
 export enum InputMode {

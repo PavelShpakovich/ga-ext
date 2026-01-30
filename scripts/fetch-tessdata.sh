@@ -37,12 +37,18 @@ cp "$WORKER_SRC" "$OUT_DIR/worker.min.js"
 
 # -----------------------------
 # 3️⃣ Download language data (not gzipped)
+# Languages: English, Russian, Spanish, German, French, Japanese
 # -----------------------------
-LANG="eng"
-TESSDATA_URL="https://github.com/tesseract-ocr/tessdata/raw/main/$LANG.traineddata"
+LANGUAGES=("eng" "rus" "spa" "deu" "fra" "jpn")
+TESSDATA_URL_BASE="https://github.com/tesseract-ocr/tessdata/raw/main"
 
-echo "Downloading $LANG.traineddata"
-curl -L -f -o "$TESSDATA_DIR/$LANG.traineddata" "$TESSDATA_URL"
+for LANG in "${LANGUAGES[@]}"; do
+  TESSDATA_URL="$TESSDATA_URL_BASE/$LANG.traineddata"
+  echo "Downloading $LANG.traineddata from $TESSDATA_URL"
+  curl -L -f -o "$TESSDATA_DIR/$LANG.traineddata" "$TESSDATA_URL" || {
+    echo "⚠️  Failed to download $LANG.traineddata (continuing with others...)"
+  }
+done
 
 echo "Done. Final file list:"
 ls -lh "$OUT_DIR"

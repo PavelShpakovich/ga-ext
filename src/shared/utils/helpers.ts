@@ -1,6 +1,5 @@
 import { Logger } from '@/core/services/Logger';
-import { createWorker } from 'tesseract.js';
-import { OCR_LANGUAGE, OCR_ASSETS_PATH } from '@/core/constants';
+import { OCR_ASSETS_PATH } from '@/core/constants';
 
 export const isWebGPUAvailable = async (): Promise<boolean> => {
   if (typeof navigator === 'undefined' || !('gpu' in navigator)) return false;
@@ -55,7 +54,7 @@ const buildAssetPaths = (base: string): AssetPaths => {
   const corePath = `${base}/tesseract-core.wasm.js`;
   const wasmPath = `${base}/tesseract-core.wasm`;
   const langPath = `${base}/tessdata`;
-  const trainedDataUrl = `${langPath}/${OCR_LANGUAGE}.traineddata`;
+  const trainedDataUrl = `${langPath}/eng.traineddata`;
   return { baseUrl: base, workerPath, corePath, wasmPath, langPath, trainedDataUrl };
 };
 
@@ -84,22 +83,8 @@ const preflightAssets = async (paths: AssetPaths): Promise<void> => {
   await check(paths.trainedDataUrl);
 };
 
-const createTesseractWorker = async (paths: AssetPaths, onProgress?: (m: OCRProgress) => void) => {
-  try {
-    return await createWorker(OCR_LANGUAGE, 1, {
-      workerBlobURL: false,
-      workerPath: paths.workerPath,
-      corePath: paths.corePath,
-      wasmPath: paths.wasmPath,
-      langPath: paths.langPath,
-      cacheMethod: 'none',
-      gzip: false,
-      logger: (m: any) => onProgress?.({ status: m.status, progress: m.progress ?? 0 }),
-    } as any);
-  } catch (err) {
-    Logger.error('OCR', 'createWorker failed', err);
-    throw err;
-  }
+const createTesseractWorker = async (paths: AssetPaths, _onProgress?: (m: OCRProgress) => void) => {
+  throw new Error('OCR processing has moved to offscreen document. Use useOCR hook instead.');
 };
 
 const recognizeImageWithWorker = async (worker: any, source: File | string): Promise<string> => {

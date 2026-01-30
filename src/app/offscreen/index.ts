@@ -1,21 +1,37 @@
 import { createWorker } from 'tesseract.js';
-import { OCR_ASSETS_PATH, OCR_LANGUAGE } from '@/core/constants';
+import { OCR_ASSETS_PATH, LANGUAGE_CONFIG } from '@/core/constants';
+import { Language } from '@/shared/types';
 import { Logger } from '@/core/services/Logger';
 
 let worker: any = null;
+let currentLanguage: Language = Language.EN;
 
 const resolveBaseUrl = (): string => {
   return chrome.runtime.getURL(OCR_ASSETS_PATH).replace(/\/+$/, '');
 };
 
-async function getWorker() {
-  if (worker) return worker;
+async function getWorker(language: Language = Language.EN) {
+  // If language changed, create a new worker
+  if (worker && currentLanguage === language) {
+    return worker;
+  }
 
+  // Terminate old worker if language changed
+  if (worker && currentLanguage !== language) {
+    try {
+      await worker.terminate();
+      worker = null;
+    } catch (err) {
+      Logger.warn('Offscreen', 'Failed to terminate old worker', err);
+    }
+  }
+
+  const tesseractCode = LANGUAGE_CONFIG[language].tesseractCode;
   const base = resolveBaseUrl();
-  Logger.info('Offscreen', 'Initializing persistent Tesseract worker', { base });
+  Logger.info('Offscreen', 'Initializing Tesseract worker', { language, tesseractCode, base });
 
   try {
-    worker = await createWorker(OCR_LANGUAGE, 1, {
+    worker = await createWorker(tesseractCode, 1, {
       workerBlobURL: false,
       workerPath: `${base}/worker.min.js`,
       corePath: `${base}/tesseract-core.wasm.js`,
@@ -35,6 +51,8 @@ async function getWorker() {
           });
       },
     } as any);
+    
+    currentLanguage = language;
   } catch (err) {
     Logger.error('Offscreen', 'Failed to create Tesseract worker', err);
     throw err;
@@ -48,8 +66,9 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message.action === 'ocr' && message.image) {
     (async () => {
       try {
-        const w = await getWorker();
-        Logger.info('Offscreen', 'Starting OCR recognition');
+        const language = message.language || Language.EN;
+        const w = await getWorker(language);
+        Logger.info('Offscreen', 'Starting OCR recognition', { language });
         const {
           data: { text },
         } = await w.recognize(message.image);

@@ -1,0 +1,128 @@
+{
+  "ui": {
+    "title": "Grammatik-Assistent",
+    "subtitle": "Lokale WebGPU-Sitzung",
+    "model_section": "KI-Modell",
+    "text_section": "Quelltext",
+    "result_section": "Korrigiertes Ergebnis",
+    "text_placeholder": "Beginne zu tippen oder füge Inhalte ein... (Cmd+Enter oder Strg+Enter zum Ausführen)",
+    "empty_text_hint": "Füge hier Text ein oder tippe direkt, um zu beginnen. Drücke Cmd+Enter (Mac) oder Strg+Enter (Windows), um die KI-Korrektur auszuführen.",
+    "reasoning_label": "Verbesserungen und Begründung",
+    "syncing": "Wird synchronisiert...",
+    "loading": "Wird geladen...",
+    "checking": "Wird überprüft...",
+    "optimized_ready": "Optimiert und bereit",
+    "cache_offline": "Für Offline-Verwendung zwischenspeichern",
+    "flush_cache": "Modell-Cache leeren",
+    "copy_result": "Ergebnis kopieren",
+    "mask_output": "Motor-Ausgabe verbergen",
+    "view_output": "Motor-Ausgabe anzeigen",
+    "context_menu_title": "Mit Grammatik-Assistent korrigieren",
+    "clear_all": "Alles löschen",
+    "update_results": "Ergebnisse aktualisieren",
+    "run_ai": "KI-Korrektur ausführen",
+    "purge_storage": "Gesamten Speicher leeren",
+    "engine_trace": "Motor-Trace",
+    "fault": "Fehler",
+    "local": "Lokal",
+    "remote": "Remote",
+    "cancel_operation": "Vorgang abbrechen",
+    "confirm": "Bestätigen",
+    "cancel": "Abbrechen",
+    "text": "Text",
+    "ocr": "OCR",
+    "show_diff": "Änderungen anzeigen",
+    "show_corrected": "Ergebnis anzeigen"
+  },
+  "styles": {
+    "standard": "Standard",
+    "formal": "Formal",
+    "academic": "Akademisch",
+    "simple": "Einfach",
+    "casual": "Umgangssprachlich"
+  },
+  "settings": {
+    "correction_style": "Korrektionsstil",
+    "language": "Sprache"
+  },
+  "status": {
+    "ready": "Bereit",
+    "busy": "Beschäftigt...",
+    "analysing": "Analysiere Text...",
+    "preparing": "Bereite Modell vor...",
+    "downloading": "Wird heruntergeladen...",
+    "halting": "Ausführung gestoppt",
+    "processing": "Wird verarbeitet...",
+    "syncing": "Wird synchronisiert..."
+  },
+  "messages": {
+    "model_synced": "Modell synchronisiert",
+    "sync_failed": "Synchronisierung fehlgeschlagen",
+    "model_removed": "Modell entfernt",
+    "removal_failed": "Entfernung fehlgeschlagen",
+    "cache_cleared": "Cache geleert",
+    "cache_failed": "Cache-Leerung fehlgeschlagen",
+    "copied": "In die Zwischenablage kopiert",
+    "download_cancelled": "Download abgebrochen",
+    "provide_text": "Bitte geben Sie Text zur Korrektur ein.",
+    "model_failed_load": "Fehler beim Laden des Modells. Versuche, es erneut herunterzuladen.",
+    "correction_failed": "Korrektur fehlgeschlagen",
+    "confirm_remove_model": "Dieses Modell von der lokalen Festplatte entfernen?",
+    "confirm_clear_cache": "Dies entfernt ALLE heruntergeladenen Modelle. Fortfahren?",
+    "no_engine_trace": "Keine Trace verfügbar",
+    "webgpu_not_available": "WebGPU nicht verfügbar. Aktiviere Hardware-Beschleunigung in den Browser-Einstellungen, um lokale KI zu verwenden.",
+    "privacy_note": "Datenschutz an erster Stelle • Keine Daten an Server gesendet",
+    "no_changes": "Keine Änderungen erforderlich"
+  },
+  "popup": {
+    "local_session": "Lokale Sitzung",
+    "webgpu": "WebGPU",
+    "launch": "Assistent starten",
+    "privacy_title": "Dein Text bleibt privat",
+    "privacy_description": "Keine Daten verlassen dein Gerät. Alles wird lokal in deinem Browser ausgeführt.",
+    "speed_title": "Blitzschnell",
+    "speed_description": "Betrieben von deiner GPU für sofortige Korrektionen ohne Internet."
+  },
+  "error": {
+    "something_wrong": "Etwas ist schief gelaufen",
+    "unexpected": "Ein unerwarteter Fehler ist aufgetreten.",
+    "reload": "Erweiterung neu laden",
+    "model_not_ready": "Modell nicht bereit",
+    "invalid_json": "Ungültige JSON-Antwort",
+    "could_not_parse": "Das Ausgabeformat des Modells konnte nicht geparst werden.",
+    "unparseable_output_detail": "Das ausgewählte Modell hat ein ungültiges Format zurückgegeben. Dies passiert häufig bei kleineren Modellen oder spezifischen Stilen. Bitte versuche, ein anderes Modell aus der Liste auszuwählen."
+  },
+  "models": {
+    "category": {
+      "pro": "Professional (Groß)",
+      "standard": "Standard (Ausgewogen)",
+      "reasoning": "DeepThink (Denken)",
+      "available": "Verfügbare Modelle"
+    },
+    "speed": {
+      "fast": "Schnell",
+      "medium": "Mittel",
+      "slow": "Langsam"
+    },
+    "descriptions": {
+      "gemma-2-9b-it-q4f16_1-MLC": "Am besten für komplexe Umschreibungen, tiefe stilistische Änderungen und Absatzumstrukturierung.",
+      "Qwen2.5-7B-Instruct-q4f16_1-MLC": "Spezialist für mehrsprachige Grammatik und technische Dokumentation.",
+      "Qwen2.5-3B-Instruct-q4f16_1-MLC": "Ausgewogene Option zur Fehlerkorrektur bei Beibehaltung der ursprünglichen Bedeutung.",
+      "Qwen3-4B-q4f16_1-MLC": "Fortgeschrittenes Denkmodell für komplexe Analyse und differenzierte stilistische Verbesserungen.",
+      "DeepSeek-R1-Distill-Llama-8B-q4f16_1-MLC": "Starke Denkfähigkeiten für nuancierte grammatikalische und stilistische Verbesserungen."
+    }
+  },
+  "errors": {
+    "content_too_long": "Inhalt zu lang. Bitte wähle spezifischen Text zur Korrektur aus."
+  },
+  "ocr": {
+    "initializing": "OCR wird initialisiert...",
+    "processing": "Verarbeite Bild...",
+    "no_text_found": "Kein Text im Bild gefunden",
+    "processing_failed": "Bildverarbeitung fehlgeschlagen",
+    "upload_image": "Bild hochladen",
+    "upload_placeholder": "Ziehe ein Bild hierher und lasse es fallen, oder klicke zum Auswählen, oder drücke ⌘V (Mac) oder Strg+V (Windows) um aus der Zwischenablage einzufügen",
+    "supported_formats": "Unterstützt: PNG, JPG, JPEG, BMP, WebP",
+    "file_size": "{{size}} MB"
+  }
+}
