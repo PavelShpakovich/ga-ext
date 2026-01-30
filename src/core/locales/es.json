@@ -1,103 +1,121 @@
 {
   "ui": {
     "title": "Asistente de Gramática",
-    "subtitle": "Sesión Local de WebGPU",
+    "subtitle": "Sesión local (WebGPU)",
     "model_section": "Modelo de IA",
-    "text_section": "Texto Fuente",
-    "result_section": "Resultado Corregido",
-    "text_placeholder": "Comienza a escribir o pega contenido... (Cmd+Enter o Ctrl+Enter para ejecutar)",
-    "empty_text_hint": "Pega o escribe tu texto aquí para comenzar. Presiona Cmd+Enter (Mac) o Ctrl+Enter (Windows) para ejecutar la corrección de IA.",
-    "reasoning_label": "Mejoras y Razonamiento",
+    "text_section": "Texto original",
+    "result_section": "Resultado corregido",
+    "text_placeholder": "Escribe o pega el contenido aquí... (⌘+Enter o Ctrl+Enter)",
+    "empty_text_hint": "Pega o escribe tu texto aquí para comenzar. Presiona ⌘+Enter (Mac) o Ctrl+Enter (Windows) para corregir.",
+    "reasoning_label": "Análisis y sugerencias",
     "syncing": "Sincronizando...",
     "loading": "Cargando...",
     "checking": "Verificando...",
     "optimized_ready": "Optimizado y listo",
-    "cache_offline": "Almacenar en caché para desconexión",
-    "flush_cache": "Vaciar caché del modelo",
+    "cache_offline": "Guardar para uso local",
+    "flush_cache": "Limpiar caché de modelos",
     "copy_result": "Copiar resultado",
-    "mask_output": "Ocultar salida del motor",
-    "view_output": "Ver salida del motor",
-    "context_menu_title": "Corregir con Asistente de Gramática",
-    "clear_all": "Limpiar todo",
+    "mask_output": "Ocultar registro del sistema",
+    "view_output": "Ver registro del sistema",
+    "context_menu_title": "Corregir con Grammar Assistant",
+    "clear_all": "Borrar todo",
     "update_results": "Actualizar resultados",
-    "run_ai": "Ejecutar corrección de IA",
-    "purge_storage": "Purgar todo el almacenamiento",
-    "engine_trace": "Traza del motor",
+    "run_ai": "Ejecutar corrección",
+    "purge_storage": "Borrar todos los datos",
+    "engine_trace": "Registro de ejecución",
     "fault": "Error",
     "local": "Local",
     "remote": "Remoto",
-    "cancel_operation": "Cancelar operación",
+    "cancel_operation": "Cancelar",
     "confirm": "Confirmar",
     "cancel": "Cancelar",
     "text": "Texto",
     "ocr": "OCR",
-    "show_diff": "Mostrar cambios",
-    "show_corrected": "Mostrar resultado"
+    "show_diff": "Ver cambios",
+    "show_corrected": "Ver resultado"
   },
   "styles": {
     "standard": "Estándar",
     "formal": "Formal",
     "academic": "Académico",
     "simple": "Simple",
-    "casual": "Casual"
+    "casual": "Informal"
   },
   "settings": {
-    "correction_style": "Estilo de corrección",
-    "language": "Idioma"
+    "correction_style": "Estilo de texto",
+    "language": "Idioma de interfaz",
+    "ui_language": "Idioma de interfaz",
+    "correction_language": "Idioma del texto",
+    "language_settings": "Idioma",
+    "disabled_while_busy": "No disponible durante el proceso",
+    "correction_language_hint": "Selecciona el idioma del texto que deseas corregir"
   },
   "status": {
     "ready": "Listo",
-    "busy": "Ocupado...",
+    "busy": "Procesando...",
     "analysing": "Analizando texto...",
     "preparing": "Preparando modelo...",
     "downloading": "Descargando...",
-    "halting": "Ejecución detenida",
-    "processing": "Procesando...",
+    "halting": "Detenido",
+    "processing": "En proceso...",
     "syncing": "Sincronizando..."
   },
   "messages": {
     "model_synced": "Modelo sincronizado",
-    "sync_failed": "Falló la sincronización",
+    "sync_failed": "Error de sincronización",
     "model_removed": "Modelo eliminado",
-    "removal_failed": "Falló la eliminación",
+    "removal_failed": "No se pudo eliminar",
     "cache_cleared": "Caché borrado",
-    "cache_failed": "Falló la limpieza de caché",
+    "cache_failed": "Error al borrar caché",
     "copied": "Copiado al portapapeles",
     "download_cancelled": "Descarga cancelada",
-    "provide_text": "Por favor, proporciona texto para corregir.",
-    "model_failed_load": "Falló al cargar el modelo. Intenta descargarlo nuevamente.",
-    "correction_failed": "Falló la corrección",
+    "provide_text": "Por favor, ingresa un texto para corregir.",
+    "model_failed_load": "Error al cargar el modelo. Intenta descargarlo de nuevo.",
+    "correction_failed": "La corrección falló",
+    "correction_success": "Corrección completada",
+    "language_mismatch_hint": "El texto parece estar en un idioma diferente al seleccionado. Los resultados pueden no ser óptimos.",
+    "language_mismatch_detected": "¡Se detectó un cambio de idioma!",
+    "language_mismatch_description": "Detectamos {{detected}}, pero tienes seleccionado {{selected}}. Los resultados del modelo son mejores cuando los idiomas coinciden.",
+    "switch_to": "Cambiar a {{lang}}",
+    "ignore_and_correct": "Ignorar y corregir de todos modos",
     "confirm_remove_model": "¿Eliminar este modelo del disco local?",
     "confirm_clear_cache": "Esto eliminará TODOS los modelos descargados. ¿Continuar?",
-    "no_engine_trace": "Sin traza disponible",
-    "webgpu_not_available": "WebGPU no disponible. Habilita la aceleración por hardware en la configuración del navegador para usar IA local.",
-    "privacy_note": "Privacidad primero • No se envía datos a servidores",
-    "no_changes": "No se requieren cambios"
+    "no_engine_trace": "Registro vacío",
+    "webgpu_not_available": "WebGPU no disponible. Activa la aceleración por hardware en tu navegador para usar IA local.",
+    "privacy_note": "Privacidad primero • Tus datos no salen de este equipo",
+    "no_changes": "No se encontraron cambios"
   },
   "popup": {
-    "local_session": "Sesión Local",
+    "local_session": "Sesión local",
     "webgpu": "WebGPU",
-    "launch": "Lanzar Asistente",
-    "privacy_title": "Tu texto permanece privado",
-    "privacy_description": "Ningún dato sale de tu dispositivo. Todo se ejecuta localmente en tu navegador.",
-    "speed_title": "Súper rápido",
-    "speed_description": "Impulsado por tu GPU para correcciones instantáneas sin internet."
+    "launch": "Abrir Asistente",
+    "privacy_title": "Privacidad garantizada",
+    "privacy_description": "Tus textos nunca salen de tu dispositivo. Todo funciona localmente en tu navegador.",
+    "speed_title": "Respuesta rápida",
+    "speed_description": "Usa la potencia de tu GPU para correcciones instantáneas sin internet."
   },
   "error": {
-    "something_wrong": "Algo salió mal",
+    "something_wrong": "Ha ocurrido un problema",
     "unexpected": "Ocurrió un error inesperado.",
     "reload": "Recargar extensión",
-    "model_not_ready": "Modelo no listo",
-    "invalid_json": "Respuesta JSON inválida",
-    "could_not_parse": "No se pudo aclarar el formato de salida del modelo.",
-    "unparseable_output_detail": "El modelo seleccionado devolvió un formato inválido. Esto a menudo ocurre con modelos más pequeños o estilos específicos. Por favor, intenta seleccionar un modelo diferente de la lista."
+    "model_not_ready": "El modelo no está listo",
+    "invalid_json": "Respuesta de IA inválida",
+    "could_not_parse": "No se pudo interpretar el formato de salida.",
+    "unparseable_output_detail": "El modelo devolvió un formato incorrecto. Intenta con otro modelo o cambia el estilo."
   },
   "models": {
+    "language_support": "Soporte de idioma",
+    "compatibility": {
+      "excellent": "Excelente",
+      "good": "Bueno",
+      "fair": "Regular",
+      "limited": "Limitado"
+    },
     "category": {
-      "pro": "Profesional (Grande)",
+      "pro": "Profesional (Avanzado)",
       "standard": "Estándar (Equilibrado)",
-      "reasoning": "DeepThink (Razonamiento)",
-      "available": "Modelos Disponibles"
+      "reasoning": "DeepThink (Lógica)",
+      "available": "Modelos disponibles"
     },
     "speed": {
       "fast": "Rápido",
@@ -105,24 +123,24 @@
       "slow": "Lento"
     },
     "descriptions": {
-      "gemma-2-9b-it-q4f16_1-MLC": "Mejor para reescrituras complejas, cambios estilísticos profundos y reestructuración de párrafos.",
-      "Qwen2.5-7B-Instruct-q4f16_1-MLC": "Especialista en gramática multilingüe y documentación técnica.",
-      "Qwen2.5-3B-Instruct-q4f16_1-MLC": "Opción equilibrada para corregir errores mientras se preserva el significado original.",
-      "Qwen3-4B-q4f16_1-MLC": "Modelo de razonamiento avanzado para análisis complejo y mejoras estilísticas sofisticadas.",
-      "DeepSeek-R1-Distill-Llama-8B-q4f16_1-MLC": "Capacidades poderosas de razonamiento para mejoras gramaticales y estilísticas matizadas."
+      "gemma-2-9b-it-q4f16_1-MLC": "Ideal para reescrituras complejas y cambios de estructura profunda.",
+      "Qwen2.5-7B-Instruct-q4f16_1-MLC": "Especialista en gramática multilingüe y documentos técnicos.",
+      "Qwen2.5-3B-Instruct-q4f16_1-MLC": "Equilibrio entre corrección y fidelidad al sentido original.",
+      "Qwen3-4B-q4f16_1-MLC": "Modelo lógico avanzado para análisis complejo y mejoras de estilo.",
+      "DeepSeek-R1-Distill-Llama-8B-q4f16_1-MLC": "Gran capacidad de razonamiento para estructuras gramaticales complejas."
     }
   },
   "errors": {
-    "content_too_long": "Contenido demasiado largo. Por favor, selecciona texto específico para corregir."
+    "content_too_long": "El texto es demasiado largo. Selecciona un fragmento más corto."
   },
   "ocr": {
-    "initializing": "Inicializando OCR...",
-    "processing": "Procesando imagen...",
-    "no_text_found": "No se encontró texto en la imagen",
-    "processing_failed": "Falló al procesar la imagen",
+    "initializing": "Iniciando OCR...",
+    "processing": "Reconociendo texto...",
+    "no_text_found": "No se detectó texto en la imagen",
+    "processing_failed": "Error al procesar la imagen",
     "upload_image": "Subir imagen",
-    "upload_placeholder": "Arrastra y suelta una imagen aquí, o haz clic para seleccionar o presiona ⌘V (Mac) o Ctrl+V (Windows) para pegar desde el portapapeles",
-    "supported_formats": "Soportado: PNG, JPG, JPEG, BMP, WebP",
+    "upload_placeholder": "Arrastra una imagen aquí o pégala directamente desde el portapapeles (⌘V / Ctrl+V)",
+    "supported_formats": "Formatos: PNG, JPG, JPEG, BMP, WebP",
     "file_size": "{{size}} MB"
   }
 }

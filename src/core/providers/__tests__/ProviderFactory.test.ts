@@ -25,24 +25,24 @@ describe('ProviderFactory', () => {
     await ProviderFactory.clearInstances();
   });
 
-  it('should create a new provider instance', () => {
-    const provider = ProviderFactory.createProvider('model-a');
+  it('should create a new provider instance', async () => {
+    const provider = await ProviderFactory.createProvider('model-a');
     expect(provider).toBeDefined();
     expect(WebLLMProvider).toHaveBeenCalledWith('model-a');
   });
 
-  it('should reuse existing instance if model matches', () => {
-    const provider1 = ProviderFactory.createProvider('model-a');
-    const provider2 = ProviderFactory.createProvider('model-a');
+  it('should reuse existing instance if model matches', async () => {
+    const provider1 = await ProviderFactory.createProvider('model-a');
+    const provider2 = await ProviderFactory.createProvider('model-a');
 
     expect(provider1).toBe(provider2);
     expect(WebLLMProvider).toHaveBeenCalledTimes(1);
   });
 
-  it('should unload previous instance when switching models', () => {
-    const provider1 = ProviderFactory.createProvider('model-a');
+  it('should unload previous instance when switching models', async () => {
+    const provider1 = await ProviderFactory.createProvider('model-a');
     // Simulate switching
-    const provider2 = ProviderFactory.createProvider('model-b');
+    const provider2 = await ProviderFactory.createProvider('model-b');
 
     // old provider should be unloaded
     expect(provider1.unload).toHaveBeenCalled();
@@ -51,19 +51,19 @@ describe('ProviderFactory', () => {
     expect(provider2).not.toBe(provider1);
   });
 
-  it('should use default model ID if none provided', () => {
-    ProviderFactory.createProvider();
+  it('should use default model ID if none provided', async () => {
+    await ProviderFactory.createProvider();
     expect(WebLLMProvider).toHaveBeenCalledWith(DEFAULT_MODEL_ID);
   });
 
   it('should clear instances correctly', async () => {
-    const provider = ProviderFactory.createProvider('model-a');
+    const provider = await ProviderFactory.createProvider('model-a');
     await ProviderFactory.clearInstances();
 
     expect(provider.unload).toHaveBeenCalled();
 
     // Creating again should be fresh
-    ProviderFactory.createProvider('model-a');
+    await ProviderFactory.createProvider('model-a');
     // Should be a 2nd call now (1st in setup, 2nd here after clear)
     expect(WebLLMProvider).toHaveBeenCalledTimes(2);
   });

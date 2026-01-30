@@ -7,7 +7,6 @@ export enum Language {
   ES = 'es',
   DE = 'de',
   FR = 'fr',
-  JA = 'ja',
 }
 
 // We keep style as a simple enum even though the UI defaults to a single option,

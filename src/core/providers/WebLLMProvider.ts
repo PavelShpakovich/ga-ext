@@ -26,6 +26,8 @@ const INITIAL_PROGRESS = 0;
 const COMPLETED_PROGRESS = 1;
 const DEFAULT_TEMPERATURE = 0.0;
 const MAX_TOKENS = 1024;
+const FREQUENCY_PENALTY = 0.5; // Prevent repetitive looping in explanations
+const PRESENCE_PENALTY = 0.3; // Encourage talking about different improvements
 
 // WebGPU type declarations
 declare global {
@@ -183,8 +185,9 @@ export class WebLLMProvider extends AIProvider {
             });
 
             if (this.cancelled) {
-              await this.engine.unload();
+              const engineToUnload = this.engine;
               this.engine = null;
+              await engineToUnload.unload();
               throw new Error('aborted');
             }
 
@@ -204,12 +207,13 @@ export class WebLLMProvider extends AIProvider {
               (err?.message && err.message.toLowerCase().includes('unload'));
 
             if (this.engine) {
+              const engineToUnload = this.engine;
+              this.engine = null;
               try {
-                await this.engine.unload();
+                await engineToUnload.unload();
               } catch (e) {
                 // Ignore unload errors during catch
               }
-              this.engine = null;
             }
 
             WebLLMProvider.currentInstance = null;
@@ -271,12 +275,13 @@ export class WebLLMProvider extends AIProvider {
     }
 
     if (this.engine) {
+      const engineToUnload = this.engine;
+      this.engine = null;
       try {
-        await this.engine.unload();
+        await engineToUnload.unload();
       } catch (e) {
         // Ignore unload errors
       }
-      this.engine = null;
     }
     this.initPromise = null;
 
@@ -352,6 +357,8 @@ export class WebLLMProvider extends AIProvider {
       messages,
       temperature: DEFAULT_TEMPERATURE,
       max_tokens: MAX_TOKENS,
+      frequency_penalty: FREQUENCY_PENALTY,
+      presence_penalty: PRESENCE_PENALTY,
       stream: true,
     });
 

@@ -54,13 +54,16 @@ export const TextSection: React.FC<TextSectionProps> = ({
     },
   ];
 
-  const handleImageSelect = async (file: File) => {
-    const extractedText = await processImage(file);
-    if (extractedText) {
-      onTextChange(extractedText);
-      setInputMode(InputMode.TEXT); // Switch back to text mode after successful extraction
-    }
-  };
+  const handleImageSelect = React.useCallback(
+    async (file: File) => {
+      const extractedText = await processImage(file);
+      if (extractedText) {
+        onTextChange(extractedText);
+        setInputMode(InputMode.TEXT); // Switch back to text mode after successful extraction
+      }
+    },
+    [processImage, onTextChange],
+  );
 
   const handlePaste = React.useCallback(
     async (e: ClipboardEvent) => {
@@ -81,7 +84,7 @@ export const TextSection: React.FC<TextSectionProps> = ({
         }
       }
     },
-    [inputMode, isProcessing, isBusy, processImage, onTextChange, handleImageSelect],
+    [inputMode, isProcessing, isBusy, handleImageSelect],
   );
 
   const handleTabSelect = (id: string) => {

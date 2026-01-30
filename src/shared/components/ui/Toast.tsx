@@ -10,6 +10,10 @@ export interface ToastProps {
   isVisible: boolean;
   onClose: () => void;
   duration?: number;
+  action?: {
+    label: string;
+    onClick: () => void;
+  };
 }
 
 const variantStyles = {
@@ -26,7 +30,14 @@ const icons = {
   info: <Info className='w-5 h-5 text-blue-500' />,
 };
 
-export const Toast: React.FC<ToastProps> = ({ message, variant = 'info', isVisible, onClose, duration = 3000 }) => {
+export const Toast: React.FC<ToastProps> = ({
+  message,
+  variant = 'info',
+  isVisible,
+  onClose,
+  duration = 3000,
+  action,
+}) => {
   useEffect(() => {
     if (isVisible && duration > 0) {
       const timer = setTimeout(onClose, duration);
@@ -43,12 +54,26 @@ export const Toast: React.FC<ToastProps> = ({ message, variant = 'info', isVisib
         className={`
           flex items-center gap-3 px-4 py-3 rounded-lg border shadow-lg 
           ${variantStyles[variant]}
-         min-w-75 max-w-sm
+         min-w-85 max-w-sm
         `}
       >
         {icons[variant]}
-        <p className='text-sm font-medium flex-1'>{message}</p>
-        <button onClick={onClose} className='p-1 hover:bg-black/5 rounded-full transition-colors'>
+        <div className='flex flex-col gap-1 flex-1'>
+          <p className='text-sm font-medium'>{message}</p>
+          {action && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                action.onClick();
+                onClose();
+              }}
+              className='text-xs font-bold uppercase tracking-wider text-left hover:underline opacity-80'
+            >
+              {action.label}
+            </button>
+          )}
+        </div>
+        <button onClick={onClose} className='p-1 hover:bg-black/5 rounded-full transition-colors cursor-pointer'>
           <X className='w-4 h-4 opacity-60' />
         </button>
       </div>

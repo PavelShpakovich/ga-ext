@@ -1,63 +1,41 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { extractTextFromImage } from '../helpers';
+import { detectDominantLanguage } from '../helpers';
+import { Language } from '../../types';
 
-// Mock Tesseract.js
-vi.mock('tesseract.js', () => ({
-  createWorker: vi.fn(() => ({
-    recognize: vi.fn(() => Promise.resolve({ data: { text: 'Extracted text from image' } })),
-    terminate: vi.fn(() => Promise.resolve()),
-  })),
-}));
-
-describe('OCR Helpers', () => {
+describe('Helpers', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  describe('extractTextFromImage', () => {
-    it('should extract text from a valid image file', async () => {
-      const mockFile = new File(['fake image content'], 'test.png', { type: 'image/png' });
-
-      const result = await extractTextFromImage(mockFile);
-
-      expect(result).toBe('Extracted text from image');
+  describe('detectDominantLanguage', () => {
+    it('should detect Cyrillic as Russian', () => {
+      expect(detectDominantLanguage('Привет мир')).toBe(Language.RU);
     });
 
-    it('should extract text from a valid image URL', async () => {
-      const mockUrl = 'https://example.com/image.png';
-
-      const result = await extractTextFromImage(mockUrl);
-
-      expect(result).toBe('Extracted text from image');
+    it('should detect Latin as English', () => {
+      expect(detectDominantLanguage('Hello world')).toBe(Language.EN);
     });
 
-    it('should handle OCR processing errors', async () => {
-      const { createWorker } = await import('tesseract.js');
-      const mockWorker = {
-        recognize: vi.fn(() => Promise.reject(new Error('OCR failed'))),
-        terminate: vi.fn(() => Promise.resolve()),
-      };
-      (createWorker as any).mockResolvedValue(mockWorker);
-
-      const mockFile = new File(['fake image content'], 'test.png', { type: 'image/png' });
-
-      await expect(extractTextFromImage(mockFile)).rejects.toThrow('Failed to extract text from image');
+    it('should distinguish between Latin languages using stop words', () => {
+      expect(detectDominantLanguage('el gato esta en la mesa')).toBe(Language.ES);
+      expect(detectDominantLanguage('le chat est dans la salle')).toBe(Language.FR);
+      expect(detectDominantLanguage('der hund ist unter dem tisch')).toBe(Language.DE);
+      expect(detectDominantLanguage('the dog is under the table')).toBe(Language.EN);
     });
 
-    it('should terminate the worker after processing', async () => {
-      const { createWorker } = await import('tesseract.js');
-      const mockTerminate = vi.fn(() => Promise.resolve());
-      const mockWorker = {
-        recognize: vi.fn(() => Promise.resolve({ data: { text: 'test' } })),
-        terminate: mockTerminate,
-      };
-      (createWorker as any).mockResolvedValue(mockWorker);
+    it('should prioritize the language with more characters', () => {
+      // 2 English chars, 5 Russian chars
+      expect(detectDominantLanguage('Hi Привет')).toBe(Language.RU);
+      // 5 English chars, 2 Russian chars
+      expect(detectDominantLanguage('Hello Пр')).toBe(Language.EN);
+    });
 
-      const mockFile = new File(['fake image content'], 'test.png', { type: 'image/png' });
+    it('should return null for empty text', () => {
+      expect(detectDominantLanguage('')).toBeNull();
+    });
 
-      await extractTextFromImage(mockFile);
-
-      expect(mockTerminate).toHaveBeenCalled();
+    it('should ignore numbers and symbols', () => {
+      expect(detectDominantLanguage('123 !!! ???')).toBeNull();
     });
   });
 });

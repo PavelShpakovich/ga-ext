@@ -1,5 +1,5 @@
 import { Logger } from '@/core/services/Logger';
-import { OCR_ASSETS_PATH } from '@/core/constants';
+import { Language } from '@/shared/types';
 
 export const isWebGPUAvailable = async (): Promise<boolean> => {
   if (typeof navigator === 'undefined' || !('gpu' in navigator)) return false;
@@ -13,8 +13,11 @@ export const isWebGPUAvailable = async (): Promise<boolean> => {
   }
 };
 
-export const generateCacheKey = (modelId: string, text: string, style?: string): string =>
-  style ? `${modelId}::${style}::${text.trim()}` : `${modelId}::${text.trim()}`;
+export const generateCacheKey = (modelId: string, text: string, style?: string, language?: string): string => {
+  const base = style ? `${modelId}::${style}` : modelId;
+  const withLang = language ? `${base}::${language}` : base;
+  return `${withLang}::${text.trim()}`;
+};
 
 export const normalizeDownloadProgress = (progress: number): number => Math.max(0, Math.min(1, progress));
 
@@ -34,91 +37,53 @@ export interface OCRProgress {
   progress: number;
 }
 
-type AssetPaths = {
-  baseUrl: string;
-  workerPath: string;
-  corePath: string;
-  wasmPath: string;
-  langPath: string;
-  trainedDataUrl: string;
-};
+/**
+ * Detects the dominant script and potential language in the text to identify potential language mismatches.
+ * Returns Language if a high-confidence match is found, or null otherwise.
+ */
+export const detectDominantLanguage = (text: string): Language | null => {
+  const trimmed = text.trim();
+  if (!trimmed) return null;
 
-const resolveBaseUrl = (): string => {
-  const maybe =
-    typeof chrome !== 'undefined' && chrome.runtime?.getURL ? chrome.runtime.getURL(OCR_ASSETS_PATH) : OCR_ASSETS_PATH;
-  return String(maybe).replace(/\/+$/, '') || OCR_ASSETS_PATH;
-};
+  // 1. Script-based detection (high confidence for non-Latin)
+  const cyrillicCount = (trimmed.match(/[\u0400-\u04FF]/g) || []).length;
+  const latinCount = (trimmed.match(/[a-zA-Z]/g) || []).length;
+  const totalLetters = cyrillicCount + latinCount;
 
-const buildAssetPaths = (base: string): AssetPaths => {
-  const workerPath = `${base}/worker.min.js`;
-  const corePath = `${base}/tesseract-core.wasm.js`;
-  const wasmPath = `${base}/tesseract-core.wasm`;
-  const langPath = `${base}/tessdata`;
-  const trainedDataUrl = `${langPath}/eng.traineddata`;
-  return { baseUrl: base, workerPath, corePath, wasmPath, langPath, trainedDataUrl };
-};
+  if (totalLetters < 5) return null;
 
-const preflightAssets = async (paths: AssetPaths): Promise<void> => {
-  if (typeof fetch !== 'function' || !String(paths.baseUrl).includes('://')) {
-    Logger.info('OCR', 'Preflight checks skipped', { baseUrl: paths.baseUrl });
-    return;
-  }
+  if (cyrillicCount > totalLetters * 0.4) return Language.RU;
 
-  const check = async (url: string) => {
-    try {
-      const resp = await fetch(url, { method: 'GET' });
-      if (!resp.ok) throw new Error(`HTTP ${resp.status} ${resp.statusText}`);
-      Logger.info('OCR', `Preflight OK for ${url}`, {
-        status: resp.status,
-        contentLength: resp.headers.get('content-length') || 'unknown',
+  // 2. Stop-word based detection for Latin languages (EN, ES, DE, FR)
+  if (latinCount > totalLetters * 0.6) {
+    const lowerText = ` ${trimmed.toLowerCase()} `;
+
+    const stopWords: Record<Language, string[]> = {
+      [Language.EN]: [' the ', ' and ', ' with ', ' that '],
+      [Language.ES]: [' el ', ' la ', ' que ', ' con '],
+      [Language.DE]: [' der ', ' die ', ' das ', ' und ', ' ist '],
+      [Language.FR]: [' le ', ' la ', ' les ', ' dans ', ' est '],
+      [Language.RU]: [], // Handled by script
+    };
+
+    let bestLang: Language | null = null;
+    let maxHits = 0;
+
+    (Object.entries(stopWords) as [Language, string[]][]).forEach(([lang, words]) => {
+      let hits = 0;
+      words.forEach((word) => {
+        if (lowerText.includes(word)) hits++;
       });
-    } catch (err) {
-      Logger.error('OCR', `Preflight failed for ${url}`, err);
-      throw new Error(`Failed to fetch resource at ${url}: ${err instanceof Error ? err.message : String(err)}`);
-    }
-  };
-
-  await check(paths.corePath);
-  await check(paths.wasmPath);
-  await check(paths.trainedDataUrl);
-};
-
-const createTesseractWorker = async (_paths: AssetPaths, _onProgress?: (m: OCRProgress) => void) => {
-  throw new Error('OCR processing has moved to offscreen document. Use useOCR hook instead.');
-};
-
-const recognizeImageWithWorker = async (worker: any, source: File | string): Promise<string> => {
-  const {
-    data: { text },
-  } = await worker.recognize(source);
-  return text.trim();
-};
-
-export const extractTextFromImage = async (
-  imageSource: File | string,
-  onProgress?: (progress: OCRProgress) => void,
-): Promise<string> => {
-  const base = resolveBaseUrl();
-  const paths = buildAssetPaths(base);
-  Logger.info('OCR', 'Resolved Tesseract paths', paths);
-
-  let worker: any = null;
-  try {
-    await preflightAssets(paths);
-    worker = await createTesseractWorker(paths, onProgress);
-    const text = await recognizeImageWithWorker(worker, imageSource);
-    return text;
-  } catch (err: any) {
-    const message = capitalize(String(err?.message ?? ''));
-    Logger.error('OCR', 'OCR pipeline failed', { message, original: err });
-    throw new Error('Failed to extract text from image. ');
-  } finally {
-    if (worker && typeof worker.terminate === 'function') {
-      try {
-        await worker.terminate();
-      } catch (tErr) {
-        Logger.error('OCR', 'Failed to terminate worker', tErr);
+      if (hits > maxHits) {
+        maxHits = hits;
+        bestLang = lang;
       }
-    }
+    });
+
+    // Only return if we have some hits, otherwise default to EN (most common) or null
+    if (maxHits > 0) return bestLang;
+    return Language.EN;
   }
+
+  return null;
 };

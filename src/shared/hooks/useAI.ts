@@ -1,13 +1,18 @@
 import { useState, useCallback } from 'react';
 import { ProviderFactory } from '@/core/providers';
-import { CorrectionResult, CorrectionStyle, ExecutionStep } from '@/shared/types';
+import { CorrectionResult, CorrectionStyle, ExecutionStep, Language } from '@/shared/types';
 import { Logger } from '@/core/services';
 import { useTranslation } from 'react-i18next';
 import { isWebGPUAvailable } from '@/shared/utils/helpers';
 import { useSettings } from './useSettings';
 
 export const useAI = (): {
-  runCorrection: (text: string, modelId: string, style?: CorrectionStyle) => Promise<CorrectionResult>;
+  runCorrection: (
+    text: string,
+    modelId: string,
+    style?: CorrectionStyle,
+    langOverride?: Language,
+  ) => Promise<CorrectionResult>;
   step: ExecutionStep;
   error: string | null;
   result: CorrectionResult | null;
@@ -26,6 +31,7 @@ export const useAI = (): {
       text: string,
       modelId: string,
       style: CorrectionStyle = CorrectionStyle.STANDARD,
+      langOverride?: Language,
     ): Promise<CorrectionResult> => {
       if (!text.trim()) {
         throw new Error(t('messages.provide_text'));
@@ -37,7 +43,7 @@ export const useAI = (): {
       setPartialResult(null);
 
       try {
-        const aiProvider = ProviderFactory.createProvider(modelId);
+        const aiProvider = await ProviderFactory.createProvider(modelId);
         aiProvider.configure({});
 
         const isAvailable = await aiProvider.isAvailable();
@@ -49,15 +55,12 @@ export const useAI = (): {
           throw new Error(t('messages.model_failed_load'));
         }
 
+        const language = langOverride || settings.correctionLanguage;
+
         setStep(ExecutionStep.CORRECTING);
-        const correctionResult = await aiProvider.correct(
-          text,
-          style,
-          settings.correctionLanguage,
-          (partial) => {
-            setPartialResult(partial);
-          },
-        );
+        const correctionResult = await aiProvider.correct(text, style, language, (partial) => {
+          setPartialResult(partial);
+        });
         setResult(correctionResult);
         setStep(ExecutionStep.DONE);
 
@@ -75,7 +78,7 @@ export const useAI = (): {
         throw new Error(errorMessage);
       }
     },
-    [t, settings.language],
+    [t, settings.correctionLanguage],
   );
 
   const reset = useCallback(() => {

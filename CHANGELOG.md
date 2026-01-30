@@ -5,6 +5,40 @@ All notable changes to Grammar Assistant will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-01-30
+
+### Added
+
+- **Task-based Provider Factory**: Implemented a sequential processing queue for AI provider instantiation. This guarantees atomic model switches and prevents WebGPU resource collisions when switching models rapidly.
+- **OCR Memory Management**: Added a 5-minute idle-timeout for the Tesseract.js worker in the offscreen document to reclaim system memory during inactivity.
+- **VRAM Hardening**: Enhanced `WebLLMProvider` with proactive engine reference nullification to prevent double-free errors and race conditions in the underlying WebGPU stack.
+- **Performance Guards**:
+  - Added a 5-second safety timeout for IndexedDB cache checks to prevent the UI from hanging if the database is locked.
+  - Implemented character limit thresholds (10k) in the diff engine to skip expensive calculations on extremely large texts.
+- **Centralized Constants**: Consolidated all hardware limits, timeouts, and thresholds into `src/core/constants.ts` for easier system tuning.
+
+### Changed
+
+- **UI Language Gating**: Replaced simple toasts with a blocking "Allowance" alert system for language mismatches, providing a clearer path for users to switch languages or confirm intent.
+- **Integrated OCR Mismatch Detection**: Language mismatch checks now automatically apply to text extracted using OCR.
+- **Hook Optimization**: Refactored `useSettings` to eliminate redundant storage writes during initialization, reducing re-renders and improving startup performance.
+- **Prompt Refinement**: Standardized lowercase JSON field name requirements across all supported languages (EN, RU, DE, ES, FR) to match our high-reliability parser.
+
+### Removed
+
+- **Japanese Language Support**: Completely removed everything related to Japanese (prompts, constants, translations, and logic) to reduce library bloat and focus on primary supported regions.
+
+### Fixed
+
+- Resolved the "Detected X, but you have X selected" error caused by stale mismatch states in the React lifecycle.
+- Fixed a bug where SidePanel headers wouldn't synchronize immediately when changing the correction language in settings.
+- Corrected casing errors in Russian prompt templates that caused JSON parse failures.
+
+### Dev
+
+- Bumped project version to `0.3.0`.
+- All tests passing (53 tests), WebGPU model lifecycle verified.
+
 ## [0.2.1] - 2026-01-30
 
 ### Added

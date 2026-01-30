@@ -5,24 +5,85 @@ import i18n from '@/core/i18n';
 
 Logger.info('Background', 'Service worker started');
 
+// Helper to update the context menu title based on current language
+async function updateContextMenuTitle() {
+  try {
+    const settings = await Storage.getSettings();
+    if (i18n.language !== settings.language) {
+      await i18n.changeLanguage(settings.language);
+    }
+    // Check if the menu item exists by attempting to update it
+    // We wrap it in a promise-aware way to catch the specific error
+    try {
+      await chrome.contextMenus.update('grammar-assistant-correct', {
+        title: i18n.t('ui.context_menu_title'),
+      });
+      Logger.debug('Background', 'Context menu title updated', { language: settings.language });
+    } catch (e) {
+      // If it doesn't exist, create it
+      chrome.contextMenus.create({
+        id: 'grammar-assistant-correct',
+        title: i18n.t('ui.context_menu_title'),
+        contexts: ['selection'],
+      });
+      Logger.debug('Background', 'Context menu created because it was missing');
+    }
+  } catch (error) {
+    Logger.error('Background', 'Failed to initialize context menu', error);
+  }
+}
+
 // Initialize on install
-chrome.runtime.onInstalled.addListener(() => {
+chrome.runtime.onInstalled.addListener(async () => {
   Logger.info('Background', 'Extension installed');
 
-  const createMenu = () => {
-    chrome.contextMenus.create({
-      id: 'grammar-assistant-correct',
-      title: i18n.t('ui.context_menu_title'),
-      contexts: ['selection'],
+  const initMenu = async () => {
+    // Ensure we use the correct language from storage if it exists
+    const settings = await Storage.getSettings();
+    if (i18n.language !== settings.language) {
+      await i18n.changeLanguage(settings.language);
+    }
+
+    // Always clean up and re-create on install/update to avoid ID conflicts
+    chrome.contextMenus.removeAll(() => {
+      chrome.contextMenus.create({
+        id: 'grammar-assistant-correct',
+        title: i18n.t('ui.context_menu_title'),
+        contexts: ['selection'],
+      });
     });
   };
 
   if (i18n.isInitialized) {
-    createMenu();
+    await initMenu();
   } else {
-    i18n.on('initialized', createMenu);
+    i18n.on('initialized', initMenu);
   }
 });
+
+// Watch for settings changes to update context menu title dynamically
+Storage.subscribe(STORAGE_KEYS.SETTINGS, async (settings) => {
+  if (settings?.language) {
+    await i18n.changeLanguage(settings.language);
+    try {
+      await chrome.contextMenus.update('grammar-assistant-correct', {
+        title: i18n.t('ui.context_menu_title'),
+      });
+      Logger.debug('Background', 'Context menu title updated via storage listener', {
+        language: settings.language,
+      });
+    } catch (e) {
+      // Ignore if it doesn't exist yet, it will be created by other paths
+    }
+  }
+});
+
+// Ensure menu title is correct when service worker starts
+if (i18n.isInitialized) {
+  updateContextMenuTitle();
+} else {
+  i18n.on('initialized', updateContextMenuTitle);
+}
 
 // Handle context menu clicks
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {

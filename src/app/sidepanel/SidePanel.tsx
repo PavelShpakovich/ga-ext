@@ -6,21 +6,18 @@ import { useDownloadProgress } from '@/shared/hooks/useDownloadProgress';
 import { ErrorBoundary } from '@/shared/components/ErrorBoundary';
 import { useSettings } from '@/shared/hooks/useSettings';
 import { useModelSelection } from '@/shared/hooks/useModelSelection';
-import { generateCacheKey } from '@/shared/utils/helpers';
-import { MAX_TEXT_LENGTH } from '@/core/constants';
+import { generateCacheKey, detectDominantLanguage } from '@/shared/utils/helpers';
+import { MAX_TEXT_LENGTH, LANGUAGE_CONFIG, AUTO_HIDE_MESSAGE_DELAY, CACHE_CHECK_TIMEOUT_MS } from '@/core/constants';
 import { Logger } from '@/core/services/Logger';
 import { SidebarHeader } from '@/features/settings/SidebarHeader';
 import { StyleSelector } from '@/features/settings/StyleSelector';
-import { LanguageSelector } from '@/features/settings/LanguageSelector';
 import { ModelSection } from '@/features/models/ModelSection';
 import { TextSection } from '@/features/correction/TextSection';
 import { ResultSection } from '@/features/correction/ResultSection';
 import { useTranslation } from 'react-i18next';
-import { Modal, ModalVariant, Toast, AlertVariant } from '@/shared/components/ui';
-import { CorrectionStyle, ModelOption, ExecutionStep } from '@/shared/types';
-
-// --- Constants ---
-const AUTO_HIDE_DELAY = 3500;
+import { Button, ButtonVariant, ButtonSize } from '@/shared/components/Button';
+import { Modal, ModalVariant, Toast, Alert, AlertVariant, TextButton, TextButtonVariant } from '@/shared/components/ui';
+import { CorrectionStyle, ModelOption, ExecutionStep, Language } from '@/shared/types';
 
 const SidePanelContent: React.FC = () => {
   const { t } = useTranslation();
@@ -32,6 +29,7 @@ const SidePanelContent: React.FC = () => {
   const [showDebug, setShowDebug] = useState(false);
   const [isModelCached, setIsModelCached] = useState(false);
   const [isCheckingCache, setIsCheckingCache] = useState(false);
+  const [mismatchDetected, setMismatchDetected] = useState<Language | null>(null);
 
   const [modalConfig, setModalConfig] = useState<{
     isOpen: boolean;
@@ -48,21 +46,30 @@ const SidePanelContent: React.FC = () => {
 
   const lastAutoRunKey = useRef<string | null>(null);
   const shouldAutoRunRef = useRef<boolean>(false);
+  const confirmedLanguageRef = useRef<Language | null>(null);
 
   const { settings, updateSettings } = useSettings();
   const [toast, setToast] = useState<{
     message: string;
     variant: 'success' | 'error' | 'info' | 'warning';
     isVisible: boolean;
+    action?: { label: string; onClick: () => void };
   }>({
     message: '',
     variant: 'info',
     isVisible: false,
   });
 
-  const showToast = useCallback((message: string, variant: 'success' | 'error' | 'info' | 'warning' = 'info') => {
-    setToast({ message, variant, isVisible: true });
-  }, []);
+  const showToast = useCallback(
+    (
+      message: string,
+      variant: 'success' | 'error' | 'info' | 'warning' = 'info',
+      action?: { label: string; onClick: () => void },
+    ) => {
+      setToast({ message, variant, isVisible: true, action });
+    },
+    [],
+  );
 
   const hideToast = useCallback(() => {
     setToast((prev) => ({ ...prev, isVisible: false }));
@@ -83,8 +90,25 @@ const SidePanelContent: React.FC = () => {
 
   const isResultStale = useMemo(() => {
     if (!result || !text.trim()) return false;
-    return lastAutoRunKey.current !== generateCacheKey(selectedModel, text, settings.selectedStyle);
-  }, [result, selectedModel, text, settings.selectedStyle]);
+    return (
+      lastAutoRunKey.current !==
+      generateCacheKey(selectedModel, text, settings.selectedStyle, settings.correctionLanguage)
+    );
+  }, [result, selectedModel, text, settings.selectedStyle, settings.correctionLanguage]);
+
+  useEffect(() => {
+    if (!text.trim()) {
+      setMismatchDetected(null);
+      confirmedLanguageRef.current = null;
+    }
+  }, [text]);
+
+  // Clear mismatch warning if user manually switches to the correct language in the header
+  useEffect(() => {
+    if (mismatchDetected && mismatchDetected === settings.correctionLanguage) {
+      setMismatchDetected(null);
+    }
+  }, [mismatchDetected, settings.correctionLanguage]);
 
   const modelOptions = selectGroups.length
     ? selectGroups
@@ -94,6 +118,28 @@ const SidePanelContent: React.FC = () => {
           options: allModels.map((m: ModelOption) => ({ value: m.id, label: m.name })),
         },
       ];
+
+  const handleTextChange = useCallback(
+    (val: string) => {
+      setText(val);
+      shouldAutoRunRef.current = false;
+
+      if (!val.trim()) {
+        setMismatchDetected(null);
+        confirmedLanguageRef.current = null;
+        return;
+      }
+
+      // Propose language switch if detected mismatch
+      const detected = detectDominantLanguage(val);
+      if (detected && detected !== settings.correctionLanguage && confirmedLanguageRef.current !== detected) {
+        setMismatchDetected(detected);
+      } else {
+        setMismatchDetected(null);
+      }
+    },
+    [settings.correctionLanguage],
+  );
 
   const handleModelChange = useCallback(
     async (id: string) => {
@@ -106,10 +152,16 @@ const SidePanelContent: React.FC = () => {
       // Reset cache checking state to show loading on new model
       setIsCheckingCache(true);
       setIsModelCached(false);
-      updateSettings({ selectedModel: id });
-      await ProviderFactory.clearInstances();
-      lastAutoRunKey.current = null;
-      shouldAutoRunRef.current = false;
+      try {
+        updateSettings({ selectedModel: id });
+        await ProviderFactory.clearInstances();
+        lastAutoRunKey.current = null;
+        shouldAutoRunRef.current = false;
+      } catch (err) {
+        Logger.error('SidePanel', 'Failed to change model', err);
+      } finally {
+        setIsCheckingCache(false);
+      }
     },
     [updateSettings, selectedModel, downloadProgress, stopDownload, isBusy],
   );
@@ -124,33 +176,54 @@ const SidePanelContent: React.FC = () => {
     [updateSettings, isBusy],
   );
 
-  const handleCorrect = useCallback(async () => {
-    const trimmed = text.trim();
-    if (!trimmed || isBusy) return;
+  const handleCorrect = useCallback(
+    async (ignoreMismatch = false, langOverride?: Language) => {
+      const trimmed = text.trim();
+      if (!trimmed || isBusy) return;
 
-    if (trimmed.length > MAX_TEXT_LENGTH) {
-      showToast(t('errors.content_too_long'), 'warning');
-      return;
-    }
+      if (trimmed.length > MAX_TEXT_LENGTH) {
+        showToast(t('errors.content_too_long'), 'warning');
+        return;
+      }
 
-    try {
-      await runCorrection(trimmed, selectedModel, settings.selectedStyle);
-      lastAutoRunKey.current = generateCacheKey(selectedModel, trimmed);
-      shouldAutoRunRef.current = false;
-      const cached = await WebLLMProvider.isModelCached(selectedModel);
-      setIsModelCached(cached);
-    } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : String(err);
-      Logger.error('SidePanel', 'Correction error', { error: errorMessage });
-    }
-  }, [text, selectedModel, isBusy, runCorrection, settings.selectedStyle, showToast, t]);
+      // Basic language check to warn about potential mismatch
+      const detected = detectDominantLanguage(trimmed);
+      if (
+        !ignoreMismatch &&
+        detected &&
+        detected !== settings.correctionLanguage &&
+        confirmedLanguageRef.current !== detected
+      ) {
+        setMismatchDetected(detected);
+        return;
+      }
+
+      // Reset mismatch state if we're proceeding or it matches
+      setMismatchDetected(null);
+      confirmedLanguageRef.current = null;
+
+      try {
+        const usedLang = langOverride || settings.correctionLanguage;
+        await runCorrection(trimmed, selectedModel, settings.selectedStyle, usedLang);
+        lastAutoRunKey.current = generateCacheKey(selectedModel, trimmed, settings.selectedStyle, usedLang);
+        shouldAutoRunRef.current = false;
+        const cached = await WebLLMProvider.isModelCached(selectedModel);
+        setIsModelCached(cached);
+        showToast(t('messages.correction_success'), 'success');
+      } catch (err: unknown) {
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        Logger.error('SidePanel', 'Correction error', { error: errorMessage });
+      }
+    },
+    [text, isBusy, t, settings.correctionLanguage, showToast, runCorrection, selectedModel, settings.selectedStyle],
+  );
 
   const handlePrefetch = useCallback(async () => {
     if (isBusy) return;
     setIsPrefetching(true);
     setLocalMessage(null);
     try {
-      const provider = ProviderFactory.createProvider(selectedModel);
+      const provider = await ProviderFactory.createProvider(selectedModel);
       await provider.ensureReady();
       setLocalMessage({ message: t('messages.model_synced'), variant: AlertVariant.SUCCESS });
       const cached = await WebLLMProvider.isModelCached(selectedModel);
@@ -226,7 +299,7 @@ const SidePanelContent: React.FC = () => {
 
   useEffect(() => {
     if (localMessage) {
-      const timer = setTimeout(() => setLocalMessage(null), AUTO_HIDE_DELAY);
+      const timer = setTimeout(() => setLocalMessage(null), AUTO_HIDE_MESSAGE_DELAY);
       return () => clearTimeout(timer);
     }
   }, [localMessage]);
@@ -234,13 +307,13 @@ const SidePanelContent: React.FC = () => {
   usePendingText(
     useCallback(
       (incoming: string, options) => {
-        setText(incoming);
+        handleTextChange(incoming);
         reset();
         if (options?.autoRun) {
           shouldAutoRunRef.current = true;
         }
       },
-      [reset],
+      [reset, handleTextChange],
     ),
     useCallback(
       (error: string) => {
@@ -264,8 +337,16 @@ const SidePanelContent: React.FC = () => {
       return;
     }
 
-    const key = generateCacheKey(selectedModel, trimmed, settings.selectedStyle);
+    const key = generateCacheKey(selectedModel, trimmed, settings.selectedStyle, settings.correctionLanguage);
     if (lastAutoRunKey.current === key) {
+      shouldAutoRunRef.current = false;
+      return;
+    }
+
+    // Check for language mismatch before auto-running
+    const detected = detectDominantLanguage(trimmed);
+    if (detected && detected !== settings.correctionLanguage && confirmedLanguageRef.current !== detected) {
+      setMismatchDetected(detected);
       shouldAutoRunRef.current = false;
       return;
     }
@@ -286,26 +367,41 @@ const SidePanelContent: React.FC = () => {
     };
 
     triggerAutoRun();
-  }, [isBusy, runCorrection, selectedModel, text, settings.selectedStyle, showToast, t]);
+  }, [isBusy, runCorrection, selectedModel, text, settings.selectedStyle, settings.correctionLanguage, showToast, t]);
 
   useEffect(() => {
     let mounted = true;
     setIsCheckingCache(true);
+
+    // Safety timeout for IndexedDB access (sometimes hangs in Chrome if another tab is locking it)
+    const timeoutId = setTimeout(() => {
+      if (mounted) {
+        setIsCheckingCache(false);
+        Logger.warn('SidePanel', 'Cache check timed out');
+      }
+    }, CACHE_CHECK_TIMEOUT_MS);
+
     WebLLMProvider.isModelCached(selectedModel)
       .then((cached) => {
         if (mounted) setIsModelCached(cached);
       })
+      .catch((err) => {
+        Logger.error('SidePanel', 'Cache check failed', err);
+      })
       .finally(() => {
+        clearTimeout(timeoutId);
         if (mounted) setIsCheckingCache(false);
       });
+
     return () => {
       mounted = false;
+      clearTimeout(timeoutId);
     };
   }, [selectedModel]);
 
   return (
     <div className='h-screen flex flex-col bg-[#F8FAFC] dark:bg-[#0F172A] text-slate-900 dark:text-slate-50 font-sans selection:bg-blue-100 dark:selection:bg-blue-900/40'>
-      <SidebarHeader title={t('ui.title')} subtitle={t('ui.subtitle')} isModelCached={isModelCached} />
+      <SidebarHeader title={t('ui.title')} subtitle={t('ui.subtitle')} isBusy={isBusy} />
 
       <main className='flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth'>
         <ModelSection
@@ -332,18 +428,15 @@ const SidePanelContent: React.FC = () => {
           disabled={isBusy || (!text.trim() && !!result)}
         />
 
-        <LanguageSelector />
-
         <TextSection
-          title={t('ui.text_section')}
+          title={`${t('ui.text_section')} (${LANGUAGE_CONFIG[settings.correctionLanguage].name})`}
           text={text}
-          onTextChange={(val) => {
-            setText(val);
-            shouldAutoRunRef.current = false;
-          }}
+          onTextChange={handleTextChange}
           onClear={() => {
             setText('');
             reset();
+            confirmedLanguageRef.current = null;
+            setMismatchDetected(null);
           }}
           onCorrect={handleCorrect}
           isBusy={isBusy}
@@ -352,6 +445,44 @@ const SidePanelContent: React.FC = () => {
           placeholder={t('ui.text_placeholder')}
           emptyHint={t('ui.empty_text_hint')}
         />
+
+        {mismatchDetected && (
+          <Alert variant={AlertVariant.WARNING} className='mx-0 mt-0 mb-4'>
+            <div className='flex flex-col gap-3'>
+              <div className='text-sm leading-relaxed'>
+                <span className='font-medium'>{t('messages.language_mismatch_detected')}</span>{' '}
+                {t('messages.language_mismatch_description', {
+                  detected: LANGUAGE_CONFIG[mismatchDetected].name,
+                  selected: LANGUAGE_CONFIG[settings.correctionLanguage].name,
+                })}
+              </div>
+              <div className='flex gap-2'>
+                <Button
+                  variant={ButtonVariant.PRIMARY}
+                  size={ButtonSize.SM}
+                  onClick={() => {
+                    const newLang = mismatchDetected;
+                    updateSettings({ correctionLanguage: newLang });
+                    setMismatchDetected(null);
+                    handleCorrect(true, newLang);
+                  }}
+                >
+                  {t('messages.switch_to', { lang: LANGUAGE_CONFIG[mismatchDetected].name })}
+                </Button>
+                <TextButton
+                  variant={TextButtonVariant.DEFAULT}
+                  onClick={() => {
+                    confirmedLanguageRef.current = mismatchDetected;
+                    setMismatchDetected(null);
+                    handleCorrect(true);
+                  }}
+                >
+                  {t('messages.ignore_and_correct')}
+                </TextButton>
+              </div>
+            </div>
+          </Alert>
+        )}
 
         <ResultSection
           title={t('ui.result_section')}
@@ -380,7 +511,13 @@ const SidePanelContent: React.FC = () => {
         cancelLabel={t('ui.cancel')}
       />
 
-      <Toast message={toast.message} variant={toast.variant} isVisible={toast.isVisible} onClose={hideToast} />
+      <Toast
+        message={toast.message}
+        variant={toast.variant}
+        isVisible={toast.isVisible}
+        onClose={hideToast}
+        action={toast.action}
+      />
     </div>
   );
 };

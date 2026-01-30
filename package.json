@@ -1,6 +1,6 @@
 {
   "name": "grammar-assistant",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Privacy-first AI-powered grammar correction Chrome extension",
   "author": "Pavel Shpakovich",
   "license": "MIT",

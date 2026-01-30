@@ -1,6 +1,8 @@
 // Simple word-based diff implementation to avoid external dependencies
 // Highlights additions and deletions between two strings
 
+import { DIFF_MAX_TEXT_LENGTH } from '@/core/constants';
+
 export type DiffPart = {
   value: string;
   added?: boolean;
@@ -13,6 +15,11 @@ export type DiffPart = {
  * but it works for showing simple grammar improvements.
  */
 export function getDiff(oldStr: string, newStr: string): DiffPart[] {
+  // Safety guard for very large texts to avoid freezing the UI
+  if (oldStr.length > DIFF_MAX_TEXT_LENGTH || newStr.length > DIFF_MAX_TEXT_LENGTH) {
+    return [{ value: newStr }];
+  }
+
   const oldWords = oldStr.split(/(\s+)/).filter(Boolean);
   const newWords = newStr.split(/(\s+)/).filter(Boolean);
 

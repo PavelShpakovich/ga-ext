@@ -1,38 +1,38 @@
 {
   "ui": {
     "title": "Assistant Grammaire",
-    "subtitle": "Session Locale WebGPU",
+    "subtitle": "Exécution locale (WebGPU)",
     "model_section": "Modèle IA",
-    "text_section": "Texte Source",
-    "result_section": "Résultat Corrigé",
-    "text_placeholder": "Commencez à taper ou collez du contenu... (Cmd+Entrée ou Ctrl+Entrée pour exécuter)",
-    "empty_text_hint": "Collez ou tapez votre texte ici pour commencer. Appuyez sur Cmd+Entrée (Mac) ou Ctrl+Entrée (Windows) pour exécuter la correction IA.",
-    "reasoning_label": "Améliorations et Justification",
+    "text_section": "Texte source",
+    "result_section": "Résultat corrigé",
+    "text_placeholder": "Écrivez ou collez votre texte... (⌘+Entrée ou Ctrl+Entrée)",
+    "empty_text_hint": "Collez ou tapez votre texte ici pour commencer. Appuyez sur ⌘+Entrée (Mac) ou Ctrl+Entrée (Windows) pour lancer la correction.",
+    "reasoning_label": "Analyse et suggestions",
     "syncing": "Synchronisation...",
     "loading": "Chargement...",
     "checking": "Vérification...",
     "optimized_ready": "Optimisé et prêt",
-    "cache_offline": "Mettre en cache pour utilisation hors ligne",
-    "flush_cache": "Vider le cache du modèle",
+    "cache_offline": "Enregistrer pour mode hors ligne",
+    "flush_cache": "Vider le cache des modèles",
     "copy_result": "Copier le résultat",
-    "mask_output": "Masquer la sortie du moteur",
-    "view_output": "Voir la sortie du moteur",
+    "mask_output": "Masquer le journal système",
+    "view_output": "Afficher le journal système",
     "context_menu_title": "Corriger avec Assistant Grammaire",
     "clear_all": "Effacer tout",
-    "update_results": "Mettre à jour les résultats",
-    "run_ai": "Exécuter la correction IA",
-    "purge_storage": "Purger tout le stockage",
-    "engine_trace": "Trace du moteur",
+    "update_results": "Actualiser les résultats",
+    "run_ai": "Lancer la correction",
+    "purge_storage": "Purger toutes les données",
+    "engine_trace": "Journal d'exécution",
     "fault": "Erreur",
     "local": "Local",
-    "remote": "Distant",
-    "cancel_operation": "Annuler l'opération",
+    "remote": "Cloud",
+    "cancel_operation": "Annuler",
     "confirm": "Confirmer",
     "cancel": "Annuler",
     "text": "Texte",
     "ocr": "OCR",
-    "show_diff": "Afficher les modifications",
-    "show_corrected": "Afficher le résultat"
+    "show_diff": "Voir les modifs",
+    "show_corrected": "Voir le résultat"
   },
   "styles": {
     "standard": "Standard",
@@ -42,17 +42,22 @@
     "casual": "Décontracté"
   },
   "settings": {
-    "correction_style": "Style de correction",
-    "language": "Langue"
+    "correction_style": "Style de texte",
+    "language": "Langue",
+    "ui_language": "Langue d'affichage",
+    "correction_language": "Langue du texte",
+    "language_settings": "Langue",
+    "disabled_while_busy": "Indisponible pendant le traitement",
+    "correction_language_hint": "Choisissez la langue du texte à corriger"
   },
   "status": {
     "ready": "Prêt",
-    "busy": "Occupé...",
+    "busy": "Traitement...",
     "analysing": "Analyse du texte...",
     "preparing": "Préparation du modèle...",
     "downloading": "Téléchargement...",
-    "halting": "Exécution arrêtée",
-    "processing": "Traitement en cours...",
+    "halting": "Arrêté",
+    "processing": "En cours...",
     "syncing": "Synchronisation..."
   },
   "messages": {
@@ -64,40 +69,53 @@
     "cache_failed": "Échec du vidage du cache",
     "copied": "Copié dans le presse-papiers",
     "download_cancelled": "Téléchargement annulé",
-    "provide_text": "Veuillez fournir du texte à corriger.",
-    "model_failed_load": "Échec du chargement du modèle. Essayez de le télécharger à nouveau.",
-    "correction_failed": "Échec de la correction",
+    "provide_text": "Veuillez saisir un texte à corriger.",
+    "model_failed_load": "Échec du chargement. Veuillez réessayer.",
+    "correction_failed": "La correction a échoué",
+    "correction_success": "Correction réussie",
+    "language_mismatch_hint": "Le texte collé semble être dans une langue différente de celle sélectionnée. Les résultats pourraient être sous-optimaux.",
+    "language_mismatch_detected": "Incohérence de langue détectée !",
+    "language_mismatch_description": "Nous avons détecté du {{detected}}, mais vous avez sélectionné du {{selected}}. Les résultats sont meilleurs lorsque les langues correspondent.",
+    "switch_to": "Passer à {{lang}}",
+    "ignore_and_correct": "Ignorer et corriger quand même",
     "confirm_remove_model": "Supprimer ce modèle du disque local ?",
-    "confirm_clear_cache": "Cela supprimera TOUS les modèles téléchargés. Continuer ?",
-    "no_engine_trace": "Aucune trace disponible",
-    "webgpu_not_available": "WebGPU non disponible. Activez l'accélération matérielle dans les paramètres du navigateur pour utiliser l'IA locale.",
-    "privacy_note": "Confidentialité d'abord • Aucune donnée n'est envoyée aux serveurs",
+    "confirm_clear_cache": "Ceci supprimera TOUS les modèles téléchargés. Continuer ?",
+    "no_engine_trace": "Le journal est vide",
+    "webgpu_not_available": "WebGPU non disponible. Activez l'accélération matérielle dans votre navigateur pour utiliser l'IA locale.",
+    "privacy_note": "Confidentialité d'abord • Vos données ne quittent pas votre ordinateur",
     "no_changes": "Aucune modification requise"
   },
   "popup": {
-    "local_session": "Session Locale",
+    "local_session": "Session locale",
     "webgpu": "WebGPU",
-    "launch": "Lancer l'Assistant",
-    "privacy_title": "Votre texte reste privé",
-    "privacy_description": "Aucune donnée ne quitte votre appareil. Tout s'exécute localement dans votre navigateur.",
-    "speed_title": "Super rapide",
-    "speed_description": "Alimenté par votre GPU pour des corrections instantanées sans Internet."
+    "launch": "Ouvrir l'Assistant",
+    "privacy_title": "Confidentialité totale",
+    "privacy_description": "Vos données restent sur votre appareil. Tout s'exécute localement dans votre navigateur.",
+    "speed_title": "Réponse instantanée",
+    "speed_description": "Utilise la puissance de votre GPU pour corriger sans internet."
   },
   "error": {
-    "something_wrong": "Quelque chose s'est mal passé",
+    "something_wrong": "Une erreur est survenue",
     "unexpected": "Une erreur inattendue s'est produite.",
     "reload": "Recharger l'extension",
-    "model_not_ready": "Modèle non prêt",
-    "invalid_json": "Réponse JSON invalide",
-    "could_not_parse": "Impossible d'analyser le format de sortie du modèle.",
-    "unparseable_output_detail": "Le modèle sélectionné a renvoyé un format invalide. Cela se produit souvent avec des modèles plus petits ou des styles spécifiques. Veuillez essayer de sélectionner un modèle différent dans la liste."
+    "model_not_ready": "Le modèle n'est pas prêt",
+    "invalid_json": "Réponse IA invalide",
+    "could_not_parse": "Format de sortie non reconnu.",
+    "unparseable_output_detail": "Le modèle a retourné un format incorrect. Essayez un autre modèle ou style."
   },
   "models": {
+    "language_support": "Support linguistique",
+    "compatibility": {
+      "excellent": "Excellent",
+      "good": "Bon",
+      "fair": "Passable",
+      "limited": "Limité"
+    },
     "category": {
-      "pro": "Professionnel (Grand)",
+      "pro": "Professionnel (Performant)",
       "standard": "Standard (Équilibré)",
-      "reasoning": "DeepThink (Raisonnement)",
-      "available": "Modèles Disponibles"
+      "reasoning": "DeepThink (Logique)",
+      "available": "Modèles disponibles"
     },
     "speed": {
       "fast": "Rapide",
@@ -105,24 +123,24 @@
       "slow": "Lent"
     },
     "descriptions": {
-      "gemma-2-9b-it-q4f16_1-MLC": "Meilleur pour les reformulations complexes, les changements stylistiques profonds et la restructuration de paragraphes.",
+      "gemma-2-9b-it-q4f16_1-MLC": "Idéal pour les reformulations complexes et les changements de structure profonds.",
       "Qwen2.5-7B-Instruct-q4f16_1-MLC": "Spécialiste en grammaire multilingue et documentation technique.",
-      "Qwen2.5-3B-Instruct-q4f16_1-MLC": "Option équilibrée pour corriger les erreurs tout en préservant le sens original.",
-      "Qwen3-4B-q4f16_1-MLC": "Modèle de raisonnement avancé pour l'analyse complexe et les améliorations stylistiques nuancées.",
-      "DeepSeek-R1-Distill-Llama-8B-q4f16_1-MLC": "Capacités de raisonnement puissantes pour des améliorations grammaticales et stylistiques nuancées."
+      "Qwen2.5-3B-Instruct-q4f16_1-MLC": "Choix équilibré : corrige les erreurs tout en gardant votre sens.",
+      "Qwen3-4B-q4f16_1-MLC": "Modèle logique avancé pour l'analyse complexe et l'amélioration du style.",
+      "DeepSeek-R1-Distill-Llama-8B-q4f16_1-MLC": "Puissantes capacités de raisonnement pour des structures grammaticales complexes."
     }
   },
   "errors": {
-    "content_too_long": "Contenu trop long. Veuillez sélectionner du texte spécifique à corriger."
+    "content_too_long": "Texte trop long. Veuillez sélectionner une portion plus courte."
   },
   "ocr": {
-    "initializing": "Initialisation de l'OCR...",
-    "processing": "Traitement de l'image...",
-    "no_text_found": "Aucun texte trouvé dans l'image",
+    "initializing": "Lancement de l'OCR...",
+    "processing": "Reconnaissance...",
+    "no_text_found": "Aucun texte détecté dans l'image",
     "processing_failed": "Échec du traitement de l'image",
-    "upload_image": "Télécharger une image",
-    "upload_placeholder": "Déposez une image ici, ou cliquez pour sélectionner, ou appuyez sur ⌘V (Mac) ou Ctrl+V (Windows) pour coller depuis le presse-papiers",
-    "supported_formats": "Formats supportés : PNG, JPG, JPEG, BMP, WebP",
-    "file_size": "{{size}} MB"
+    "upload_image": "Envoyer une image",
+    "upload_placeholder": "Déposez une image ici ou collez-la depuis le presse-papiers (⌘V / Ctrl+V)",
+    "supported_formats": "Formats : PNG, JPG, JPEG, BMP, WebP",
+    "file_size": "{{size}} Mo"
   }
 }

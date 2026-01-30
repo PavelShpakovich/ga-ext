@@ -67,7 +67,9 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
           <div className='space-y-3'>
             <ModelInfoCard model={modelInfo} />
             <div className='flex items-center justify-between px-1'>
-              <span className='text-xs font-semibold text-slate-600 dark:text-slate-400'>Language Support</span>
+              <span className='text-xs font-semibold text-slate-600 dark:text-slate-400'>
+                {t('models.language_support')}
+              </span>
               <LanguageCompatibilityBadge
                 modelId={selectedModel}
                 language={settings.correctionLanguage}

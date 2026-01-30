@@ -37,9 +37,9 @@ cp "$WORKER_SRC" "$OUT_DIR/worker.min.js"
 
 # -----------------------------
 # 3️⃣ Download language data (not gzipped)
-# Languages: English, Russian, Spanish, German, French, Japanese
+# Languages: English, Russian, Spanish, German, French
 # -----------------------------
-LANGUAGES=("eng" "rus" "spa" "deu" "fra" "jpn")
+LANGUAGES=("eng" "rus" "spa" "deu" "fra")
 TESSDATA_URL_BASE="https://github.com/tesseract-ocr/tessdata/raw/main"
 
 for LANG in "${LANGUAGES[@]}"; do

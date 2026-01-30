@@ -26,9 +26,14 @@ export class ModelCapabilityRegistry {
    */
   static async initialize(): Promise<void> {
     try {
-      const stored = localStorage.getItem(this.STORAGE_KEY);
+      const stored = await new Promise<string | null>((resolve) => {
+        chrome.storage.local.get([this.STORAGE_KEY], (result) => {
+          resolve(result[this.STORAGE_KEY] || null);
+        });
+      });
+
       if (stored) {
-        const parsed = JSON.parse(stored);
+        const parsed = typeof stored === 'string' ? JSON.parse(stored) : stored;
         this.capabilities = new Map(Object.entries(parsed));
         Logger.debug('ModelCapabilityRegistry', 'Initialized from storage', {
           models: this.capabilities.size,
@@ -140,7 +145,7 @@ export class ModelCapabilityRegistry {
     this.capabilities.clear();
     this.recordedFailures.clear();
     try {
-      localStorage.removeItem(this.STORAGE_KEY);
+      chrome.storage.local.remove(this.STORAGE_KEY);
     } catch {
       // Ignore storage errors
     }
@@ -161,7 +166,7 @@ export class ModelCapabilityRegistry {
   private static persist(): void {
     try {
       const data = Object.fromEntries(this.capabilities);
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data));
+      chrome.storage.local.set({ [this.STORAGE_KEY]: data });
     } catch (err) {
       Logger.warn('ModelCapabilityRegistry', 'Failed to persist capabilities', err);
     }

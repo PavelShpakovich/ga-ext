@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Settings, CorrectionStyle } from '@/shared/types';
-import { DEFAULT_MODEL_ID, DEFAULT_LANGUAGE, SUPPORTED_MODELS } from '@/core/constants';
+import { DEFAULT_MODEL_ID, DEFAULT_LANGUAGE, SUPPORTED_MODELS, STORAGE_KEYS } from '@/core/constants';
 import { Storage, Logger } from '@/core/services';
 import i18n from '@/core/i18n';
 
@@ -19,6 +19,21 @@ export const useSettings = (): {
 
   useEffect(() => {
     loadSettings();
+
+    // Subscribe to storage changes to keep state in sync across hook instances
+    const unsubscribe = Storage.subscribe(STORAGE_KEYS.SETTINGS, (newSettings) => {
+      if (newSettings) {
+        setSettings(newSettings);
+        // Apply language to i18n if it changed from storage
+        if (newSettings.language && i18n.language !== newSettings.language) {
+          i18n.changeLanguage(newSettings.language);
+        }
+      }
+    });
+
+    return () => {
+      unsubscribe();
+    };
   }, []);
 
   const loadSettings = async () => {
@@ -55,7 +70,17 @@ export const useSettings = (): {
         loadedSettings.language = DEFAULT_LANGUAGE;
       }
 
-      await Storage.updateSettings(loadedSettings);
+      if (!loadedSettings.correctionLanguage) {
+        loadedSettings.correctionLanguage = loadedSettings.language || DEFAULT_LANGUAGE;
+      }
+
+      // Only write back to storage if changes were made during validation/migration
+      const originalSettings = await Storage.get(STORAGE_KEYS.SETTINGS);
+      const hasChanged = JSON.stringify(originalSettings) !== JSON.stringify(loadedSettings);
+
+      if (hasChanged) {
+        await Storage.updateSettings(loadedSettings);
+      }
 
       // Apply language to i18n
       if (i18n.language !== loadedSettings.language) {

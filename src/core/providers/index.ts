@@ -1,7 +1,7 @@
 // AI Provider Factory
 
 import { WebLLMProvider } from '@/core/providers/WebLLMProvider';
-import { DEFAULT_MODEL_ID } from '@/core/constants';
+import { DEFAULT_MODEL_ID, MODEL_IDLE_TIMEOUT_MS } from '@/core/constants';
 import { Logger } from '@/core/services/Logger';
 
 export class ProviderFactory {
@@ -10,7 +10,7 @@ export class ProviderFactory {
   private static activeInstance: WebLLMProvider | null = null;
   private static activeModelId: string | null = null;
   private static idleTimer: ReturnType<typeof setTimeout> | null = null;
-  private static readonly IDLE_TIMEOUT = 10 * 60 * 1000; // 10 minutes
+  private static activeTask: Promise<any> = Promise.resolve();
 
   private static resetIdleTimer() {
     if (this.idleTimer) {
@@ -19,49 +19,41 @@ export class ProviderFactory {
     this.idleTimer = setTimeout(async () => {
       Logger.info('ProviderFactory', 'Idle timeout reached, unloading model to save memory');
       await this.clearInstances();
-    }, this.IDLE_TIMEOUT);
+    }, MODEL_IDLE_TIMEOUT_MS);
   }
 
-  static createProvider(model?: string): WebLLMProvider {
-    // If no model provided, use the constant default
+  static async createProvider(model?: string): Promise<WebLLMProvider> {
     const targetModelId = model || DEFAULT_MODEL_ID;
 
-    // Reset idle timer on any request for a provider
-    this.resetIdleTimer();
+    // Use a sequential task queue to prevent race conditions during model switches
+    const result = await (this.activeTask = this.activeTask
+      .then(async () => {
+        // Reset idle timer on any request for a provider
+        this.resetIdleTimer();
 
-    // Check if we already have this model active
-    if (this.activeInstance && this.activeModelId === targetModelId) {
-      Logger.debug('ProviderFactory', `Reusing active provider for model: ${targetModelId}`);
-      return this.activeInstance;
-    }
+        // Check if we already have this model active
+        if (this.activeInstance && this.activeModelId === targetModelId) {
+          Logger.debug('ProviderFactory', `Reusing active provider for model: ${targetModelId}`);
+          return this.activeInstance;
+        }
 
-    // If we have a DIFFERENT model active, we MUST unload it first
-    if (this.activeInstance) {
-      Logger.info('ProviderFactory', `Switching models: Unloading ${this.activeModelId} for ${targetModelId}`);
-      // Fire and forget unload? No, better to wait or just trigger it.
-      // Since createProvider is synchronous (not async), we can't await unload here easily without changing signature.
-      // However, WebLLMProvider.unload() is async.
-      // We will trigger the unload ensuring it runs, but we create the new instance immediately.
-      // Note: WebLLM (MLCEngine) might throw if two engines try to use GPU.
-      // Ideally createProvider should be async, but that requires refactoring useAI.
-      // For now, we will orphan the old instance and let it try to clean up.
+        // Unload existing instance before creating a new one to free VRAM
+        await this.clearInstances();
 
-      const oldInstance = this.activeInstance;
-      oldInstance.unload().catch((err) => {
-        Logger.error('ProviderFactory', 'Failed to unload previous model gracefully', err);
-      });
+        Logger.debug('ProviderFactory', `Creating new provider instance for model: ${targetModelId}`);
+        const newInstance = new WebLLMProvider(targetModelId);
 
-      this.activeInstance = null;
-      this.activeModelId = null;
-    }
+        this.activeInstance = newInstance;
+        this.activeModelId = targetModelId;
 
-    Logger.debug('ProviderFactory', `Creating new provider instance for model: ${targetModelId}`);
-    const newInstance = new WebLLMProvider(targetModelId);
+        return newInstance;
+      })
+      .catch((err) => {
+        Logger.error('ProviderFactory', 'Failed to create provider in queue', err);
+        throw err;
+      }));
 
-    this.activeInstance = newInstance;
-    this.activeModelId = targetModelId;
-
-    return newInstance;
+    return result as WebLLMProvider;
   }
 
   /**
@@ -69,14 +61,21 @@ export class ProviderFactory {
    * Useful when reloading models or clearing memory.
    */
   static async clearInstances(): Promise<void> {
+    if (this.idleTimer) {
+      clearTimeout(this.idleTimer);
+      this.idleTimer = null;
+    }
+
     if (this.activeInstance) {
+      const instance = this.activeInstance;
+      this.activeInstance = null;
+      this.activeModelId = null;
+
       try {
-        await this.activeInstance.unload();
+        await instance.unload();
       } catch (err) {
         Logger.error('ProviderFactory', 'Error unloading instance during clear', err);
       }
-      this.activeInstance = null;
-      this.activeModelId = null;
     }
     Logger.debug('ProviderFactory', 'Cleared active provider');
   }

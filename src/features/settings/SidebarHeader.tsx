@@ -1,16 +1,13 @@
 import React from 'react';
-import { Badge, BadgeVariant } from '@/shared/components/ui/Badge';
-import { useTranslation } from 'react-i18next';
+import { LanguageSelector, LanguageSelectorVariant } from './LanguageSelector';
 
 interface SidebarHeaderProps {
   title: string;
   subtitle: string;
-  isModelCached: boolean;
+  isBusy?: boolean;
 }
 
-export const SidebarHeader: React.FC<SidebarHeaderProps> = ({ title, subtitle, isModelCached }) => {
-  const { t } = useTranslation();
-
+export const SidebarHeader: React.FC<SidebarHeaderProps> = ({ title, subtitle, isBusy = false }) => {
   return (
     <header className='px-4 py-3 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-10 flex items-center justify-between transition-colors duration-500'>
       <div className='flex items-center gap-3.5'>
@@ -28,14 +25,7 @@ export const SidebarHeader: React.FC<SidebarHeaderProps> = ({ title, subtitle, i
           </span>
         </div>
       </div>
-      <div className='flex items-center gap-3'>
-        <Badge
-          variant={isModelCached ? BadgeVariant.SUCCESS : BadgeVariant.DEFAULT}
-          className='text-[10px] px-2.5 py-1 rounded-lg uppercase tracking-wider font-bold shadow-sm'
-        >
-          {isModelCached ? t('ui.local') : t('ui.remote')}
-        </Badge>
-      </div>
+      <LanguageSelector variant={LanguageSelectorVariant.COMPACT} disabled={isBusy} />
     </header>
   );
 };

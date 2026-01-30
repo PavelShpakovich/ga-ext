@@ -42,7 +42,12 @@
     "casual": "Casual"
   },
   "settings": {
-    "correction_style": "Correction Style"
+    "correction_style": "Correction Style",
+    "ui_language": "Interface Language",
+    "correction_language": "Correction Content",
+    "language_settings": "Language",
+    "disabled_while_busy": "Cannot change while busy",
+    "correction_language_hint": "Language of text being corrected"
   },
   "status": {
     "ready": "Ready",
@@ -66,6 +71,12 @@
     "provide_text": "Please provide text to correct.",
     "model_failed_load": "Model failed to load. Try downloading again.",
     "correction_failed": "Correction failed",
+    "correction_success": "Correction completed",
+    "language_mismatch_hint": "Pasted text seems to be in a different language than selected. Results might be suboptimal.",
+    "language_mismatch_detected": "Language mismatch detected!",
+    "language_mismatch_description": "We detected {{detected}}, but you have {{selected}} selected. Model results are better when languages match.",
+    "switch_to": "Switch to {{lang}}",
+    "ignore_and_correct": "Ignore & Correct anyway",
     "confirm_remove_model": "Remove this model from local disk?",
     "confirm_clear_cache": "This will delete ALL downloaded models. Continue?",
     "no_engine_trace": "No trace available",
@@ -113,6 +124,14 @@
       "Llama-3.2-3B-Instruct-q4f16_1-MLC": "Perfect for quick daily grammar fixes and polishing chat messages.",
       "gemma-2-2b-it-q4f16_1-MLC": "Lightweight and creative; ideal for simple sentence rewrites.",
       "Qwen2.5-1.5B-Instruct-q4f16_1-MLC": "Instantaneous checks for typos and basic punctuation errors."
+    },
+    "language_support": "Language Support",
+    "compatibility": {
+      "excellent": "Excellent",
+      "good": "Good",
+      "fair": "Fair",
+      "limited": "Limited",
+      "unknown": "Unknown"
     }
   },
   "errors": {

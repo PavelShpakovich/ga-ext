@@ -1,6 +1,7 @@
 import React from 'react';
 import { Language } from '@/shared/types';
 import { LanguageCompatibilityRegistry, CompatibilityLevel } from '@/core/services/LanguageCompatibility';
+import { useTranslation } from 'react-i18next';
 
 interface LanguageCompatibilityBadgeProps {
   modelId: string;
@@ -15,7 +16,7 @@ interface LanguageCompatibilityBadgeProps {
  */
 function getDotClasses(level: CompatibilityLevel): string {
   const baseClasses = 'w-2 h-2 rounded-full';
-  
+
   switch (level) {
     case CompatibilityLevel.EXCELLENT:
       return `${baseClasses} bg-emerald-500 dark:bg-emerald-400`;
@@ -36,7 +37,7 @@ function getDotClasses(level: CompatibilityLevel): string {
  */
 function getLabelClasses(level: CompatibilityLevel): string {
   const baseClasses = 'text-xs font-medium px-2 py-1 rounded';
-  
+
   switch (level) {
     case CompatibilityLevel.EXCELLENT:
       return `${baseClasses} bg-emerald-50 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-200`;
@@ -54,7 +55,7 @@ function getLabelClasses(level: CompatibilityLevel): string {
 /**
  * Component for displaying model-language compatibility information
  * Shows a colored indicator dot and optional label badge
- * 
+ *
  * @param modelId - ID of the model to check compatibility for
  * @param language - Language to check compatibility with
  * @param showLabel - Whether to display the label badge (default: true)
@@ -66,26 +67,27 @@ export const LanguageCompatibilityBadge: React.FC<LanguageCompatibilityBadgeProp
   showLabel = true,
   className = '',
 }) => {
+  const { t } = useTranslation();
   const level = LanguageCompatibilityRegistry.getCompatibility(modelId, language);
-  const label = LanguageCompatibilityRegistry.getCompatibilityLabel(level);
+  const labelText = t(`models.compatibility.${level}`);
+  const displayLabel = `${labelText} [${language.toUpperCase()}]`;
   const notes = LanguageCompatibilityRegistry.getCompatibilityNotes(modelId, language);
 
   return (
-    <div className={`flex items-center gap-2 ${className}`} aria-label={`${label} support`}>
-      <div
-        className={getDotClasses(level)}
-        role="img"
-        aria-label={label}
-        title={notes || `${label} support for this language`}
-      />
+    <div className={`flex items-center gap-2 ${className}`} aria-label={`${labelText} support`}>
+      <div className={getDotClasses(level)} role='img' aria-label={labelText} title={notes || labelText} />
       {showLabel && (
         <span
           className={getLabelClasses(level)}
           title={notes}
           aria-describedby={notes ? `compatibility-note-${modelId}-${language}` : undefined}
         >
-          {label}
-          {notes && <span id={`compatibility-note-${modelId}-${language}`} className="sr-only">{notes}</span>}
+          {displayLabel}
+          {notes && (
+            <span id={`compatibility-note-${modelId}-${language}`} className='sr-only'>
+              {notes}
+            </span>
+          )}
         </span>
       )}
     </div>

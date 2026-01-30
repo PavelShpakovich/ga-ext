@@ -6,7 +6,6 @@ import ruTranslations from '@/core/locales/ru.json';
 import esTranslations from '@/core/locales/es.json';
 import deTranslations from '@/core/locales/de.json';
 import frTranslations from '@/core/locales/fr.json';
-import jaTranslations from '@/core/locales/ja.json';
 import { Language } from '@/shared/types';
 
 // Preload only essential languages (English + detected language)
@@ -17,30 +16,28 @@ const resources = {
   [Language.ES]: { translation: esTranslations },
   [Language.DE]: { translation: deTranslations },
   [Language.FR]: { translation: frTranslations },
-  [Language.JA]: { translation: jaTranslations },
 };
 
 // Detect user's browser language and map to supported languages
 const detectUserLanguage = (): Language => {
   if (typeof navigator === 'undefined') return Language.EN;
-  
+
   const browserLang = navigator.language?.split('-')[0].toLowerCase() || '';
   const supportedLangs = Object.values(Language);
-  
+
   // Try exact match
-  const exactMatch = supportedLangs.find(lang => lang === browserLang);
+  const exactMatch = supportedLangs.find((lang) => lang === browserLang);
   if (exactMatch) return exactMatch;
-  
+
   // Map common language codes to our supported languages
   const languageMap: Record<string, Language> = {
-    'ru': Language.RU,
-    'es': Language.ES,
-    'de': Language.DE,
-    'fr': Language.FR,
-    'ja': Language.JA,
-    'en': Language.EN,
+    ru: Language.RU,
+    es: Language.ES,
+    de: Language.DE,
+    fr: Language.FR,
+    en: Language.EN,
   };
-  
+
   return languageMap[browserLang] || Language.EN;
 };
 

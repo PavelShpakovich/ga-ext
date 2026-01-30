@@ -238,14 +238,23 @@ export class ResponseValidator {
       }
 
       // Extract "explanation" field (array or string)
+      // Robust regex that handles partially truncated arrays (doesn't require closing ])
       const explanationMatch =
-        raw.match(/"explanation[s]?"?\s*:\s*\[(.*?)\]/) || raw.match(/'explanation[s]?'?\s*:\s*\[(.*?)\]/) || null;
+        raw.match(/"explanation[s]?"?\s*:\s*\[([^]*?)(?:\]|$)/) ||
+        raw.match(/'explanation[s]?'?\s*:\s*\[([^]*?)(?:\]|$)/) ||
+        null;
 
       if (explanationMatch) {
-        const items = explanationMatch[1]
+        const content = explanationMatch[1];
+        // Clean up items even if the last one is truncated
+        const items = content
           .split(',')
-          .map((item) => item.trim().replace(/^["']|["']$/g, ''))
-          .filter((item) => item.length > 0);
+          .map((item) => {
+            const cleaned = item.trim().replace(/^["']|["']$/g, '');
+            // Only return item if it looks complete (doesn't end with open quote and has content)
+            return cleaned;
+          })
+          .filter((item) => item.length > 0 && !item.startsWith('"') && !item.startsWith("'"));
         result['explanation'] = items;
       }
 

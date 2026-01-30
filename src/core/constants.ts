@@ -65,7 +65,6 @@ export const LANGUAGE_CONFIG = {
   [Language.ES]: { name: 'Español', tesseractCode: 'spa' },
   [Language.DE]: { name: 'Deutsch', tesseractCode: 'deu' },
   [Language.FR]: { name: 'Français', tesseractCode: 'fra' },
-  [Language.JA]: { name: '日本語', tesseractCode: 'jpn' },
 } as const;
 
 export const STORAGE_KEYS = {
@@ -77,6 +76,13 @@ export const STORAGE_KEYS = {
 } as const;
 
 export const MAX_TEXT_LENGTH = 6000; // ~1500 tokens (aligned with 2048 context window)
+export const DIFF_MAX_TEXT_LENGTH = 10000; // Skip diff for very large texts for performance
+
+// Timeout constants
+export const AUTO_HIDE_MESSAGE_DELAY = 3500;
+export const CACHE_CHECK_TIMEOUT_MS = 5000;
+export const MODEL_IDLE_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
+export const OCR_IDLE_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
 
 // OCR constants
 export const SUPPORTED_IMAGE_TYPES = ['image/png', 'image/jpg', 'image/jpeg', 'image/bmp', 'image/webp'] as const;
