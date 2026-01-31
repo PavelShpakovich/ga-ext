@@ -93,7 +93,8 @@
     "no_engine_trace": "Protokoll ist leer",
     "webgpu_not_available": "WebGPU nicht verfügbar. Aktivieren Sie die Hardwarebeschleunigung im Browser für lokale KI.",
     "privacy_note": "Datenschutz zuerst • Keine Daten verlassen Ihren Rechner",
-    "no_changes": "Keine Änderungen nötig"
+    "no_changes": "Keine Änderungen nötig",
+    "explanation_unavailable": "Erklärung aufgrund Parsing-Fehler nicht verfügbar"
   },
   "popup": {
     "local_session": "Lokales Sitzung",

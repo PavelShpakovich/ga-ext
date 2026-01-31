@@ -93,7 +93,8 @@
     "no_engine_trace": "Le journal est vide",
     "webgpu_not_available": "WebGPU non disponible. Activez l'accélération matérielle dans votre navigateur pour utiliser l'IA locale.",
     "privacy_note": "Confidentialité d'abord • Vos données ne quittent pas votre ordinateur",
-    "no_changes": "Aucune modification requise"
+    "no_changes": "Aucune modification requise",
+    "explanation_unavailable": "Explication non disponible en raison d'une erreur d'analyse"
   },
   "popup": {
     "local_session": "Session locale",

@@ -104,7 +104,9 @@ export class ResponseValidator {
       const parsed = JSON.parse(textToParse);
       if (this.hasValidStructure(parsed)) {
         const normalized = this.normalizeFields(parsed as Record<string, unknown>);
-        return { isValid: true, parsed: normalized };
+        // Attempt to repair concatenated explanations
+        const repaired = this.trySplitConcatenatedExplanations(normalized);
+        return { isValid: true, parsed: repaired };
       }
       return {
         isValid: false,
@@ -157,7 +159,9 @@ export class ResponseValidator {
       if (this.hasValidStructure(parsed)) {
         // Normalize field names to lowercase
         const normalized = this.normalizeFields(parsed);
-        return { isValid: true, parsed: normalized };
+        // Attempt to repair concatenated explanations
+        const repaired = this.trySplitConcatenatedExplanations(normalized);
+        return { isValid: true, parsed: repaired };
       }
       return {
         isValid: false,
@@ -283,6 +287,51 @@ export class ResponseValidator {
   }
 
   /**
+   * Attempts to repair concatenated explanations by splitting on semicolons
+   * Detects when a single explanation item contains multiple semicolon-separated items
+   */
+  private static trySplitConcatenatedExplanations(parsed: Record<string, unknown>): Record<string, unknown> {
+    if (!('explanation' in parsed)) {
+      return parsed;
+    }
+
+    const explanation = parsed['explanation'];
+
+    if (!Array.isArray(explanation) || explanation.length !== 1) {
+      return parsed;
+    }
+
+    const item = explanation[0];
+    if (typeof item !== 'string') {
+      return parsed;
+    }
+
+    // Check if single item contains multiple semicolon-separated parts
+    // Pattern: has semicolons AND reasonable length (> 150 chars likely means concatenated items)
+    if (item.includes(';') && item.length > 150) {
+      // Split by semicolon and clean up each part
+      const parts = item
+        .split(';')
+        .map((part) => part.trim())
+        .filter((part) => part.length > 0);
+
+      if (parts.length > 1) {
+        // Successfully split concatenated explanation
+        Logger.debug('ResponseValidator', 'Split concatenated explanations', {
+          originalLength: explanation.length,
+          newLength: parts.length,
+        });
+        return {
+          ...parsed,
+          explanation: parts,
+        };
+      }
+    }
+
+    return parsed;
+  }
+
+  /**
    * Normalizes field names to lowercase canonical forms
    */
   private static normalizeFields(parsed: Record<string, unknown>): Record<string, unknown> {
@@ -374,6 +423,48 @@ export class ResponseValidator {
       severity: 'warning',
       details: 'Unable to parse JSON response - unknown error',
     };
+  }
+
+  /**
+   * Extract only the corrected text field, ignoring explanation
+   * Used as last resort when full JSON parsing fails but we want to show user the corrected text
+   */
+  static extractCorrectedTextOnly(raw: string): string | null {
+    try {
+      // Try multiple patterns to extract corrected field value
+      const patterns = [
+        // Standard: "corrected": "text"
+        /"corrected"\s*:\s*"([^"]*(?:\\.[^"]*)*)"/,
+        // With escaped quotes: "corrected": "text with \"quotes\""
+        /"corrected"\s*:\s*"((?:[^"\\]|\\.)*)"/,
+        // Single quotes variant
+        /'corrected'\s*:\s*'([^']*(?:\\.[^']*)*)'/,
+        // Unquoted field name
+        /corrected\s*:\s*"([^"]*(?:\\.[^"]*)*)"/,
+      ];
+
+      for (const pattern of patterns) {
+        const match = raw.match(pattern);
+        if (match && match[1]) {
+          // Unescape the extracted text
+          const extracted = match[1]
+            .replace(/\\"/g, '"')
+            .replace(/\\'/g, "'")
+            .replace(/\\n/g, '\n')
+            .replace(/\\\\/g, '\\');
+
+          if (extracted.trim().length > 0) {
+            Logger.debug('ResponseValidator', 'Extracted corrected text only', { length: extracted.length });
+            return extracted;
+          }
+        }
+      }
+
+      return null;
+    } catch (err) {
+      Logger.error('ResponseValidator', 'Failed to extract corrected text', err);
+      return null;
+    }
   }
 
   /**

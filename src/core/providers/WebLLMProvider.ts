@@ -450,6 +450,23 @@ export class WebLLMProvider extends AIProvider {
       return this.formatResult(validation.parsed, original, raw);
     }
 
+    // PARTIAL SUCCESS: Try to extract at least the corrected text
+    // Even if full JSON parsing failed, the user should see corrected text if available
+    const partialResult = ResponseValidator.extractCorrectedTextOnly(raw);
+
+    if (partialResult && partialResult.trim().length > 0 && partialResult !== original) {
+      Logger.info('WebLLMProvider', 'Partial success: extracted corrected text despite JSON parse failure');
+      return {
+        original,
+        corrected: partialResult,
+        explanation: i18n.t('messages.explanation_unavailable', {
+          defaultValue: 'Explanation unavailable due to parsing error',
+        }),
+        raw,
+        partialSuccess: true,
+      };
+    }
+
     // Record failure and categorize error
     ModelCapabilityRegistry.recordParseFailure(this.modelId, style);
 

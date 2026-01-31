@@ -56,14 +56,14 @@ const COMPATIBILITY_MATRIX: readonly ModelLanguageCompatibility[] = [
   {
     modelId: 'gemma-2-9b-it-q4f16_1-MLC',
     language: Language.ES,
-    level: CompatibilityLevel.FAIR,
-    notes: 'Limited Spanish support',
+    level: CompatibilityLevel.GOOD,
+    notes: 'Good Spanish support',
   },
   {
     modelId: 'gemma-2-9b-it-q4f16_1-MLC',
     language: Language.DE,
-    level: CompatibilityLevel.FAIR,
-    notes: 'Limited German support',
+    level: CompatibilityLevel.GOOD,
+    notes: 'Good German support',
   },
   {
     modelId: 'gemma-2-9b-it-q4f16_1-MLC',
@@ -114,8 +114,8 @@ const COMPATIBILITY_MATRIX: readonly ModelLanguageCompatibility[] = [
   {
     modelId: 'Hermes-3-Llama-3.1-8B-q4f16_1-MLC',
     language: Language.RU,
-    level: CompatibilityLevel.GOOD,
-    notes: 'Good Russian support with reasoning',
+    level: CompatibilityLevel.FAIR,
+    notes: 'Fair Russian support',
   },
   {
     modelId: 'Hermes-3-Llama-3.1-8B-q4f16_1-MLC',
@@ -180,8 +180,8 @@ const COMPATIBILITY_MATRIX: readonly ModelLanguageCompatibility[] = [
   {
     modelId: 'Mistral-7B-Instruct-v0.2-q4f16_1-MLC',
     language: Language.RU,
-    level: CompatibilityLevel.GOOD,
-    notes: 'Good Russian support',
+    level: CompatibilityLevel.FAIR,
+    notes: 'Limited Russian support - not recommended',
   },
   {
     modelId: 'Mistral-7B-Instruct-v0.2-q4f16_1-MLC',
@@ -198,8 +198,8 @@ const COMPATIBILITY_MATRIX: readonly ModelLanguageCompatibility[] = [
   {
     modelId: 'Mistral-7B-Instruct-v0.2-q4f16_1-MLC',
     language: Language.FR,
-    level: CompatibilityLevel.GOOD,
-    notes: 'Good French support',
+    level: CompatibilityLevel.EXCELLENT,
+    notes: 'Excellent French support (native)',
   },
 ];
 

@@ -92,7 +92,8 @@
     "no_engine_trace": "No trace available",
     "webgpu_not_available": "WebGPU not available. Enable hardware acceleration in your browser settings to use local AI.",
     "privacy_note": "Privacy First • No Data Sent to Servers",
-    "no_changes": "No changes needed"
+    "no_changes": "No changes needed",
+    "explanation_unavailable": "Explanation unavailable due to parsing error"
   },
   "popup": {
     "local_session": "Local Session",

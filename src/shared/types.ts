@@ -75,6 +75,8 @@ export interface CorrectionResult {
   explanation?: string | string[];
   raw?: string;
   parseError?: string;
+  // Indicates that corrected text was extracted but explanation/full JSON parsing failed
+  partialSuccess?: boolean;
 }
 
 export interface Settings {

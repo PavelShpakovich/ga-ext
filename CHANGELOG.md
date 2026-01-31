@@ -5,6 +5,31 @@ All notable changes to Grammar Assistant will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.1] - 2026-01-31
+
+### Added
+
+- **Partial Success Mode**: Implemented graceful degradation for parsing failures - corrected text is now displayed even when full JSON parsing fails
+- **Enhanced Prompt Templates**: Added visual examples (✓/❌) and stricter JSON-only requirements to all 5 language prompts to prevent malformed output
+- **Response Extraction**: Added `extractCorrectedTextOnly()` method with 4 regex patterns to extract corrected text from partially malformed responses
+- **Localized Error Messages**: Added `explanation_unavailable` translation key to all 5 languages for partial success scenarios
+
+### Changed
+
+- **Language Compatibility Ratings**: Updated based on real-world testing:
+  - Mistral-7B Russian: GOOD → FAIR (not recommended for Russian)
+  - Mistral-7B French: GOOD → EXCELLENT (native French support)
+  - Hermes-3 Russian: GOOD → FAIR (limited Cyrillic support)
+  - Gemma-2-9B Spanish/German: FAIR → GOOD (improved ratings for larger model)
+- **Prompt Structure**: Enhanced all prompts with explicit "No trailing text after JSON" and "Nothing before, nothing after" instructions
+- **Error Handling**: Parsing errors no longer block display of corrected text when partial extraction succeeds
+
+### Fixed
+
+- **Critical Parsing Bug**: Fixed issue where valid corrected text was hidden behind error message when explanation array failed to parse
+- **JSON Validation**: Removed `parseError` field from partial success results to prevent UI from treating them as errors
+- **User Experience**: Users now always see corrected text even if model outputs malformed JSON structure
+
 ## [0.4.0] - 2026-01-31
 
 ### Added
