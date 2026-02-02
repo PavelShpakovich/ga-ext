@@ -8,7 +8,7 @@ import { TextButton, TextButtonVariant } from '@/shared/components/ui/TextButton
 import { CorrectionResult, ExecutionStep } from '@/shared/types';
 import { StatusIndicator } from '@/features/models/StatusIndicator';
 import { useTranslation } from 'react-i18next';
-import { getDiff } from '@/shared/utils/diff';
+import { useDiff } from '@/shared/hooks/useDiff';
 import { IconButton, IconButtonVariant, IconButtonSize } from '@/shared/components/ui';
 
 interface ResultSectionProps {
@@ -43,7 +43,7 @@ export const ResultSection: React.FC<ResultSectionProps> = ({
   const { t } = useTranslation();
   const [showDiff, setShowDiff] = useState(false);
 
-  const diffParts = result ? getDiff(result.original, result.corrected) : [];
+  const diffParts = useDiff(result?.original ?? '', result?.corrected ?? '');
 
   return (
     <div className='space-y-4'>

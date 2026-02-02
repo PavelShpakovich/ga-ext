@@ -31,6 +31,7 @@ export class ProviderFactory {
   private static activeInstance: WebLLMProvider | null = null;
   private static activeModelId: string | null = null;
   private static activeTask: Promise<unknown> = Promise.resolve();
+  private static activeOperations: number = 0;
 
   static async createProvider(model?: string): Promise<WebLLMProvider> {
     const targetModelId = model || DEFAULT_MODEL_ID;
@@ -74,10 +75,41 @@ export class ProviderFactory {
   }
 
   /**
+   * Check if there are active operations
+   */
+  static hasActiveOperations(): boolean {
+    return this.activeOperations > 0;
+  }
+
+  /**
+   * Mark operation start (call before using provider)
+   */
+  static startOperation(): void {
+    this.activeOperations++;
+    Logger.debug('ProviderFactory', 'Operation started', { active: this.activeOperations });
+  }
+
+  /**
+   * Mark operation end (call after provider operation completes)
+   */
+  static endOperation(): void {
+    this.activeOperations = Math.max(0, this.activeOperations - 1);
+    Logger.debug('ProviderFactory', 'Operation ended', { active: this.activeOperations });
+  }
+
+  /**
    * Clears all cached provider instances.
    * Useful when reloading models or clearing memory.
+   * Will not unload if there are active operations in progress.
    */
-  static async clearInstances(): Promise<void> {
+  static async clearInstances(force: boolean = false): Promise<void> {
+    if (!force && this.activeOperations > 0) {
+      Logger.warn('ProviderFactory', 'Cannot clear instances - operations in progress', {
+        activeOperations: this.activeOperations,
+      });
+      return;
+    }
+
     if (this.activeInstance) {
       const instance = this.activeInstance;
       this.activeInstance = null;

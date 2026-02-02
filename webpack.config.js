@@ -1,8 +1,9 @@
 const path = require('path');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 
-module.exports = {
+module.exports = (env = {}) => ({
   entry: {
     background: './src/app/background/index.ts',
     'content-script': './src/app/content/index.ts',
@@ -14,6 +15,8 @@ module.exports = {
     path: path.resolve(__dirname, 'dist'),
     filename: '[name].js',
     clean: true,
+    // Enable Web Workers support
+    globalObject: 'self',
   },
   module: {
     rules: [
@@ -69,6 +72,15 @@ module.exports = {
         { from: 'public/tesseract', to: 'tesseract' },
       ],
     }),
+    ...(env.analyze
+      ? [
+          new BundleAnalyzerPlugin({
+            analyzerMode: 'static',
+            openAnalyzer: true,
+            reportFilename: '../bundle-report.html',
+          }),
+        ]
+      : []),
   ],
   optimization: {
     splitChunks: {
@@ -88,4 +100,4 @@ module.exports = {
     },
   },
   devtool: 'cheap-module-source-map',
-};
+});

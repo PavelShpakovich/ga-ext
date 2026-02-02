@@ -31,3 +31,4 @@ export { usePendingText } from './usePendingText';
 export { useDownloadProgress } from './useDownloadProgress';
 export { useOCR } from './useOCR';
 export { useClickOutside } from './useClickOutside';
+export { useDiff } from './useDiff';

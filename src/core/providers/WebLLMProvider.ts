@@ -338,61 +338,72 @@ export class WebLLMProvider extends AIProvider {
     language: Language = Language.EN,
     onPartialText?: (text: string) => void,
   ): Promise<CorrectionResult> {
-    await this.ensureReady();
-    if (!this.engine) {
-      throw new Error('Model not ready');
-    }
+    // Import dynamically to avoid circular dependency
+    const { ProviderFactory } = await import('@/core/providers');
 
-    const prompt = this.buildPrompt(text, style, language);
-    const messages: ChatCompletionMessageParam[] = [
-      { role: 'system', content: this.getSystemPrompt(language) },
-      { role: 'user', content: prompt },
-    ];
+    // Mark operation start to prevent model unloading during use
+    ProviderFactory.startOperation();
 
-    const completion = await this.engine.chat.completions.create({
-      messages,
-      temperature: DEFAULT_TEMPERATURE,
-      max_tokens: MAX_TOKENS,
-      frequency_penalty: FREQUENCY_PENALTY,
-      presence_penalty: PRESENCE_PENALTY,
-      stream: true,
-    });
+    try {
+      await this.ensureReady();
+      if (!this.engine) {
+        throw new Error('Model not ready');
+      }
 
-    let fullContent = '';
-    let lastCorrectedText = '';
+      const prompt = this.buildPrompt(text, style, language);
+      const messages: ChatCompletionMessageParam[] = [
+        { role: 'system', content: this.getSystemPrompt(language) },
+        { role: 'user', content: prompt },
+      ];
 
-    for await (const chunk of completion) {
-      const delta = chunk.choices[0]?.delta?.content || '';
-      fullContent += delta;
+      const completion = await this.engine.chat.completions.create({
+        messages,
+        temperature: DEFAULT_TEMPERATURE,
+        max_tokens: MAX_TOKENS,
+        frequency_penalty: FREQUENCY_PENALTY,
+        presence_penalty: PRESENCE_PENALTY,
+        stream: true,
+      });
 
-      // Validate streaming response incrementally for early error detection
-      this.validateStreamingChunk(fullContent);
+      let fullContent = '';
+      let lastCorrectedText = '';
 
-      if (onPartialText) {
-        // Simple heuristic to extract text from "corrected": "..." in partial JSON
-        // We look for the start of the "corrected" field and take everything until the next quote or end
-        const correctedPrefix = '"corrected":';
-        const index = fullContent.indexOf(correctedPrefix);
-        if (index !== -1) {
-          const startSearch = index + correctedPrefix.length;
-          const firstQuote = fullContent.indexOf('"', startSearch);
-          if (firstQuote !== -1) {
-            const nextQuote = fullContent.indexOf('"', firstQuote + 1);
-            const partial =
-              nextQuote !== -1
-                ? fullContent.substring(firstQuote + 1, nextQuote)
-                : fullContent.substring(firstQuote + 1);
+      for await (const chunk of completion) {
+        const delta = chunk.choices[0]?.delta?.content || '';
+        fullContent += delta;
 
-            if (partial !== lastCorrectedText) {
-              lastCorrectedText = partial;
-              onPartialText(lastCorrectedText);
+        // Validate streaming response incrementally for early error detection
+        this.validateStreamingChunk(fullContent);
+
+        if (onPartialText) {
+          // Simple heuristic to extract text from "corrected": "..." in partial JSON
+          // We look for the start of the "corrected" field and take everything until the next quote or end
+          const correctedPrefix = '"corrected":';
+          const index = fullContent.indexOf(correctedPrefix);
+          if (index !== -1) {
+            const startSearch = index + correctedPrefix.length;
+            const firstQuote = fullContent.indexOf('"', startSearch);
+            if (firstQuote !== -1) {
+              const nextQuote = fullContent.indexOf('"', firstQuote + 1);
+              const partial =
+                nextQuote !== -1
+                  ? fullContent.substring(firstQuote + 1, nextQuote)
+                  : fullContent.substring(firstQuote + 1);
+
+              if (partial !== lastCorrectedText) {
+                lastCorrectedText = partial;
+                onPartialText(lastCorrectedText);
+              }
             }
           }
         }
       }
-    }
 
-    return this.parseResponse(fullContent, text, style);
+      return this.parseResponse(fullContent, text, style);
+    } finally {
+      // Always mark operation end, even if error occurs
+      ProviderFactory.endOperation();
+    }
   }
 
   /**

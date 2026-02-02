@@ -5,6 +5,42 @@ All notable changes to Grammar Assistant will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.5] - 2026-02-02
+
+### Added
+
+- **Web Workers for Diff**: Offloaded diff computation to Web Worker for better UI responsiveness
+  - Created `shared/workers/diff.worker.ts` for background diff computation
+  - Added `DiffWorkerManager` service with Promise-based API and automatic fallback
+  - New `useDiff` hook replaces synchronous `getDiff()` calls in React components
+  - Prevents UI freezing when computing diffs for large text corrections
+  - Webpack 5 worker support with automatic code splitting
+
+### Changed
+
+- `ResultSection` now uses `useDiff` hook for asynchronous diff computation
+- Webpack output configured with `globalObject: 'self'` for Web Worker compatibility
+
+### Fixed
+
+- **Model Disposal Race Condition**: Prevented WebLLM "Object already disposed" errors
+  - Added operation tracking to `ProviderFactory` (startOperation/endOperation/hasActiveOperations)
+  - Idle timeout now skips model unloading when corrections are in progress
+  - `correct()` method wrapped with try/finally to ensure operation tracking cleanup
+
+## [0.4.4] - 2026-02-02
+
+### Added
+
+- **Bundle Analysis**: Added webpack-bundle-analyzer for visualizing bundle composition
+  - New `npm run analyze` script generates interactive HTML report
+  - Analysis shows background.js (5.38 MiB) dominated by WebLLM library
+  - Identified optimization targets: WebLLM code splitting, tesseract lazy loading, icon optimization
+
+### Developer
+
+- Configured webpack-bundle-analyzer plugin with static HTML report generation
+
 ## [0.4.3] - 2026-02-02
 
 ### Added
