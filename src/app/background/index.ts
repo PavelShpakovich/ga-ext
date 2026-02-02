@@ -1,9 +1,33 @@
+/**
+ * @file background/index.ts
+ * Chrome Extension Service Worker
+ * Orchestrates background modules with optimized lifecycle management.
+ *
+ * Architecture:
+ * - messageHandler: Runtime message routing (OCR, side panel, model downloads)
+ * - commandHandler: Keyboard shortcuts and context menu
+ * - modelManager: Alarm-based idle timeout and memory pressure handling
+ * - contextMenu: Dynamic i18n-aware context menu
+ *
+ * Performance optimizations:
+ * - Modular structure enables lazy loading
+ * - chrome.alarms API for reliable timers across service worker restarts
+ * - Memory pressure detection for automatic model unloading
+ */
+
 import { Logger } from '@/core/services/Logger';
 import { STORAGE_KEYS } from '@/core/constants';
 import { Storage } from '@/core/services/StorageService';
 import i18n from '@/core/i18n';
-import { setPendingText, setPendingError, clearStalePending } from '@/shared/utils/pendingStorage';
+import { clearStalePending } from '@/shared/utils/pendingStorage';
 import { updateContextMenuTitle, initializeContextMenu } from './contextMenu';
+import {
+  initializeMessageHandler,
+  initializeContextMenuHandler,
+  initializeKeyboardHandler,
+  initializeIdleTimeout,
+  initializeMemoryMonitoring,
+} from './modules';
 
 Logger.info('Background', 'Service worker started');
 
@@ -11,6 +35,25 @@ Logger.info('Background', 'Service worker started');
 clearStalePending().catch((err) => {
   Logger.warn('Background', 'Failed to clear stale pending payloads on startup', err);
 });
+
+// ========================================
+// Initialize all modules
+// ========================================
+
+// Message routing
+initializeMessageHandler();
+
+// Context menu and keyboard shortcuts
+initializeContextMenuHandler();
+initializeKeyboardHandler();
+
+// Model lifecycle management
+initializeIdleTimeout();
+initializeMemoryMonitoring();
+
+// ========================================
+// Context Menu i18n Setup
+// ========================================
 
 // Initialize on install
 chrome.runtime.onInstalled.addListener(async () => {
@@ -49,131 +92,4 @@ if (i18n.isInitialized) {
   i18n.on('initialized', updateContextMenuTitle);
 }
 
-// Handle context menu clicks
-chrome.contextMenus.onClicked.addListener(async (info, tab) => {
-  if (info.menuItemId === 'grammar-assistant-correct' && tab?.id) {
-    const selectedText = info.selectionText || '';
-    Logger.debug('Background', 'Context menu clicked', { length: selectedText.length });
-
-    // Open side panel
-    chrome.sidePanel.open({ tabId: tab.id });
-
-    // Send selected text to side panel and flag auto-correct
-    await setPendingText(selectedText, true);
-  }
-});
-
-// Handle keyboard shortcut
-chrome.commands.onCommand.addListener((command, tab) => {
-  if (command === 'correct-text' && tab?.id) {
-    Logger.debug('Background', 'Keyboard shortcut triggered');
-
-    // Request selected text from content script
-    chrome.tabs.sendMessage(tab.id, { action: 'getSelectedText' }, async (response) => {
-      // Always open SidePanel for better UX, even if no text selected
-      if (tab.id) {
-        chrome.sidePanel.open({ tabId: tab.id });
-      }
-
-      if (response?.error === 'TOO_LONG') {
-        Logger.debug('Background', 'Text too long, sending error to SidePanel');
-        await setPendingError('TOO_LONG');
-        return;
-      }
-
-      const text = response?.text;
-
-      if (text) {
-        await setPendingText(text, true);
-      } else {
-        // Optional: Could send a message to the sidepanel to show "Select text first" hint
-        Logger.debug('Background', 'No text selected from content script', response);
-      }
-    });
-  }
-});
-
-// Handle messages from content script and side panel
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  Logger.debug('Background', 'Message received', { action: message.action, fromTab: !!sender.tab });
-
-  if (message.action === 'run-ocr') {
-    (async () => {
-      try {
-        await setupOffscreen();
-        const response = await chrome.runtime.sendMessage({
-          action: 'ocr',
-          image: message.image,
-          language: message.language,
-        });
-        sendResponse(response);
-      } catch (error) {
-        Logger.error('Background', 'OCR through offscreen failed', error);
-        sendResponse({ error: (error as Error).message });
-      }
-    })();
-    return true;
-  }
-
-  if (message.action === 'openSidePanel') {
-    // If message comes from a tab (content script), use that tab ID
-    if (sender.tab?.id) {
-      chrome.sidePanel.open({ tabId: sender.tab.id });
-      if (message.text !== undefined) {
-        setPendingText(message.text, !!message.autoRun).then(() => {
-          sendResponse({ success: true });
-        });
-        return true;
-      }
-      sendResponse({ success: true });
-    } else {
-      // If message comes from popup, query the active tab
-      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        if (tabs[0]?.id) {
-          chrome.sidePanel.open({ tabId: tabs[0].id });
-          if (message.text !== undefined) {
-            setPendingText(message.text, !!message.autoRun).then(() => {
-              sendResponse({ success: true });
-            });
-            return true;
-          }
-        }
-        sendResponse({ success: true });
-      });
-      return true; // Keep channel open for async response
-    }
-  }
-
-  if (message.action === 'startModelDownload') {
-    const modelId = message.modelId as string | undefined;
-    if (!modelId) return true;
-
-    if (sender.tab?.id) {
-      chrome.sidePanel.open({ tabId: sender.tab.id });
-      Storage.set(STORAGE_KEYS.PENDING_MODEL_DOWNLOAD, modelId);
-    } else {
-      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        if (tabs[0]?.id) {
-          chrome.sidePanel.open({ tabId: tabs[0].id });
-          Storage.set(STORAGE_KEYS.PENDING_MODEL_DOWNLOAD, modelId);
-        }
-      });
-    }
-  }
-
-  return true; // Keep channel open for async response
-});
-
-async function setupOffscreen() {
-  const OFFSCREEN_PATH = 'offscreen.html';
-
-  if (await chrome.offscreen.hasDocument()) {
-    return;
-  }
-
-  await chrome.offscreen.createDocument({
-    url: OFFSCREEN_PATH,
-    reasons: [chrome.offscreen.Reason.DOM_PARSER],
-    justification: 'Perform OCR tasks using Tesseract.js in a background-like environment',
-  });
-}
+Logger.debug('Background', 'Service worker initialized');

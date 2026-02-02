@@ -5,6 +5,37 @@ All notable changes to Grammar Assistant will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.3] - 2026-02-02
+
+### Added
+
+- **Service Worker Optimization**: Modular architecture with enhanced lifecycle management
+  - Split `background/index.ts` into focused modules: `messageHandler`, `commandHandler`, `modelManager`
+  - Implemented alarm-based idle timeout using `chrome.alarms` API (more reliable across service worker restarts)
+  - Added memory pressure monitoring for automatic model unloading during low memory conditions
+  - Removed setTimeout-based idle timer in favor of Chrome's alarm system
+- **Provider Factory Enhancement**: Improved model management with callback hooks
+  - Added activity tracking via `setActivityCallback` for model usage monitoring
+  - Added `setModelLoadedCallback` to automatically start idle monitoring when models load
+  - Decoupled idle timeout logic from ProviderFactory for better separation of concerns
+- **Background Module System**: New modular structure enables lazy loading and better organization
+  - `modules/messageHandler.ts`: Runtime message routing (OCR, side panel, model downloads)
+  - `modules/commandHandler.ts`: Keyboard shortcuts and context menu events
+  - `modules/modelManager.ts`: Model lifecycle with alarm-based timeouts and memory management
+  - `modules/index.ts`: Barrel export for clean imports
+
+### Changed
+
+- Refactored idle timeout mechanism from setTimeout (10-minute timer) to chrome.alarms (1-minute periodic checks)
+- Main background script now orchestrates modules instead of containing all logic
+- Improved service worker reliability during wake/sleep cycles
+
+### Technical Notes
+
+- Background bundle remains stable at ~5.38 MiB (includes WebLLM)
+- All 136 tests passing, 0 lint errors
+- Better memory management reduces risk of extension crashes on low-memory devices
+
 ## [0.4.2] - 2026-02-02
 
 ### Changed
