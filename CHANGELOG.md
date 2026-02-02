@@ -5,6 +5,31 @@ All notable changes to Grammar Assistant will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.2] - 2026-02-02
+
+### Changed
+
+- **Code Architecture**: Major refactoring to improve maintainability and code organization
+  - Extracted utility functions into dedicated modules (`pendingStorage.ts`, `contextMenu.ts`, `tesseractWorker.ts`)
+  - Reduced `background/index.ts` from 228 to 180 lines by eliminating 60+ lines of duplication
+  - Split large `SidePanel.tsx` component (547 lines) into focused, reusable hooks (472 lines, 14% reduction)
+- **Custom Hooks**: Created three new specialized hooks for better separation of concerns
+  - `useLanguageMismatch`: Language detection and mismatch warning logic (83 lines)
+  - `useToastNotifications`: Toast notification management (57 lines)
+  - `useCorrectionActions`: Correction workflow with language validation (136 lines)
+- **Documentation**: Added comprehensive JSDoc comments to all utility functions and modules
+  - Module-level documentation for `ContextMenu`, `TesseractWorker`, and `PendingStorage`
+  - Parameter and return type documentation for all public functions
+  - Created barrel exports (`hooks/index.ts`, `utils/index.ts`) for cleaner import paths
+- **Type Safety**: Improved type definitions throughout the codebase
+  - Replaced generic `any` types with proper interfaces (`CorrectionResult`, `Record<string, unknown>`)
+  - Added explicit type annotations for all hook parameters and return values
+
+### Fixed
+
+- **React Hook Dependencies**: Resolved all ESLint warnings for missing hook dependencies
+- **Variable Scope**: Fixed declaration order issues to prevent "used before assigned" errors
+
 ## [0.4.1] - 2026-01-31
 
 ### Added

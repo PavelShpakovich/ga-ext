@@ -10,7 +10,7 @@ export class ProviderFactory {
   private static activeInstance: WebLLMProvider | null = null;
   private static activeModelId: string | null = null;
   private static idleTimer: ReturnType<typeof setTimeout> | null = null;
-  private static activeTask: Promise<any> = Promise.resolve();
+  private static activeTask: Promise<unknown> = Promise.resolve();
 
   private static resetIdleTimer() {
     if (this.idleTimer) {

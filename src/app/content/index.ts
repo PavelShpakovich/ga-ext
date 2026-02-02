@@ -1,11 +1,17 @@
 import { Logger } from '@/core/services/Logger';
 import { MAX_TEXT_LENGTH } from '@/core/constants';
 
+declare global {
+  interface Window {
+    __GA_CONTENT_SCRIPT_LOADED__?: boolean;
+  }
+}
+
 // Prevent multiple initializations in case of re-injection
-if ((window as any).__GA_CONTENT_SCRIPT_LOADED__) {
+if (window.__GA_CONTENT_SCRIPT_LOADED__) {
   Logger.debug('ContentScript', 'Already loaded, skipping initialization');
 } else {
-  (window as any).__GA_CONTENT_SCRIPT_LOADED__ = true;
+  window.__GA_CONTENT_SCRIPT_LOADED__ = true;
   Logger.info('ContentScript', 'Content script loaded');
 }
 
@@ -45,18 +51,10 @@ const getActiveSelectionText = (): string | null => {
     }
   }
 
-  // Handle contenteditable if no text is explicitly selected but element is focused
+  // Do not auto-capture full contenteditable text without explicit selection
   if (activeElement.isContentEditable) {
     lastInteractedElement = activeElement;
-    const text = activeElement.innerText.trim();
-
-    // Safety check: Prevent accidental processing of huge documents
-    // If text is larger than limits, require user to select smaller chunk
-    if (text.length > MAX_TEXT_LENGTH) {
-      Logger.warn('ContentScript', 'Text too long for auto-selection.');
-      return null;
-    }
-    return text;
+    return '';
   }
 
   return '';

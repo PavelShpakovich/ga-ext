@@ -7,7 +7,6 @@ interface StorageSchema {
   grammar_assistant_settings: Settings;
   pendingText: string;
   pendingModelDownload: string;
-  pendingAutoCorrect: boolean;
   pendingError: string;
 }
 
@@ -44,7 +43,7 @@ export class StorageService {
       return result[key];
     } catch (error) {
       Logger.error('StorageService', `Failed to get key: ${key}`, error);
-      return undefined as any;
+      return undefined as unknown as K extends keyof StorageSchema ? StorageSchema[K] : never;
     }
   }
 
@@ -92,7 +91,7 @@ export class StorageService {
    */
   public subscribe<K extends StorageKey>(
     key: K,
-    callback: (newValue: K extends keyof StorageSchema ? StorageSchema[K] : any) => void,
+    callback: (newValue: K extends keyof StorageSchema ? StorageSchema[K] : unknown) => void,
   ): () => void {
     const listener = (changes: { [key: string]: chrome.storage.StorageChange }, areaName: string) => {
       if (areaName === 'local' && changes[key]) {

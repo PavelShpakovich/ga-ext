@@ -1,6 +1,11 @@
 import { Logger } from '@/core/services/Logger';
 import { Language } from '@/shared/types';
 
+/**
+ * Checks if WebGPU is available in the current browser environment.
+ * WebGPU is required for running WebLLM models locally with hardware acceleration.
+ * @returns Promise resolving to true if WebGPU is supported and an adapter can be obtained
+ */
 export const isWebGPUAvailable = async (): Promise<boolean> => {
   if (typeof navigator === 'undefined' || !('gpu' in navigator)) return false;
   try {
@@ -13,14 +18,33 @@ export const isWebGPUAvailable = async (): Promise<boolean> => {
   }
 };
 
+/**
+ * Generates a unique cache key for correction results based on model, text, style, and language.
+ * Used to determine if a correction can be reused or needs to be regenerated.
+ * @param modelId - The AI model identifier
+ * @param text - The input text to correct
+ * @param style - Optional correction style (formal, casual, etc.)
+ * @param language - Optional target language
+ * @returns A unique string key combining all parameters
+ */
 export const generateCacheKey = (modelId: string, text: string, style?: string, language?: string): string => {
   const base = style ? `${modelId}::${style}` : modelId;
   const withLang = language ? `${base}::${language}` : base;
   return `${withLang}::${text.trim()}`;
 };
 
+/**
+ * Normalizes a download progress value to ensure it stays within valid bounds [0, 1].
+ * @param progress - The raw progress value (may be outside 0-1 range)
+ * @returns Progress value clamped between 0 and 1
+ */
 export const normalizeDownloadProgress = (progress: number): number => Math.max(0, Math.min(1, progress));
 
+/**
+ * Copies text to the system clipboard using the Clipboard API.
+ * @param text - The text to copy
+ * @returns Promise resolving to true if successful, false if the operation failed
+ */
 export const copyToClipboard = async (text: string): Promise<boolean> => {
   try {
     await navigator.clipboard.writeText(text);
@@ -30,6 +54,11 @@ export const copyToClipboard = async (text: string): Promise<boolean> => {
   }
 };
 
+/**
+ * Capitalizes the first character of a string.
+ * @param s - The input string
+ * @returns String with first character uppercased, or original string if empty
+ */
 export const capitalize = (s: string) => (s && s[0].toUpperCase() + s.slice(1)) || s;
 
 export interface OCRProgress {

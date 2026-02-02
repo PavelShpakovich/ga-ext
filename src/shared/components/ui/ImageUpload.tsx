@@ -5,6 +5,8 @@ import { Button, ButtonVariant, ButtonSize } from '@/shared/components/Button';
 import { useTranslation } from 'react-i18next';
 import { SUPPORTED_IMAGE_TYPES } from '@/core/constants';
 
+type SupportedImageType = (typeof SUPPORTED_IMAGE_TYPES)[number];
+
 interface ImageUploadProps {
   onImageSelect: (file: File) => void;
   disabled?: boolean;
@@ -20,7 +22,10 @@ export const ImageUpload: React.FC<ImageUploadProps> = React.memo(
 
     const acceptedTypes = useMemo(() => SUPPORTED_IMAGE_TYPES.join(','), []);
 
-    const isSupported = useCallback((file: File) => SUPPORTED_IMAGE_TYPES.includes(file.type as any), []);
+    const isSupported = useCallback(
+      (file: File) => SUPPORTED_IMAGE_TYPES.includes(file.type as SupportedImageType),
+      [],
+    );
 
     const selectFile = useCallback(
       (file: File) => {

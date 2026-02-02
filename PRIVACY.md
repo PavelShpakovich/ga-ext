@@ -13,7 +13,7 @@ The core function of Grammar Assistant is to correct and improve your text. Unli
 
 ## 2. Information We Do Not Collect
 
-- **No Text Collection:** We do not collect, store, or transmit any text you type or select for correction.
+- **No Text Collection:** We do not collect or transmit any text you type or select for correction. Selected text may be stored temporarily in session storage for transfer between extension components and is cleared quickly.
 - **No Browsing History:** We do not monitor your browsing activity or collect information about the websites you visit.
 - **No Personal Identification:** We do not require account creation, and we do not collect personal information such as names, emails, or IP addresses.
 
@@ -26,6 +26,18 @@ The extension uses your browser's local storage (`chrome.storage.local`) only to
 - The status of your local model cache.
 
 This data remains on your device and is not synchronized to any external servers.
+
+## 3.1 Temporary Session Storage (Inter-Context Transfer)
+
+When you trigger corrections from the context menu or keyboard shortcut, the selected text may be stored temporarily in **session storage** (`chrome.storage.session`) so it can be passed from the background service worker to the side panel. This data is:
+
+- Ephemeral and automatically cleared after delivery or a short timeout.
+- Not persisted across browser restarts.
+- Never transmitted to any server.
+
+## 3.2 Error Logs
+
+To improve reliability, we store a small number of **sanitized error logs** locally (no text content, no selections, no user input). These logs include only timestamps, categories, and short messages to help diagnose crashes.
 
 ## 4. Third-Party Connections (Model Weights)
 

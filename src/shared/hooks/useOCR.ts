@@ -11,11 +11,14 @@ export const useOCR = () => {
   const [progress, setProgress] = useState<OCRProgress | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  type OcrProgressMessage = { action: 'ocr-progress'; payload: OCRProgress };
+
   // Listen for progress updates from offscreen
   useEffect(() => {
-    const handleMessage = (message: any) => {
-      if (message.action === 'ocr-progress') {
-        setProgress(message.payload);
+    const handleMessage = (message: unknown) => {
+      const maybeMessage = message as Partial<OcrProgressMessage>;
+      if (maybeMessage.action === 'ocr-progress' && maybeMessage.payload) {
+        setProgress(maybeMessage.payload);
       }
     };
 

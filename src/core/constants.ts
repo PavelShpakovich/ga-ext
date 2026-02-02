@@ -69,7 +69,6 @@ export const STORAGE_KEYS = {
   PENDING_TEXT: 'pendingText',
   PENDING_ERROR: 'pendingError',
   PENDING_MODEL_DOWNLOAD: 'pendingModelDownload',
-  PENDING_AUTO_CORRECT: 'pendingAutoCorrect',
 } as const;
 
 export const MAX_TEXT_LENGTH = 10000; // ~2500 tokens (aligned with 4096+ context window, leaves room for corrections + explanations)
@@ -80,6 +79,9 @@ export const AUTO_HIDE_MESSAGE_DELAY = 3500;
 export const CACHE_CHECK_TIMEOUT_MS = 5000;
 export const MODEL_IDLE_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
 export const OCR_IDLE_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
+
+// Pending payload lifetime for transient inter-context messaging
+export const PENDING_TTL_MS = 2 * 60 * 1000; // 2 minutes
 
 // OCR constants
 export const SUPPORTED_IMAGE_TYPES = ['image/png', 'image/jpg', 'image/jpeg', 'image/bmp', 'image/webp'] as const;

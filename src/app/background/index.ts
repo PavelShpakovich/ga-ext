@@ -2,62 +2,26 @@ import { Logger } from '@/core/services/Logger';
 import { STORAGE_KEYS } from '@/core/constants';
 import { Storage } from '@/core/services/StorageService';
 import i18n from '@/core/i18n';
+import { setPendingText, setPendingError, clearStalePending } from '@/shared/utils/pendingStorage';
+import { updateContextMenuTitle, initializeContextMenu } from './contextMenu';
 
 Logger.info('Background', 'Service worker started');
 
-// Helper to update the context menu title based on current language
-async function updateContextMenuTitle() {
-  try {
-    const settings = await Storage.getSettings();
-    if (i18n.language !== settings.language) {
-      await i18n.changeLanguage(settings.language);
-    }
-    // Check if the menu item exists by attempting to update it
-    // We wrap it in a promise-aware way to catch the specific error
-    try {
-      await chrome.contextMenus.update('grammar-assistant-correct', {
-        title: i18n.t('ui.context_menu_title'),
-      });
-      Logger.debug('Background', 'Context menu title updated', { language: settings.language });
-    } catch (e) {
-      // If it doesn't exist, create it
-      chrome.contextMenus.create({
-        id: 'grammar-assistant-correct',
-        title: i18n.t('ui.context_menu_title'),
-        contexts: ['selection'],
-      });
-      Logger.debug('Background', 'Context menu created because it was missing');
-    }
-  } catch (error) {
-    Logger.error('Background', 'Failed to initialize context menu', error);
-  }
-}
+// Cleanup any stale payloads on startup (best-effort)
+clearStalePending().catch((err) => {
+  Logger.warn('Background', 'Failed to clear stale pending payloads on startup', err);
+});
 
 // Initialize on install
 chrome.runtime.onInstalled.addListener(async () => {
   Logger.info('Background', 'Extension installed');
 
-  const initMenu = async () => {
-    // Ensure we use the correct language from storage if it exists
-    const settings = await Storage.getSettings();
-    if (i18n.language !== settings.language) {
-      await i18n.changeLanguage(settings.language);
-    }
-
-    // Always clean up and re-create on install/update to avoid ID conflicts
-    chrome.contextMenus.removeAll(() => {
-      chrome.contextMenus.create({
-        id: 'grammar-assistant-correct',
-        title: i18n.t('ui.context_menu_title'),
-        contexts: ['selection'],
-      });
-    });
-  };
+  await clearStalePending();
 
   if (i18n.isInitialized) {
-    await initMenu();
+    await initializeContextMenu();
   } else {
-    i18n.on('initialized', initMenu);
+    i18n.on('initialized', initializeContextMenu);
   }
 });
 
@@ -95,10 +59,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     chrome.sidePanel.open({ tabId: tab.id });
 
     // Send selected text to side panel and flag auto-correct
-    await Promise.all([
-      Storage.set(STORAGE_KEYS.PENDING_TEXT, selectedText),
-      Storage.set(STORAGE_KEYS.PENDING_AUTO_CORRECT, true),
-    ]);
+    await setPendingText(selectedText, true);
   }
 });
 
@@ -116,17 +77,14 @@ chrome.commands.onCommand.addListener((command, tab) => {
 
       if (response?.error === 'TOO_LONG') {
         Logger.debug('Background', 'Text too long, sending error to SidePanel');
-        await Storage.set(STORAGE_KEYS.PENDING_ERROR, 'TOO_LONG');
+        await setPendingError('TOO_LONG');
         return;
       }
 
       const text = response?.text;
 
       if (text) {
-        await Promise.all([
-          Storage.set(STORAGE_KEYS.PENDING_TEXT, text),
-          Storage.set(STORAGE_KEYS.PENDING_AUTO_CORRECT, true),
-        ]);
+        await setPendingText(text, true);
       } else {
         // Optional: Could send a message to the sidepanel to show "Select text first" hint
         Logger.debug('Background', 'No text selected from content script', response);
@@ -162,10 +120,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (sender.tab?.id) {
       chrome.sidePanel.open({ tabId: sender.tab.id });
       if (message.text !== undefined) {
-        Promise.all([
-          Storage.set(STORAGE_KEYS.PENDING_TEXT, message.text),
-          Storage.set(STORAGE_KEYS.PENDING_AUTO_CORRECT, !!message.autoRun),
-        ]).then(() => {
+        setPendingText(message.text, !!message.autoRun).then(() => {
           sendResponse({ success: true });
         });
         return true;
@@ -177,10 +132,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         if (tabs[0]?.id) {
           chrome.sidePanel.open({ tabId: tabs[0].id });
           if (message.text !== undefined) {
-            Promise.all([
-              Storage.set(STORAGE_KEYS.PENDING_TEXT, message.text),
-              Storage.set(STORAGE_KEYS.PENDING_AUTO_CORRECT, !!message.autoRun),
-            ]).then(() => {
+            setPendingText(message.text, !!message.autoRun).then(() => {
               sendResponse({ success: true });
             });
             return true;

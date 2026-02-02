@@ -91,10 +91,17 @@ export class LoggerService {
 
   private async persistErrorLog(entry: LogEntry): Promise<void> {
     try {
+      const sanitized: LogEntry = {
+        timestamp: entry.timestamp,
+        level: entry.level,
+        category: entry.category,
+        message: entry.message.length > 500 ? `${entry.message.slice(0, 497)}...` : entry.message,
+      };
+
       // Direct storage access to avoid circular dependency with StorageService
       const result = await chrome.storage.local.get('grammar_assistant_error_logs');
       const errorLogs = result.grammar_assistant_error_logs || [];
-      errorLogs.push(entry);
+      errorLogs.push(sanitized);
 
       // Keep only last 50 errors to avoid storage quota issues
       if (errorLogs.length > 50) {

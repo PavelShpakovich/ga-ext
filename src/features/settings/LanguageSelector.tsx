@@ -1,6 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { Language } from '@/shared/types';
-import { LANGUAGE_CONFIG } from '@/core/constants';
 import { changeLanguage } from '@/core/i18n';
 import { useSettings } from '@/shared/hooks/useSettings';
 import { useClickOutside } from '@/shared/hooks/useClickOutside';
