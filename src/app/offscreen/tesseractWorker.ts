@@ -6,7 +6,7 @@
 
 import { createWorker, type Worker, type LoggerMessage } from 'tesseract.js';
 import { OCR_ASSETS_PATH, LANGUAGE_CONFIG, OCR_IDLE_TIMEOUT_MS } from '@/core/constants';
-import { Language } from '@/shared/types';
+import { Language, MessageAction } from '@/shared/types';
 import { Logger } from '@/core/services/Logger';
 
 type WorkerState = {
@@ -104,7 +104,7 @@ export async function getWorker(language: Language = Language.EN): Promise<Worke
         if (m.status === 'recognizing text') {
           chrome.runtime
             .sendMessage({
-              action: 'ocr-progress',
+              action: MessageAction.OCR_PROGRESS,
               payload: { status: 'Recognizing...', progress: m.progress ?? 0 },
             })
             .catch(() => {});

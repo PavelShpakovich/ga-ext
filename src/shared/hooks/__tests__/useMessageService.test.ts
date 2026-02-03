@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useMessageService } from '../useMessageService';
+import { ToastVariant } from '@/shared/types';
 import { ModalVariant } from '@/shared/components/ui/Modal';
 
 describe('useMessageService', () => {
@@ -14,19 +15,19 @@ describe('useMessageService', () => {
 
       expect(result.current.toast.isVisible).toBe(false);
       expect(result.current.toast.message).toBe('');
-      expect(result.current.toast.variant).toBe('info');
+      expect(result.current.toast.variant).toBe(ToastVariant.INFO);
     });
 
     it('should show toast with message and variant', () => {
       const { result } = renderHook(() => useMessageService());
 
       act(() => {
-        result.current.showToast('Test message', 'success');
+        result.current.showToast('Test message', ToastVariant.SUCCESS);
       });
 
       expect(result.current.toast.isVisible).toBe(true);
       expect(result.current.toast.message).toBe('Test message');
-      expect(result.current.toast.variant).toBe('success');
+      expect(result.current.toast.variant).toBe(ToastVariant.SUCCESS);
     });
 
     it('should show toast with action callback', () => {
@@ -34,7 +35,7 @@ describe('useMessageService', () => {
       const mockAction = { label: 'Undo', onClick: () => {} };
 
       act(() => {
-        result.current.showToast('Message', 'info', mockAction);
+        result.current.showToast('Message', ToastVariant.INFO, mockAction);
       });
 
       expect(result.current.toast.action).toEqual(mockAction);
@@ -47,14 +48,14 @@ describe('useMessageService', () => {
         result.current.showToast('Message');
       });
 
-      expect(result.current.toast.variant).toBe('info');
+      expect(result.current.toast.variant).toBe(ToastVariant.INFO);
     });
 
     it('should hide toast', () => {
       const { result } = renderHook(() => useMessageService());
 
       act(() => {
-        result.current.showToast('Test', 'success');
+        result.current.showToast('Test', ToastVariant.SUCCESS);
       });
 
       expect(result.current.toast.isVisible).toBe(true);
@@ -68,7 +69,12 @@ describe('useMessageService', () => {
 
     it('should support all toast variants', () => {
       const { result } = renderHook(() => useMessageService());
-      const variants: Array<'success' | 'error' | 'info' | 'warning'> = ['success', 'error', 'info', 'warning'];
+      const variants: ToastVariant[] = [
+        ToastVariant.SUCCESS,
+        ToastVariant.ERROR,
+        ToastVariant.INFO,
+        ToastVariant.WARNING,
+      ];
 
       variants.forEach((variant) => {
         act(() => {
@@ -171,7 +177,7 @@ describe('useMessageService', () => {
 
       expect(result.current.toast.isVisible).toBe(true);
       expect(result.current.toast.message).toBe('Error occurred');
-      expect(result.current.toast.variant).toBe('error');
+      expect(result.current.toast.variant).toBe(ToastVariant.ERROR);
     });
 
     it('showErrorToast should support action', () => {
@@ -194,7 +200,7 @@ describe('useMessageService', () => {
 
       expect(result.current.toast.isVisible).toBe(true);
       expect(result.current.toast.message).toBe('Warning!');
-      expect(result.current.toast.variant).toBe('warning');
+      expect(result.current.toast.variant).toBe(ToastVariant.WARNING);
     });
 
     it('showWarningToast should support action', () => {
@@ -214,7 +220,7 @@ describe('useMessageService', () => {
       const { result } = renderHook(() => useMessageService());
 
       act(() => {
-        result.current.showToast('Saving...', 'info');
+        result.current.showToast('Saving...', ToastVariant.INFO);
         result.current.showModal('Confirm', 'Continue?', () => {});
       });
 
@@ -227,7 +233,7 @@ describe('useMessageService', () => {
 
       act(() => {
         result.current.showModal('Confirm', 'Continue?', () => {});
-        result.current.showToast('Updated', 'success');
+        result.current.showToast('Updated', ToastVariant.SUCCESS);
       });
 
       expect(result.current.modalConfig.isOpen).toBe(true);
@@ -239,7 +245,7 @@ describe('useMessageService', () => {
       const { result } = renderHook(() => useMessageService());
 
       act(() => {
-        result.current.showToast('Message', 'info');
+        result.current.showToast('Message', ToastVariant.INFO);
         result.current.showModal('Title', 'Message', () => {});
       });
 
@@ -259,7 +265,7 @@ describe('useMessageService', () => {
       const mockAction = { label: 'Undo', onClick: () => {} };
 
       act(() => {
-        result.current.showToast('First message', 'success', mockAction);
+        result.current.showToast('First message', ToastVariant.SUCCESS, mockAction);
       });
 
       const firstToast = { ...result.current.toast };

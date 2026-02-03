@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { ToastVariant } from '@/shared/types';
 import { ModalVariant } from '@/shared/components/ui/Modal';
 import { ModalConfig, ToastState } from '@/shared/types/ui.types';
 
@@ -9,7 +10,7 @@ import { ModalConfig, ToastState } from '@/shared/types/ui.types';
 export const useMessageService = () => {
   const [toast, setToast] = useState<ToastState>({
     message: '',
-    variant: 'info',
+    variant: ToastVariant.INFO,
     isVisible: false,
   });
 
@@ -24,11 +25,7 @@ export const useMessageService = () => {
    * Show a toast notification with optional action button
    */
   const showToast = useCallback(
-    (
-      message: string,
-      variant: 'success' | 'error' | 'info' | 'warning' = 'info',
-      action?: { label: string; onClick: () => void },
-    ) => {
+    (message: string, variant: ToastVariant = ToastVariant.INFO, action?: { label: string; onClick: () => void }) => {
       setToast({ message, variant, isVisible: true, action });
     },
     [],
@@ -80,7 +77,7 @@ export const useMessageService = () => {
    */
   const showSuccessToast = useCallback(
     (message: string, action?: { label: string; onClick: () => void }) => {
-      showToast(message, 'success', action);
+      showToast(message, ToastVariant.SUCCESS, action);
     },
     [showToast],
   );
@@ -90,7 +87,7 @@ export const useMessageService = () => {
    */
   const showErrorToast = useCallback(
     (message: string, action?: { label: string; onClick: () => void }) => {
-      showToast(message, 'error', action);
+      showToast(message, ToastVariant.ERROR, action);
     },
     [showToast],
   );
@@ -100,7 +97,7 @@ export const useMessageService = () => {
    */
   const showWarningToast = useCallback(
     (message: string, action?: { label: string; onClick: () => void }) => {
-      showToast(message, 'warning', action);
+      showToast(message, ToastVariant.WARNING, action);
     },
     [showToast],
   );

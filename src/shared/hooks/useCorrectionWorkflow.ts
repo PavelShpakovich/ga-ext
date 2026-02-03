@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { Language, CorrectionStyle, CorrectionResult, Settings } from '@/shared/types';
+import { Language, CorrectionStyle, CorrectionResult, Settings, ToastVariant } from '@/shared/types';
 import { WebLLMProvider, ProviderFactory } from '@/core/providers';
 import { Logger } from '@/core/services/Logger';
 import { generateCacheKey, detectDominantLanguage } from '@/shared/utils/helpers';
@@ -9,7 +9,7 @@ import { MAX_TEXT_LENGTH } from '@/core/constants';
  * Callback signatures used in correction workflow
  */
 export interface WorkflowCallbacks {
-  showToast: (message: string, variant: 'success' | 'error' | 'info' | 'warning') => void;
+  showToast: (message: string, variant: ToastVariant) => void;
   setMismatchDetected: (lang: Language | null) => void;
   setIsModelCached: (value: boolean) => void;
   setLocalMessage: (msg: { message: string; variant: string } | null) => void;
@@ -61,7 +61,7 @@ export const useCorrectionWorkflow = (
       if (!trimmed) return;
 
       if (trimmed.length > MAX_TEXT_LENGTH) {
-        callbacks.showToast(t('errors.content_too_long'), 'warning');
+        callbacks.showToast(t('errors.content_too_long'), ToastVariant.WARNING);
         return;
       }
 
@@ -91,11 +91,11 @@ export const useCorrectionWorkflow = (
         const cached = await WebLLMProvider.isModelCached(selectedModel);
         callbacks.setIsModelCached(cached);
 
-        callbacks.showToast(t('messages.correction_success'), 'success');
+        callbacks.showToast(t('messages.correction_success'), ToastVariant.SUCCESS);
       } catch (err: unknown) {
         const errorMessage = err instanceof Error ? err.message : String(err);
         Logger.error('CorrectionWorkflow', 'Correction error', { error: errorMessage });
-        callbacks.showToast(errorMessage, 'error');
+        callbacks.showToast(errorMessage, ToastVariant.ERROR);
       }
     },
     [text, selectedModel, settings, runCorrection, callbacks, refs, t],

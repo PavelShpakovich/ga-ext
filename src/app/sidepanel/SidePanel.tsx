@@ -20,7 +20,7 @@ import { ResultSection } from '@/features/correction/ResultSection';
 import { useTranslation } from 'react-i18next';
 import { Button, ButtonVariant, ButtonSize } from '@/shared/components/Button';
 import { Modal, ModalVariant, Toast, Alert, AlertVariant, TextButton, TextButtonVariant } from '@/shared/components/ui';
-import { CorrectionStyle, ModelOption, ExecutionStep } from '@/shared/types';
+import { CorrectionStyle, ModelOption, ExecutionStep, ToastVariant } from '@/shared/types';
 
 const SidePanelContent: React.FC = () => {
   const { t } = useTranslation();
@@ -32,6 +32,7 @@ const SidePanelContent: React.FC = () => {
   const [showDebug, setShowDebug] = useState(false);
   const [isModelCached, setIsModelCached] = useState(false);
   const [isCheckingCache, setIsCheckingCache] = useState(false);
+  const [isModelSwitching, setIsModelSwitching] = useState(false);
 
   const [modalConfig, setModalConfig] = useState<{
     isOpen: boolean;
@@ -102,7 +103,8 @@ const SidePanelContent: React.FC = () => {
     isPrefetching ||
     isDeleting ||
     isRemovingModel ||
-    isCheckingCache;
+    isCheckingCache ||
+    isModelSwitching;
 
   const modelOptions = selectGroups.length
     ? selectGroups
@@ -115,8 +117,15 @@ const SidePanelContent: React.FC = () => {
 
   const handleModelChange = useCallback(
     async (id: string) => {
-      if (isBusy) return; // prevent changing model while busy
+      // Prevent race conditions - only allow one model switch at a time
+      if (isBusy || isModelSwitching) {
+        Logger.warn('SidePanel', 'Model switch already in progress, ignoring request');
+        return;
+      }
       if (id === selectedModel) return;
+
+      setIsModelSwitching(true);
+      Logger.info('SidePanel', 'Starting model switch', { from: selectedModel, to: id });
 
       // Immediately stop download and clear progress to prevent flashing
       if (downloadProgress) {
@@ -135,16 +144,21 @@ const SidePanelContent: React.FC = () => {
       try {
         // 2. Perform engine cleanup first
         await ProviderFactory.clearInstances();
+        Logger.debug('SidePanel', 'Provider instances cleared');
 
         // 3. Update settings (this triggers re-render and useEffect)
         await updateSettings({ selectedModel: id });
+        Logger.info('SidePanel', 'Model switch completed', { modelId: id });
 
         shouldAutoRunRef.current = false;
 
         // Note: isCheckingCache and isModelCached will be finalized by the useEffect triggered by selectedModel change
       } catch (err) {
-        Logger.error('SidePanel', 'Failed to change model', err);
+        Logger.error('SidePanel', 'Failed to change model', { error: err, targetModel: id });
         setIsCheckingCache(false);
+        showToast(t('messages.model_switch_failed'), ToastVariant.ERROR);
+      } finally {
+        setIsModelSwitching(false);
       }
     },
     [
@@ -153,10 +167,13 @@ const SidePanelContent: React.FC = () => {
       downloadProgress,
       stopDownload,
       isBusy,
+      isModelSwitching,
       reset,
       clearMismatch,
       lastAutoRunKey,
       shouldAutoRunRef,
+      showToast,
+      t,
     ],
   );
 
@@ -273,9 +290,9 @@ const SidePanelContent: React.FC = () => {
     useCallback(
       (error: string) => {
         if (error === 'TOO_LONG') {
-          showToast(t('errors.content_too_long'), 'warning');
+          showToast(t('errors.content_too_long'), ToastVariant.WARNING);
         } else {
-          showToast(error, 'error');
+          showToast(error, ToastVariant.ERROR);
         }
       },
       [showToast, t],
@@ -287,7 +304,7 @@ const SidePanelContent: React.FC = () => {
     if (!trimmed || isBusy || !shouldAutoRunRef.current) return;
 
     if (trimmed.length > MAX_TEXT_LENGTH) {
-      showToast(t('errors.content_too_long'), 'warning');
+      showToast(t('errors.content_too_long'), ToastVariant.WARNING);
       shouldAutoRunRef.current = false;
       return;
     }

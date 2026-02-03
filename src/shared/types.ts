@@ -90,3 +90,7 @@ export enum InputMode {
   TEXT = 'text',
   OCR = 'ocr',
 }
+
+// Re-export UI types from types subdirectory
+export type { ToastState, ModalConfig, AlertState, SelectOption, LabeledAction, AsyncState } from './types/ui.types';
+export { ToastVariant, MessageAction } from './types/ui.types';

@@ -94,7 +94,13 @@
     "webgpu_not_available": "WebGPU nicht verfügbar. Aktivieren Sie die Hardwarebeschleunigung im Browser für lokale KI.",
     "privacy_note": "Datenschutz zuerst • Keine Daten verlassen Ihren Rechner",
     "no_changes": "Keine Änderungen nötig",
-    "explanation_unavailable": "Erklärung aufgrund Parsing-Fehler nicht verfügbar"
+    "explanation_unavailable": "Erklärung aufgrund Parsing-Fehler nicht verfügbar",
+    "invalid_text_encoding": "Text enthält ungültige Kodierung. Bitte überprüfen Sie Ihre Eingabe.",
+    "invalid_characters": "Text enthält ungültige oder verdächtige Zeichen.",
+    "invalid_content": "Text enthält potenziell schädlichen Inhalt.",
+    "invalid_input": "Ungültige Eingabe.",
+    "invalid_model_id": "Ungültiger Modellbezeichner.",
+    "model_switch_failed": "Modellwechsel fehlgeschlagen. Bitte versuchen Sie es erneut."
   },
   "popup": {
     "local_session": "Lokales Sitzung",

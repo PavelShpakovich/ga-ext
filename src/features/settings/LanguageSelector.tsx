@@ -4,6 +4,7 @@ import { changeLanguage } from '@/core/i18n';
 import { useSettings } from '@/shared/hooks/useSettings';
 import { useClickOutside } from '@/shared/hooks/useClickOutside';
 import { useTranslation } from 'react-i18next';
+import { Logger } from '@/core/services/Logger';
 import { Languages, Globe } from 'lucide-react';
 import clsx from 'clsx';
 import { IconButton, IconButtonVariant, IconButtonSize } from '@/shared/components/ui/IconButton';
@@ -43,7 +44,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
         await changeLanguage(newLanguage);
         await updateSettings({ language: newLanguage });
       } catch (error) {
-        console.error('Failed to change UI language:', error);
+        Logger.error('LanguageSelector', 'Failed to change UI language', error);
       }
     },
     [updateSettings],
@@ -54,7 +55,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
       try {
         await updateSettings({ correctionLanguage: newLanguage });
       } catch (error) {
-        console.error('Failed to change correction language:', error);
+        Logger.error('LanguageSelector', 'Failed to change correction language', error);
       }
     },
     [updateSettings],

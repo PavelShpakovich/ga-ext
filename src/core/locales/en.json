@@ -93,7 +93,13 @@
     "webgpu_not_available": "WebGPU not available. Enable hardware acceleration in your browser settings to use local AI.",
     "privacy_note": "Privacy First • No Data Sent to Servers",
     "no_changes": "No changes needed",
-    "explanation_unavailable": "Explanation unavailable due to parsing error"
+    "explanation_unavailable": "Explanation unavailable due to parsing error",
+    "invalid_text_encoding": "Text contains invalid encoding. Please check your input.",
+    "invalid_characters": "Text contains invalid or suspicious characters.",
+    "invalid_content": "Text contains potentially malicious content.",
+    "invalid_input": "Invalid input provided.",
+    "invalid_model_id": "Invalid model identifier.",
+    "model_switch_failed": "Failed to switch models. Please try again."
   },
   "popup": {
     "local_session": "Local Session",
@@ -148,6 +154,7 @@
     "processing": "Processing image...",
     "no_text_found": "No text found in image",
     "processing_failed": "Failed to process image",
+    "invalid_image": "Invalid image format or data",
     "upload_image": "Upload Image",
     "upload_placeholder": "Drag & drop an image here, or click to select or press \u2318V (Mac) or Ctrl+V (Windows) to paste from clipboard",
     "supported_formats": "Supported: PNG, JPG, JPEG, BMP, WebP",

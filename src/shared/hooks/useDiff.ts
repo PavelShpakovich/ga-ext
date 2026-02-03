@@ -6,6 +6,7 @@
 import { useState, useEffect } from 'react';
 import { DiffPart } from '@/shared/utils/diff';
 import { getDiffWorkerManager } from '@/shared/services/DiffWorkerManager';
+import { Logger } from '@/core/services/Logger';
 
 export function useDiff(oldText: string, newText: string): DiffPart[] {
   const [diffParts, setDiffParts] = useState<DiffPart[]>([]);
@@ -22,7 +23,7 @@ export function useDiff(oldText: string, newText: string): DiffPart[] {
           setDiffParts(result);
         }
       } catch (error) {
-        console.error('[useDiff] Error computing diff:', error);
+        Logger.error('useDiff', 'Error computing diff', error);
         // On error, show unchanged text
         if (!cancelled) {
           setDiffParts([{ value: newText }]);

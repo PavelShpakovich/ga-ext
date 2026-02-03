@@ -2,6 +2,27 @@ import { AlertVariant } from '@/shared/components/ui/Alert';
 import { ModalVariant } from '@/shared/components/ui/Modal';
 
 /**
+ * Toast notification variants
+ */
+export enum ToastVariant {
+  SUCCESS = 'success',
+  ERROR = 'error',
+  INFO = 'info',
+  WARNING = 'warning',
+}
+
+/**
+ * Chrome extension message actions
+ */
+export enum MessageAction {
+  OPEN_SIDE_PANEL = 'openSidePanel',
+  GET_SELECTED_TEXT = 'getSelectedText',
+  RUN_OCR = 'run-ocr',
+  OCR_PROGRESS = 'ocr-progress',
+  DOWNLOAD_MODEL = 'downloadModel',
+}
+
+/**
  * Configuration for modal dialogs
  * Used across the app for consistent modal handling
  */
@@ -21,7 +42,7 @@ export interface ModalConfig {
  */
 export interface ToastState {
   message: string;
-  variant: 'success' | 'error' | 'info' | 'warning';
+  variant: ToastVariant;
   isVisible: boolean;
   action?: {
     label: string;

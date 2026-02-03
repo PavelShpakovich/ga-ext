@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Language } from '@/shared/types';
+import { Language, ToastVariant } from '@/shared/types';
 import { AlertVariant } from '@/shared/components/ui/Alert';
 import { ModalConfig, ToastState } from '@/shared/types/ui.types';
 
@@ -74,7 +74,7 @@ export const useSidePanelState = () => {
 
   const [toast, setToast] = useState<ToastState>({
     message: '',
-    variant: 'info',
+    variant: ToastVariant.INFO,
     isVisible: false,
   });
 

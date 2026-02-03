@@ -47,13 +47,44 @@ export class WebLLMProvider extends AIProvider {
   private initPromise: Promise<void> | null = null;
   private rejectInit: ((reason: unknown) => void) | null = null;
   private cancelled = false;
+  private progressCallbackId: number | null = null;
 
   static onProgressUpdate: ((progress: ModelProgress) => void) | null = null;
   private static currentInstance: WebLLMProvider | null = null;
+  private static progressCallbackRegistry = new Map<number, (progress: ModelProgress) => void>();
+  private static callbackIdCounter = 0;
 
   constructor(modelId: string = DEFAULT_MODEL_ID) {
     super();
     this.modelId = modelId;
+  }
+
+  /**
+   * Register a progress callback and get an ID for cleanup
+   */
+  static registerProgressCallback(callback: (progress: ModelProgress) => void): number {
+    const id = ++this.callbackIdCounter;
+    this.progressCallbackRegistry.set(id, callback);
+    Logger.debug('WebLLMProvider', 'Progress callback registered', { id });
+    return id;
+  }
+
+  /**
+   * Unregister a progress callback by ID
+   */
+  static unregisterProgressCallback(id: number): void {
+    if (this.progressCallbackRegistry.delete(id)) {
+      Logger.debug('WebLLMProvider', 'Progress callback unregistered', { id });
+    }
+  }
+
+  /**
+   * Clear all progress callbacks (for complete cleanup)
+   */
+  static clearProgressCallbacks(): void {
+    const count = this.progressCallbackRegistry.size;
+    this.progressCallbackRegistry.clear();
+    Logger.debug('WebLLMProvider', 'All progress callbacks cleared', { count });
   }
 
   static getAvailableModels(): ModelOption[] {
@@ -69,8 +100,22 @@ export class WebLLMProvider extends AIProvider {
   }
 
   private emitProgress(progress: ModelProgress): void {
+    // Emit to all registered callbacks
+    for (const callback of WebLLMProvider.progressCallbackRegistry.values()) {
+      try {
+        callback(progress);
+      } catch (error) {
+        Logger.error('WebLLMProvider', 'Error in progress callback', error);
+      }
+    }
+
+    // Also emit to legacy single callback for backwards compatibility
     if (WebLLMProvider.onProgressUpdate) {
-      WebLLMProvider.onProgressUpdate(progress);
+      try {
+        WebLLMProvider.onProgressUpdate(progress);
+      } catch (error) {
+        Logger.error('WebLLMProvider', 'Error in legacy progress callback', error);
+      }
     }
   }
 
@@ -303,11 +348,24 @@ export class WebLLMProvider extends AIProvider {
    * Unload the model to free up resources
    */
   async unload(): Promise<void> {
-    Logger.debug('WebLLMProvider', `Unloading model ${this.modelId}`);
+    Logger.info('WebLLMProvider', 'Unloading model and cleaning up resources', { modelId: this.modelId });
     try {
       await this.stopDownload(false);
+
+      // Clean up instance-specific callback registration
+      if (this.progressCallbackId !== null) {
+        WebLLMProvider.unregisterProgressCallback(this.progressCallbackId);
+        this.progressCallbackId = null;
+      }
+
+      // Clear instance reference if this is the current instance
+      if (WebLLMProvider.currentInstance === this) {
+        WebLLMProvider.currentInstance = null;
+      }
+
+      Logger.debug('WebLLMProvider', 'Model unload completed', { modelId: this.modelId });
     } catch (e) {
-      Logger.error('WebLLMProvider', 'Error unloading model', e);
+      Logger.error('WebLLMProvider', 'Error during model unload', { error: e, modelId: this.modelId });
     }
   }
 

@@ -8,6 +8,7 @@ import { Logger } from '@/core/services/Logger';
 import { STORAGE_KEYS } from '@/core/constants';
 import { Storage } from '@/core/services/StorageService';
 import { setPendingText } from '@/shared/utils/pendingStorage';
+import { MessageAction } from '@/shared/types';
 
 /**
  * Setup offscreen document for OCR processing
@@ -36,7 +37,7 @@ async function handleOCRRequest(
   try {
     await setupOffscreen();
     const response = await chrome.runtime.sendMessage({
-      action: 'ocr',
+      action: MessageAction.RUN_OCR,
       image: message.image,
       language: message.language,
     });
@@ -111,13 +112,13 @@ export function initializeMessageHandler(): void {
     });
 
     // OCR requests
-    if (message.action === 'run-ocr') {
+    if (message.action === MessageAction.RUN_OCR) {
       handleOCRRequest(message, sendResponse);
       return true; // Keep channel open for async response
     }
 
     // Side panel requests
-    if (message.action === 'openSidePanel') {
+    if (message.action === MessageAction.OPEN_SIDE_PANEL) {
       handleOpenSidePanel(message, sender, sendResponse);
       return true;
     }

@@ -94,7 +94,13 @@
     "webgpu_not_available": "WebGPU no disponible. Activa la aceleración por hardware en tu navegador para usar IA local.",
     "privacy_note": "Privacidad primero • Tus datos no salen de este equipo",
     "no_changes": "No se encontraron cambios",
-    "explanation_unavailable": "Explicación no disponible debido a error de análisis"
+    "explanation_unavailable": "Explicación no disponible debido a error de análisis",
+    "invalid_text_encoding": "El texto contiene codificación no válida. Verifique su entrada.",
+    "invalid_characters": "El texto contiene caracteres no válidos o sospechosos.",
+    "invalid_content": "El texto contiene contenido potencialmente malicioso.",
+    "invalid_input": "Entrada no válida proporcionada.",
+    "invalid_model_id": "Identificador de modelo no válido.",
+    "model_switch_failed": "Error al cambiar de modelo. Inténtalo de nuevo."
   },
   "popup": {
     "local_session": "Sesión local",

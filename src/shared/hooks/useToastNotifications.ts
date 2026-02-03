@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { ToastVariant } from '@/shared/types';
 
 export interface ToastAction {
   label: string;
@@ -31,12 +32,9 @@ export function useToastNotifications() {
    * @param variant - The toast variant (success, error, info, warning)
    * @param action - Optional action button config
    */
-  const showToast = useCallback(
-    (message: string, variant: 'success' | 'error' | 'info' | 'warning' = 'info', action?: ToastAction) => {
-      setToast({ message, variant, isVisible: true, action });
-    },
-    [],
-  );
+  const showToast = useCallback((message: string, variant: ToastVariant = ToastVariant.INFO, action?: ToastAction) => {
+    setToast({ message, variant, isVisible: true, action });
+  }, []);
 
   /**
    * Hides the currently visible toast

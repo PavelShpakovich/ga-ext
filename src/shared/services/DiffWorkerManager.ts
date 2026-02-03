@@ -6,6 +6,7 @@
 
 import { DiffPart } from '@/shared/utils/diff';
 import type { DiffWorkerRequest, DiffWorkerResponse } from '@/shared/workers/diff.worker';
+import { Logger } from '@/core/services/Logger';
 
 type PendingRequest = {
   resolve: (result: DiffPart[]) => void;
@@ -43,7 +44,7 @@ export class DiffWorkerManager {
       });
 
       this.worker.addEventListener('error', (error) => {
-        console.error('[DiffWorkerManager] Worker error:', error);
+        Logger.error('DiffWorkerManager', 'Worker error', error);
         // Reject all pending requests
         for (const [id, pending] of this.pendingRequests.entries()) {
           pending.reject(new Error('Worker error'));
@@ -86,7 +87,7 @@ export class DiffWorkerManager {
 
       return await promise;
     } catch (error) {
-      console.warn('[DiffWorkerManager] Worker failed, falling back to sync computation:', error);
+      Logger.warn('DiffWorkerManager', 'Worker failed, falling back to sync computation', error);
       // Fallback to synchronous computation
       const { getDiff } = await import('@/shared/utils/diff');
       return getDiff(oldText, newText);

@@ -3,7 +3,7 @@ import { WebLLMProvider } from '@/core/providers';
 import { generateCacheKey, detectDominantLanguage } from '@/shared/utils/helpers';
 import { MAX_TEXT_LENGTH } from '@/core/constants';
 import { Logger } from '@/core/services/Logger';
-import { CorrectionStyle, Language, ExecutionStep, CorrectionResult } from '@/shared/types';
+import { CorrectionStyle, Language, ExecutionStep, CorrectionResult, ToastVariant } from '@/shared/types';
 
 export interface CorrectionActionsConfig {
   text: string;
@@ -21,7 +21,7 @@ export interface CorrectionActionsConfig {
   ) => Promise<CorrectionResult>;
   reset: () => void;
   t: (key: string, options?: Record<string, unknown>) => string;
-  showToast: (message: string, variant: 'success' | 'error' | 'info' | 'warning') => void;
+  showToast: (message: string, variant: ToastVariant) => void;
   updateModelCache: (cached: boolean) => void;
   hasPendingMismatch: (lang: Language) => boolean;
   onMismatchDetected: (lang: Language) => void;
@@ -82,7 +82,7 @@ export function useCorrectionActions(config: CorrectionActionsConfig): Correctio
       if (!trimmed || config.isBusy) return;
 
       if (trimmed.length > MAX_TEXT_LENGTH) {
-        showToast(t('errors.content_too_long'), 'warning');
+        showToast(t('errors.content_too_long'), ToastVariant.WARNING);
         return;
       }
 
@@ -108,11 +108,11 @@ export function useCorrectionActions(config: CorrectionActionsConfig): Correctio
         // Update cache status after successful correction
         const cached = await WebLLMProvider.isModelCached(selectedModel);
         updateModelCache(cached);
-        showToast(t('messages.correction_success'), 'success');
+        showToast(t('messages.correction_success'), ToastVariant.SUCCESS);
       } catch (err: unknown) {
         const errorMessage = err instanceof Error ? err.message : String(err);
         Logger.error('CorrectionActions', 'Correction error', { error: errorMessage });
-        showToast(errorMessage, 'error');
+        showToast(errorMessage, ToastVariant.ERROR);
       }
     },
     [

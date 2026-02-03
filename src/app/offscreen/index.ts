@@ -1,10 +1,10 @@
-import { Language } from '@/shared/types';
+import { Language, MessageAction } from '@/shared/types';
 import { Logger } from '@/core/services/Logger';
 import { recognizeText } from './tesseractWorker';
 
 // Global message listener for OCR tasks
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-  if (message.action === 'ocr' && message.image) {
+  if (message.action === MessageAction.RUN_OCR && message.image) {
     (async () => {
       try {
         const language = message.language || Language.EN;
