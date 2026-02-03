@@ -6,6 +6,7 @@ import { Badge, BadgeVariant } from '@/shared/components/ui/Badge';
 import { isWebGPUAvailable } from '@/shared/utils/helpers';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/shared/hooks/useTheme';
+import { MessageAction } from '@/shared/types';
 
 const Popup: React.FC = () => {
   const { t } = useTranslation();
@@ -34,7 +35,7 @@ const Popup: React.FC = () => {
       }
 
       // Request selected text from content script
-      chrome.tabs.sendMessage(tab.id!, { action: 'getSelectedText' }, (response) => {
+      chrome.tabs.sendMessage(tab.id!, { action: MessageAction.GET_SELECTED_TEXT }, (response) => {
         // Fallback: If no response or error, just open the panel normally
         if (chrome.runtime.lastError || !response) {
           chrome.runtime.sendMessage({ action: 'openSidePanel' }, () => {

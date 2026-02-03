@@ -6,6 +6,7 @@
 
 import { Logger } from '@/core/services/Logger';
 import { setPendingText, setPendingError } from '@/shared/utils/pendingStorage';
+import { MessageAction } from '@/shared/types';
 
 /**
  * Handle context menu click events
@@ -36,7 +37,7 @@ export function initializeKeyboardHandler(): void {
       Logger.debug('CommandHandler', 'Keyboard shortcut triggered');
 
       // Request selected text from content script
-      chrome.tabs.sendMessage(tab.id, { action: 'getSelectedText' }, async (response) => {
+      chrome.tabs.sendMessage(tab.id, { action: MessageAction.GET_SELECTED_TEXT }, async (response) => {
         // Always open SidePanel for better UX, even if no text selected
         if (tab.id) {
           chrome.sidePanel.open({ tabId: tab.id });

@@ -1,5 +1,6 @@
 import { Logger } from '@/core/services/Logger';
 import { MAX_TEXT_LENGTH } from '@/core/constants';
+import { MessageAction } from '@/shared/types';
 
 declare global {
   interface Window {
@@ -28,6 +29,7 @@ const getDeepActiveElement = (root: Document | ShadowRoot = document): Element |
 };
 
 const getActiveSelectionText = (): string | null => {
+  // Fallback to legacy logic
   const selection = window.getSelection();
   const selectionText = selection?.toString().trim() || '';
 
@@ -82,7 +84,7 @@ document.addEventListener('focusin', (e) => {
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   Logger.debug('ContentScript', 'Received message', { action: message.action });
 
-  if (message.action === 'getSelectedText') {
+  if (message.action === MessageAction.GET_SELECTED_TEXT) {
     const text = getActiveSelectionText();
     if (text === null) {
       sendResponse({ error: 'TOO_LONG' });
