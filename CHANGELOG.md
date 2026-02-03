@@ -5,6 +5,33 @@ All notable changes to Grammar Assistant will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.7] - 2026-02-04
+
+### Changed
+
+- **Prompt Optimization for Small Models**: Simplified prompt templates across all 5 languages (EN, RU, ES, DE, FR) for better performance with 3B parameter models
+  - Removed verbose instructions and philosophical explanations
+  - Added concrete few-shot examples showing perfect text returns empty string
+  - Direct formatting rules with minimal overhead
+  - Optimized for Qwen2.5-3B-Instruct and similar small models
+- **Type Safety Enhancement**: Converted string literals to enums for message actions
+  - Standardized `MessageAction.GET_SELECTED_TEXT`, `MessageAction.OPEN_SIDE_PANEL`, `MessageAction.RUN_OCR`, `MessageAction.OCR_PROGRESS`, `MessageAction.DOWNLOAD_MODEL`
+  - Updated content script, background handlers, popup, and command handler to use typed enums
+  - Prevents typos and enables autocomplete across the codebase
+
+### Fixed
+
+- **Select Component Dark Theme**: Fixed model selector arrow visibility in dark mode
+  - Replaced CSS background SVG with Lucide React ChevronDown icon component
+  - Properly inherits text color with `text-slate-600 dark:text-slate-400`
+  - Consistent visual appearance across light and dark themes
+
+### Dev
+
+- All 136 tests passing
+- Clean TypeScript compilation and ESLint validation
+- Build size remains stable (~5.8 MiB for sidepanel with WebLLM)
+
 ## [0.4.5] - 2026-02-02
 
 ### Added
