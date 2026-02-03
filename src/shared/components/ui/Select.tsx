@@ -1,4 +1,6 @@
 import React from 'react';
+import { ChevronDown } from 'lucide-react';
+import clsx from 'clsx';
 
 interface SelectOption {
   value: string;
@@ -32,38 +34,44 @@ export const Select: React.FC<SelectProps> = ({
   title,
 }) => {
   return (
-    <select
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      disabled={disabled}
-      title={title}
-      className={`w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 rounded-2xl focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/10 focus-visible:border-blue-500 transition-all dark:text-slate-100 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-[13px] font-medium appearance-none ${className}`}
-      // Note: SVG background is necessary here since native <select> elements cannot use Tailwind background-image
-      // This is the recommended approach for styling native select dropdowns
-      style={{
-        backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
-        backgroundRepeat: 'no-repeat',
-        backgroundPosition: 'right 1rem center',
-        backgroundSize: '1rem',
-      }}
-    >
-      {placeholder && !value && <option value=''>{placeholder}</option>}
+    <div className='relative w-full'>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        disabled={disabled}
+        title={title}
+        className={clsx(
+          'w-full pl-4 pr-10 py-2.5',
+          'bg-white dark:bg-slate-900',
+          'border border-slate-200 dark:border-slate-700/80',
+          'rounded-2xl',
+          'focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/10 focus-visible:border-blue-500',
+          'transition-all',
+          'dark:text-slate-100',
+          'disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer',
+          'text-[13px] font-medium appearance-none',
+          className,
+        )}
+      >
+        {placeholder && !value && <option value=''>{placeholder}</option>}
 
-      {options?.map((option) => (
-        <option key={option.value} value={option.value}>
-          {option.label}
-        </option>
-      ))}
+        {options?.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
 
-      {groups?.map((group) => (
-        <optgroup key={group.label} label={group.label}>
-          {group.options.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </optgroup>
-      ))}
-    </select>
+        {groups?.map((group) => (
+          <optgroup key={group.label} label={group.label}>
+            {group.options.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </optgroup>
+        ))}
+      </select>
+      <ChevronDown className='absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 dark:text-slate-400 pointer-events-none' />
+    </div>
   );
 };

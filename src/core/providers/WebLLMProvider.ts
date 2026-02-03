@@ -554,11 +554,16 @@ export class WebLLMProvider extends AIProvider {
 
   private formatResult(parsed: Record<string, unknown>, original: string, raw: string): CorrectionResult {
     // 1. Defensively extract corrected text
+    // Empty string explicitly means "no changes needed" - optimization from model
     let corrected = original;
     const correctedValue = parsed['corrected'] || parsed['corrected_text'] || parsed['correctedText'];
 
-    if (typeof correctedValue === 'string' && correctedValue.trim().length > 0) {
-      corrected = correctedValue;
+    if (typeof correctedValue === 'string') {
+      // Empty string means no corrections needed - use original
+      if (correctedValue.trim().length > 0) {
+        corrected = correctedValue;
+      }
+      // else: keep corrected = original (empty string indicates no changes)
     } else if (Array.isArray(correctedValue)) {
       corrected = correctedValue.join(' ');
     } else if (correctedValue && typeof correctedValue !== 'boolean') {
@@ -580,25 +585,10 @@ export class WebLLMProvider extends AIProvider {
     const sameText = corrected.trim() === original.trim();
 
     if (sameText) {
-      const note = `(${i18n.t('messages.no_changes')})`;
-
-      const appendNote = (exp: string | string[], n: string): string | string[] => {
-        if (Array.isArray(exp)) {
-          if (exp.length === 0) return [n];
-          const lastIndex = exp.length - 1;
-          const last = exp.at?.(-1) || exp[lastIndex] || '';
-          if (last.includes(n)) return exp;
-          const copy = exp.slice();
-          copy[lastIndex] = `${copy[lastIndex]} ${n}`.trim();
-          return copy;
-        }
-
-        const s = (exp as string) || '';
-        if (s.includes(n)) return s;
-        return `${s} ${n}`.trim();
-      };
-
-      explanation = appendNote(explanation, note);
+      // When text is unchanged, clear any spurious explanations from the model
+      // and show only the "no changes" message
+      const note = i18n.t('messages.no_changes');
+      explanation = Array.isArray(explanation) ? [note] : note;
     }
 
     return {
