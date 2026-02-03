@@ -6,4 +6,3 @@
 
 export * from './messageHandler';
 export * from './commandHandler';
-export * from './modelManager';

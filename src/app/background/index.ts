@@ -21,13 +21,7 @@ import { Storage } from '@/core/services/StorageService';
 import i18n from '@/core/i18n';
 import { clearStalePending } from '@/shared/utils/pendingStorage';
 import { updateContextMenuTitle, initializeContextMenu } from './contextMenu';
-import {
-  initializeMessageHandler,
-  initializeContextMenuHandler,
-  initializeKeyboardHandler,
-  initializeIdleTimeout,
-  initializeMemoryMonitoring,
-} from './modules';
+import { initializeMessageHandler, initializeContextMenuHandler, initializeKeyboardHandler } from './modules';
 
 Logger.info('Background', 'Service worker started');
 
@@ -46,10 +40,6 @@ initializeMessageHandler();
 // Context menu and keyboard shortcuts
 initializeContextMenuHandler();
 initializeKeyboardHandler();
-
-// Model lifecycle management
-initializeIdleTimeout();
-initializeMemoryMonitoring();
 
 // ========================================
 // Context Menu i18n Setup

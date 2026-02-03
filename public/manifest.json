@@ -10,7 +10,7 @@
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
   },
-  "permissions": ["activeTab", "contextMenus", "sidePanel", "storage", "offscreen", "alarms", "system.memory"],
+  "permissions": ["activeTab", "contextMenus", "sidePanel", "storage", "offscreen"],
   "host_permissions": ["https://huggingface.co/*", "https://*.huggingface.co/*", "https://cdn.huggingface.co/*"],
   "content_security_policy": {
     "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
