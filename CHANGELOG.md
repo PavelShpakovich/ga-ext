@@ -5,6 +5,31 @@ All notable changes to Grammar Assistant will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.9] - 2026-02-04
+
+### Fixed
+
+- **Side Panel Scrolling**: Fixed content being cut off when displaying long text or parse errors
+  - Added `min-h-0` to main flex container to allow proper flex shrinking and scrolling
+  - Wrapped text content blocks with overflow-hidden divs to properly clip scrollbars within rounded corners
+  - Ensured Engine trace block remains visible and scrollable even with long content
+- **Triple-Quote JSON Parsing**: Added support for Python-style triple-quoted strings in model outputs
+  - Enhanced ResponseValidator to convert `"""multiline content"""` to valid JSON format
+  - Properly escapes special characters (quotes, newlines, backslashes) within triple-quoted content
+  - Fixed streaming display to correctly handle triple-quoted strings in real-time
+- **Parse Error Toast**: Fixed incorrect success toast showing when model returns unparseable output
+  - Now displays warning toast with proper error message when parse errors occur
+  - Success toast only appears when correction completes without errors
+
+### Changed
+
+- **ResultSection Component Refactoring**: Improved code organization and maintainability
+  - Extracted sub-components: ContentBox, PartialResult, ParseErrorDisplay, DiffDisplay, ExplanationSection, DebugTrace
+  - Centralized styling constants (CONTENT_BOX_STYLES, THEME_COLORS) for DRY principles
+  - Replaced nested ternary operators with clear `renderContent()` function
+  - Reduced main component from ~200 lines to ~90 lines with better readability
+  - Single source of truth for colors and layouts across all content displays
+
 ## [0.4.8] - 2026-02-04
 
 ### Changed

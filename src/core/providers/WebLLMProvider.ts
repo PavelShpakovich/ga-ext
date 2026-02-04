@@ -435,23 +435,41 @@ export class WebLLMProvider extends AIProvider {
         this.validateStreamingChunk(fullContent);
 
         if (onPartialText) {
-          // Simple heuristic to extract text from "corrected": "..." in partial JSON
-          // We look for the start of the "corrected" field and take everything until the next quote or end
+          // Extract text from "corrected": "..." or "corrected": """...""" in partial JSON
           const correctedPrefix = '"corrected":';
           const index = fullContent.indexOf(correctedPrefix);
           if (index !== -1) {
             const startSearch = index + correctedPrefix.length;
-            const firstQuote = fullContent.indexOf('"', startSearch);
-            if (firstQuote !== -1) {
-              const nextQuote = fullContent.indexOf('"', firstQuote + 1);
+
+            // Check if we have triple quotes
+            const tripleQuoteMatch = fullContent.substring(startSearch).match(/^\s*"""\s*/);
+            if (tripleQuoteMatch) {
+              // Triple-quoted string - extract until closing """
+              const contentStart = startSearch + tripleQuoteMatch[0].length;
+              const closingTriple = fullContent.indexOf('"""', contentStart);
               const partial =
-                nextQuote !== -1
-                  ? fullContent.substring(firstQuote + 1, nextQuote)
-                  : fullContent.substring(firstQuote + 1);
+                closingTriple !== -1
+                  ? fullContent.substring(contentStart, closingTriple).trim()
+                  : fullContent.substring(contentStart).trim();
 
               if (partial !== lastCorrectedText) {
                 lastCorrectedText = partial;
                 onPartialText(lastCorrectedText);
+              }
+            } else {
+              // Regular quoted string
+              const firstQuote = fullContent.indexOf('"', startSearch);
+              if (firstQuote !== -1) {
+                const nextQuote = fullContent.indexOf('"', firstQuote + 1);
+                const partial =
+                  nextQuote !== -1
+                    ? fullContent.substring(firstQuote + 1, nextQuote)
+                    : fullContent.substring(firstQuote + 1);
+
+                if (partial !== lastCorrectedText) {
+                  lastCorrectedText = partial;
+                  onPartialText(lastCorrectedText);
+                }
               }
             }
           }

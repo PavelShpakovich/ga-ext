@@ -101,14 +101,20 @@ export function useCorrectionActions(config: CorrectionActionsConfig): Correctio
 
       try {
         const usedLang = langOverride || correctionLanguage;
-        await runCorrection(trimmed, selectedModel, selectedStyle, usedLang);
+        const correctionResult = await runCorrection(trimmed, selectedModel, selectedStyle, usedLang);
         lastAutoRunKey.current = generateCacheKey(selectedModel, trimmed, selectedStyle, usedLang);
         shouldAutoRunRef.current = false;
 
         // Update cache status after successful correction
         const cached = await WebLLMProvider.isModelCached(selectedModel);
         updateModelCache(cached);
-        showToast(t('messages.correction_success'), ToastVariant.SUCCESS);
+
+        // Only show success toast if there's no parse error
+        if (correctionResult.parseError) {
+          showToast(t('error.could_not_parse'), ToastVariant.WARNING);
+        } else {
+          showToast(t('messages.correction_success'), ToastVariant.SUCCESS);
+        }
       } catch (err: unknown) {
         const errorMessage = err instanceof Error ? err.message : String(err);
         Logger.error('CorrectionActions', 'Correction error', { error: errorMessage });

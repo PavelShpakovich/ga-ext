@@ -84,7 +84,7 @@ export const Card: React.FC<CardProps> = ({
       <div
         className={clsx(
           'relative transition-all duration-300 overflow-hidden',
-          isCollapsed ? 'max-h-0 opacity-0' : 'max-h-screen opacity-100',
+          isCollapsed ? 'max-h-0 opacity-0' : 'opacity-100',
         )}
       >
         {children}

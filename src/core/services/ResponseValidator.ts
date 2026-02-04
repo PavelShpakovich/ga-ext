@@ -133,7 +133,27 @@ export class ResponseValidator {
 
     try {
       // Repair techniques in order of application
-      const fixed = textToParse
+      let fixed = textToParse;
+
+      // 0. Fix Python-style triple quotes (""") to single quotes (")
+      // This must happen BEFORE the newline escape logic
+      // Match: """content""" and replace with "content" (properly escaped)
+      fixed = fixed.replace(/"""\s*\n?([\s\S]*?)\n?\s*"""/g, (match, content) => {
+        // First, trim leading/trailing whitespace from content but preserve internal newlines
+        const trimmed = content.trim();
+        // Escape backslashes first (but not already escaped ones)
+        let escaped = trimmed.replace(/\\/g, '\\\\');
+        // Then escape quotes
+        escaped = escaped.replace(/"/g, '\\"');
+        // Then escape newlines
+        escaped = escaped.replace(/\n/g, '\\n');
+        // Then escape other special JSON characters
+        escaped = escaped.replace(/\r/g, '\\r');
+        escaped = escaped.replace(/\t/g, '\\t');
+        return `"${escaped}"`;
+      });
+
+      fixed = fixed
         // 1. Replace literal newlines within quotes with \n (but preserve already escaped newlines)
         .replace(/"([^"]*)"/g, (match) => {
           const inner = match.slice(1, -1);
