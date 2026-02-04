@@ -408,6 +408,7 @@ export class WebLLMProvider extends AIProvider {
         throw new Error('Model not ready');
       }
 
+      Logger.debug('WebLLMProvider', 'Building prompt with language', { language, style });
       const prompt = this.buildPrompt(text, style, language);
       const messages: ChatCompletionMessageParam[] = [
         { role: 'system', content: this.getSystemPrompt(language) },

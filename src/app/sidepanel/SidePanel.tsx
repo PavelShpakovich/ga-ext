@@ -20,19 +20,15 @@ import { ResultSection } from '@/features/correction/ResultSection';
 import { useTranslation } from 'react-i18next';
 import { Button, ButtonVariant, ButtonSize } from '@/shared/components/Button';
 import { Modal, ModalVariant, Toast, Alert, AlertVariant, TextButton, TextButtonVariant } from '@/shared/components/ui';
-import { CorrectionStyle, ModelOption, ExecutionStep, ToastVariant } from '@/shared/types';
+import { CorrectionStyle, ModelOption, ExecutionStep, ToastVariant, Language } from '@/shared/types';
 
 const SidePanelContent: React.FC = () => {
   const { t } = useTranslation();
   const [text, setText] = useState('');
   const [localMessage, setLocalMessage] = useState<{ message: string; variant: AlertVariant } | null>(null);
-  const [isPrefetching, setIsPrefetching] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [isRemovingModel, setIsRemovingModel] = useState(false);
   const [showDebug, setShowDebug] = useState(false);
   const [isModelCached, setIsModelCached] = useState(false);
-  const [isCheckingCache, setIsCheckingCache] = useState(false);
-  const [isModelSwitching, setIsModelSwitching] = useState(false);
+  const [systemStep, setSystemStep] = useState<ExecutionStep>(ExecutionStep.IDLE);
 
   const [modalConfig, setModalConfig] = useState<{
     isOpen: boolean;
@@ -58,6 +54,11 @@ const SidePanelContent: React.FC = () => {
   const { downloadProgress, stopDownload } = useDownloadProgress();
   const { runCorrection, step, error, result, partialResult, reset } = useAI();
 
+  // Determine current step: system operations take precedence over correction step
+  const currentStep = systemStep !== ExecutionStep.IDLE ? systemStep : step;
+  const isBusy =
+    currentStep !== ExecutionStep.IDLE && currentStep !== ExecutionStep.DONE && currentStep !== ExecutionStep.ERROR;
+
   const { handleCorrect, isResultStale, lastAutoRunKey, shouldAutoRunRef } = useCorrectionActions({
     text,
     selectedModel: settings.selectedModel,
@@ -65,13 +66,7 @@ const SidePanelContent: React.FC = () => {
     correctionLanguage: settings.correctionLanguage,
     step,
     result,
-    isBusy:
-      step === ExecutionStep.PREPARING_MODEL ||
-      step === ExecutionStep.CORRECTING ||
-      isPrefetching ||
-      isDeleting ||
-      isRemovingModel ||
-      isCheckingCache,
+    isBusy,
     runCorrection,
     reset,
     t,
@@ -97,14 +92,6 @@ const SidePanelContent: React.FC = () => {
 
   const selectedModel = settings.selectedModel;
   const modelInfo = useMemo(() => getModelInfo(selectedModel), [selectedModel, getModelInfo]);
-  const isBusy =
-    step === ExecutionStep.PREPARING_MODEL ||
-    step === ExecutionStep.CORRECTING ||
-    isPrefetching ||
-    isDeleting ||
-    isRemovingModel ||
-    isCheckingCache ||
-    isModelSwitching;
 
   const modelOptions = selectGroups.length
     ? selectGroups
@@ -118,13 +105,12 @@ const SidePanelContent: React.FC = () => {
   const handleModelChange = useCallback(
     async (id: string) => {
       // Prevent race conditions - only allow one model switch at a time
-      if (isBusy || isModelSwitching) {
-        Logger.warn('SidePanel', 'Model switch already in progress, ignoring request');
+      if (isBusy) {
+        Logger.warn('SidePanel', 'Operation in progress, ignoring model switch request');
         return;
       }
       if (id === selectedModel) return;
 
-      setIsModelSwitching(true);
       Logger.info('SidePanel', 'Starting model switch', { from: selectedModel, to: id });
 
       // Immediately stop download and clear progress to prevent flashing
@@ -133,7 +119,6 @@ const SidePanelContent: React.FC = () => {
       }
 
       // 1. Reset states IMMEDIATELY and CLEAR the engine
-      setIsCheckingCache(true);
       setIsModelCached(false);
       // Clear language override context when switching models to avoid carrying over user's previous choice
       clearMismatch();
@@ -152,13 +137,11 @@ const SidePanelContent: React.FC = () => {
 
         shouldAutoRunRef.current = false;
 
-        // Note: isCheckingCache and isModelCached will be finalized by the useEffect triggered by selectedModel change
+        // Note: Cache check useEffect will run automatically when selectedModel changes
       } catch (err) {
         Logger.error('SidePanel', 'Failed to change model', { error: err, targetModel: id });
-        setIsCheckingCache(false);
         showToast(t('messages.model_switch_failed'), ToastVariant.ERROR);
-      } finally {
-        setIsModelSwitching(false);
+        setSystemStep(ExecutionStep.IDLE);
       }
     },
     [
@@ -167,7 +150,6 @@ const SidePanelContent: React.FC = () => {
       downloadProgress,
       stopDownload,
       isBusy,
-      isModelSwitching,
       reset,
       clearMismatch,
       lastAutoRunKey,
@@ -189,7 +171,7 @@ const SidePanelContent: React.FC = () => {
 
   const handlePrefetch = useCallback(async () => {
     if (isBusy) return;
-    setIsPrefetching(true);
+    setSystemStep(ExecutionStep.PREFETCHING);
     setLocalMessage(null);
     try {
       const provider = await ProviderFactory.createProvider(selectedModel);
@@ -205,7 +187,7 @@ const SidePanelContent: React.FC = () => {
         setLocalMessage({ message: errorMessage, variant: AlertVariant.ERROR });
       }
     } finally {
-      setIsPrefetching(false);
+      setSystemStep(ExecutionStep.IDLE);
     }
   }, [selectedModel, t, isBusy]);
 
@@ -217,7 +199,7 @@ const SidePanelContent: React.FC = () => {
       message: t('messages.confirm_remove_model'),
       variant: ModalVariant.DANGER,
       onConfirm: async () => {
-        setIsRemovingModel(true);
+        setSystemStep(ExecutionStep.REMOVING_MODEL);
         try {
           // deleteModel now includes its own verification logic
           await WebLLMProvider.deleteModel(selectedModel);
@@ -230,7 +212,7 @@ const SidePanelContent: React.FC = () => {
           const errorMessage = err instanceof Error ? err.message : t('messages.removal_failed');
           setLocalMessage({ message: errorMessage, variant: AlertVariant.ERROR });
         } finally {
-          setIsRemovingModel(false);
+          setSystemStep(ExecutionStep.IDLE);
         }
       },
     });
@@ -244,7 +226,7 @@ const SidePanelContent: React.FC = () => {
       message: t('messages.confirm_clear_cache'),
       variant: ModalVariant.DANGER,
       onConfirm: async () => {
-        setIsDeleting(true);
+        setSystemStep(ExecutionStep.CLEARING_CACHE);
         try {
           // Robust cleanup: stop all active engines before clearing storage
           await ProviderFactory.clearInstances();
@@ -256,7 +238,7 @@ const SidePanelContent: React.FC = () => {
           const errorMessage = err instanceof Error ? err.message : t('messages.cache_failed');
           setLocalMessage({ message: errorMessage, variant: AlertVariant.ERROR });
         } finally {
-          setIsDeleting(false);
+          setSystemStep(ExecutionStep.IDLE);
         }
       },
     });
@@ -268,6 +250,20 @@ const SidePanelContent: React.FC = () => {
       setLocalMessage({ message: t('messages.copied'), variant: AlertVariant.SUCCESS });
     }
   }, [result, t]);
+
+  const handleSwitchLanguage = useCallback(
+    async (detectedLang: Language) => {
+      await updateSettings({ correctionLanguage: detectedLang });
+      clearMismatch();
+      handleCorrect(true, detectedLang);
+    },
+    [updateSettings, clearMismatch, handleCorrect],
+  );
+
+  const handleIgnoreAndCorrect = useCallback(() => {
+    confirmDetectedLanguage();
+    handleCorrect(true);
+  }, [confirmDetectedLanguage, handleCorrect]);
 
   useEffect(() => {
     if (localMessage) {
@@ -353,13 +349,13 @@ const SidePanelContent: React.FC = () => {
 
   useEffect(() => {
     let mounted = true;
-    setIsCheckingCache(true);
+    setSystemStep(ExecutionStep.CHECKING_CACHE);
     setIsModelCached(false); // Reset cache state for the new model
 
     // Safety timeout for IndexedDB access (sometimes hangs in Chrome if another tab is locking it)
     const timeoutId = setTimeout(() => {
       if (mounted) {
-        setIsCheckingCache(false);
+        setSystemStep(ExecutionStep.IDLE);
         Logger.warn('SidePanel', 'Cache check timed out');
       }
     }, CACHE_CHECK_TIMEOUT_MS);
@@ -373,7 +369,7 @@ const SidePanelContent: React.FC = () => {
       })
       .finally(() => {
         clearTimeout(timeoutId);
-        if (mounted) setIsCheckingCache(false);
+        if (mounted) setSystemStep(ExecutionStep.IDLE);
       });
 
     return () => {
@@ -394,11 +390,8 @@ const SidePanelContent: React.FC = () => {
           modelOptions={modelOptions}
           modelInfo={modelInfo}
           isModelCached={isModelCached}
-          isCheckingCache={isCheckingCache}
-          isPrefetching={isPrefetching}
-          isRemovingModel={isRemovingModel}
           isBusy={isBusy}
-          step={step}
+          step={currentStep}
           downloadProgress={downloadProgress}
           onPrefetch={handlePrefetch}
           onRemoveModel={handleRemoveModel}
@@ -442,22 +435,11 @@ const SidePanelContent: React.FC = () => {
                 <Button
                   variant={ButtonVariant.PRIMARY}
                   size={ButtonSize.SM}
-                  onClick={() => {
-                    const newLang = mismatchDetected;
-                    updateSettings({ correctionLanguage: newLang });
-                    clearMismatch();
-                    handleCorrect(true, newLang);
-                  }}
+                  onClick={() => handleSwitchLanguage(mismatchDetected)}
                 >
                   {t('messages.switch_to', { lang: LANGUAGE_CONFIG[mismatchDetected].name })}
                 </Button>
-                <TextButton
-                  variant={TextButtonVariant.DEFAULT}
-                  onClick={() => {
-                    confirmDetectedLanguage();
-                    handleCorrect(true);
-                  }}
-                >
+                <TextButton variant={TextButtonVariant.DEFAULT} onClick={handleIgnoreAndCorrect}>
                   {t('messages.ignore_and_correct')}
                 </TextButton>
               </div>

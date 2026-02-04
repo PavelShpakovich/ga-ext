@@ -79,6 +79,11 @@ export const useCorrectionWorkflow = (
 
       try {
         const usedLang = langOverride || settings.correctionLanguage;
+        Logger.debug('CorrectionWorkflow', 'Starting correction with language', {
+          langOverride,
+          settingsLanguage: settings.correctionLanguage,
+          usedLang,
+        });
         await runCorrection(trimmed, selectedModel, settings.selectedStyle, usedLang);
 
         // Track cache key for staleness checks

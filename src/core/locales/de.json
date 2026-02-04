@@ -21,6 +21,7 @@
     "loading": "Ladevorgang...",
     "checking": "Überprüfung...",
     "ready": "Bereit",
+    "cached": "Zwischengespeichert",
     "optimized_ready": "Optimiert und bereit",
     "cache_offline": "Für Offline-Modus speichern",
     "flush_cache": "Modell-Cache leeren",

@@ -28,9 +28,14 @@ export enum CorrectionStyle {
 
 export enum ExecutionStep {
   IDLE = 'idle',
+  CHECKING_CACHE = 'checking-cache',
+  SWITCHING_MODEL = 'switching-model',
   PREPARING_MODEL = 'preparing-model',
+  PREFETCHING = 'prefetching',
   CORRECTING = 'correcting',
   DONE = 'done',
+  REMOVING_MODEL = 'removing-model',
+  CLEARING_CACHE = 'clearing-cache',
   ERROR = 'error',
 }
 

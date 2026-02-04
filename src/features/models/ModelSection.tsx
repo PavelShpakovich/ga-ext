@@ -20,9 +20,6 @@ interface ModelSectionProps {
   modelOptions: { label: string; options: { value: string; label: string }[] }[];
   modelInfo?: ModelOption;
   isModelCached: boolean;
-  isCheckingCache: boolean;
-  isPrefetching: boolean;
-  isRemovingModel: boolean;
   isBusy: boolean;
   step: ExecutionStep;
   downloadProgress: ModelProgress | null;
@@ -34,6 +31,7 @@ interface ModelSectionProps {
 
 enum CacheStateEnum {
   CHECKING = 'checking',
+  CACHED = 'cached',
   READY = 'ready',
   DOWNLOAD = 'download',
   SYNCING = 'syncing',
@@ -52,9 +50,6 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
   modelOptions,
   modelInfo,
   isModelCached,
-  isCheckingCache,
-  isPrefetching,
-  isRemovingModel,
   isBusy,
   step,
   downloadProgress,
@@ -69,12 +64,17 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
 
   // Derive cache state from conditions
   const cacheState = useMemo<CacheStateEnum>(() => {
-    if (isCheckingCache) return CacheStateEnum.CHECKING;
-    if (isPrefetching) return CacheStateEnum.SYNCING;
+    if (step === ExecutionStep.CHECKING_CACHE) return CacheStateEnum.CHECKING;
+    if (step === ExecutionStep.PREFETCHING) return CacheStateEnum.SYNCING;
     if (step === ExecutionStep.PREPARING_MODEL) return CacheStateEnum.LOADING;
-    if (isModelCached) return CacheStateEnum.READY;
+    // Model is loaded and actively working
+    if ((step === ExecutionStep.CORRECTING || step === ExecutionStep.DONE) && isModelCached) {
+      return CacheStateEnum.READY;
+    }
+    // Model is cached but not yet loaded into memory
+    if (isModelCached) return CacheStateEnum.CACHED;
     return CacheStateEnum.DOWNLOAD;
-  }, [isCheckingCache, isPrefetching, step, isModelCached]);
+  }, [step, isModelCached]);
 
   // Unified state configuration
   const stateConfig = useMemo<StateConfig>(() => {
@@ -84,6 +84,12 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
           type: 'display',
           icon: <Loader2 className='w-4 h-4 animate-spin text-blue-500' />,
           label: t('ui.checking'),
+        };
+      case CacheStateEnum.CACHED:
+        return {
+          type: 'display',
+          icon: <Download className='w-4 h-4 text-blue-500' />,
+          label: t('ui.cached'),
         };
       case CacheStateEnum.READY:
         return {
@@ -116,6 +122,7 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
   const badge = useMemo(() => {
     const badgeClasses: Record<CacheStateEnum, string> = {
       [CacheStateEnum.CHECKING]: 'bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800',
+      [CacheStateEnum.CACHED]: 'bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800',
       [CacheStateEnum.READY]: 'bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800',
       [CacheStateEnum.SYNCING]: 'bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800',
       [CacheStateEnum.LOADING]: 'bg-orange-50 dark:bg-orange-900/20 border border-orange-100 dark:border-orange-800',
@@ -124,6 +131,7 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
 
     const textClasses: Record<CacheStateEnum, string> = {
       [CacheStateEnum.CHECKING]: 'text-blue-600 dark:text-blue-400',
+      [CacheStateEnum.CACHED]: 'text-blue-600 dark:text-blue-400',
       [CacheStateEnum.READY]: 'text-emerald-600 dark:text-emerald-400',
       [CacheStateEnum.SYNCING]: 'text-amber-600 dark:text-amber-400',
       [CacheStateEnum.LOADING]: 'text-orange-600 dark:text-orange-400',
@@ -132,6 +140,7 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
 
     const animationClasses: Record<CacheStateEnum, string> = {
       [CacheStateEnum.CHECKING]: 'animate-in fade-in zoom-in duration-300',
+      [CacheStateEnum.CACHED]: 'animate-in fade-in duration-300',
       [CacheStateEnum.READY]: 'animate-in fade-in duration-500',
       [CacheStateEnum.SYNCING]: 'animate-in fade-in duration-300',
       [CacheStateEnum.LOADING]: 'animate-in fade-in duration-300',
@@ -176,7 +185,7 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
         disabled={isBusy}
         variant={isModelCached ? ButtonVariant.SECONDARY : ButtonVariant.PRIMARY}
         className='flex-1 group'
-        aria-busy={isPrefetching || step === ExecutionStep.PREPARING_MODEL}
+        aria-busy={step === ExecutionStep.PREFETCHING || step === ExecutionStep.PREPARING_MODEL}
       >
         {icon}
         {label}
@@ -224,7 +233,7 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
               icon={<Trash2 />}
               variant={IconButtonVariant.OUTLINE}
               onClick={onRemoveModel}
-              disabled={isRemovingModel || isBusy}
+              disabled={isBusy}
               size={IconButtonSize.MD}
               title={t('ui.flush_cache')}
               aria-label={t('ui.flush_cache')}

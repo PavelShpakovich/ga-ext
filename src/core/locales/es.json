@@ -21,6 +21,7 @@
     "loading": "Cargando...",
     "checking": "Verificando...",
     "ready": "Listo",
+    "cached": "En caché",
     "optimized_ready": "Optimizado y listo",
     "cache_offline": "Guardar para uso local",
     "flush_cache": "Limpiar caché de modelos",

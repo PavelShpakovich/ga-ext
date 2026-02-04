@@ -21,6 +21,7 @@
     "loading": "Chargement...",
     "checking": "Vérification...",
     "ready": "Prêt",
+    "cached": "En cache",
     "optimized_ready": "Optimisé et prêt",
     "cache_offline": "Enregistrer pour mode hors ligne",
     "flush_cache": "Vider le cache des modèles",

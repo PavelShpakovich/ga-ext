@@ -5,6 +5,34 @@ All notable changes to Grammar Assistant will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.8] - 2026-02-04
+
+### Changed
+
+- **Unified State Management System**: Refactored state handling from fragmented boolean flags to a single, robust ExecutionStep enum
+  - Replaced 6 separate boolean flags (`isPrefetching`, `isModelSwitching`, `isCheckingCache`, `isDeleting`, `isRemovingModel`) with unified `ExecutionStep` enum
+  - Added new execution steps: `CHECKING_CACHE`, `SWITCHING_MODEL`, `PREFETCHING`, `REMOVING_MODEL`, `CLEARING_CACHE`
+  - Simplified `isBusy` calculation: now just checks if step is not IDLE/DONE/ERROR
+  - Cleaner component interfaces with fewer props
+  - Single source of truth for application state
+- **Model State Improvements**: Enhanced model status indicators for better clarity
+  - Separated "Cached" state (downloaded but not loaded) from "Optimized & Ready" state (loaded in memory)
+  - "Optimized & Ready" now only shows when model is actively correcting or has completed correction
+  - Added translations for "cached" state in all 5 languages (EN, RU, DE, ES, FR)
+
+### Fixed
+
+- **Language Switch Race Condition**: Fixed issue where switching to English after language mismatch detection still produced Russian explanations
+  - Added `await` to `updateSettings()` call before running correction to ensure settings are persisted
+  - Added debug logging to track language parameter usage throughout the correction flow
+  - Ensures language override parameter is respected in all correction scenarios
+- **Text Clearing During Operations**: Disabled clear button when model is loading or system is busy
+  - Prevents accidentally clearing text during model preparation, correction, or other operations
+  - Matches existing textarea disabled behavior for consistency
+- **Model State Display**: Fixed incorrect "Cached" state showing during active corrections
+  - Model now correctly shows "Optimized & Ready" when correcting or after completion
+  - "Cached" state only appears when model is downloaded but not yet loaded into memory
+
 ## [0.4.7] - 2026-02-04
 
 ### Changed

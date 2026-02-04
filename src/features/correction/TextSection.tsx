@@ -138,6 +138,7 @@ export const TextSection: React.FC<TextSectionProps> = ({
               size={IconButtonSize.SM}
               className='text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10'
               onClick={onClear}
+              disabled={isBusy}
               title={t('ui.clear_all')}
               aria-label={t('ui.clear_all')}
             />

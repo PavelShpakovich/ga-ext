@@ -21,6 +21,7 @@
     "loading": "Loading...",
     "checking": "Checking...",
     "ready": "Ready",
+    "cached": "Cached",
     "optimized_ready": "Optimized & Ready",
     "cache_offline": "Cache for Offline",
     "flush_cache": "Flush model cache",
