@@ -56,8 +56,8 @@ export class ErrorBoundary extends Component<Props, State> {
               <line x1='12' y1='16' x2='12.01' y2='16' />
             </svg>
           </div>
-          <h2 className='text-lg font-bold text-gray-900 dark:text-white mb-2'>{i18n.t('error.something_wrong')}</h2>
-          <p className='text-sm text-gray-600 dark:text-gray-300 mb-4'>
+          <h2 className='text-lg font-bold text-gray-900 dark:text-white'>{i18n.t('error.something_wrong')}</h2>
+          <p className='text-sm text-gray-600 dark:text-gray-300'>
             {this.state.error?.message || i18n.t('error.unexpected')}
           </p>
           <button

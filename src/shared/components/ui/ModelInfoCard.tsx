@@ -40,7 +40,7 @@ export const ModelInfoCard: React.FC<ModelInfoCardProps> = ({ model, className =
     <div
       className={`p-4 bg-slate-50/50 dark:bg-slate-800/30 rounded-2xl border border-slate-200/50 dark:border-slate-700/50 ${className}`}
     >
-      <div className='flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider mb-2'>
+      <div className='flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider'>
         {model.family && (
           <span className='px-1.5 py-0.5 bg-slate-200 dark:bg-slate-700 rounded text-slate-700 dark:text-slate-300'>
             {model.family}

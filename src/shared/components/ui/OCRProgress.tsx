@@ -14,7 +14,7 @@ export const OCRProgress: React.FC<OCRProgressProps> = ({ status, progress, clas
   return (
     <div className={`${className}`}>
       <div className='bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4'>
-        <div className='flex items-center gap-3 mb-2'>
+        <div className='flex items-center gap-3'>
           <Loader2 className='w-4 h-4 animate-spin text-blue-500' />
           <span className='text-sm font-medium text-blue-700 dark:text-blue-300'>{status}</span>
         </div>

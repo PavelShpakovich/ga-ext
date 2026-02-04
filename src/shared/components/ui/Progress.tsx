@@ -20,7 +20,7 @@ export const Progress: React.FC<ProgressProps> = ({ value, max = 100, showLabel 
         />
       </div>
       {showLabel && (
-        <div className='flex justify-between items-center mt-2'>
+        <div className='flex justify-between items-center'>
           <span className='text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest'>
             Status
           </span>

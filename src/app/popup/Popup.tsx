@@ -76,9 +76,7 @@ const Popup: React.FC = () => {
             <h1 className='text-[15px] font-bold tracking-tight text-slate-800 dark:text-white leading-none'>
               {t('ui.title')}
             </h1>
-            <p className='text-[10px] text-slate-500 dark:text-slate-400 mt-1 font-medium'>
-              {t('popup.local_session')}
-            </p>
+            <p className='text-[10px] text-slate-500 dark:text-slate-400 font-medium'>{t('popup.local_session')}</p>
           </div>
         </div>
         <Badge
@@ -89,7 +87,7 @@ const Popup: React.FC = () => {
         </Badge>
       </header>
 
-      <main className='px-5 pb-6 space-y-5 relative'>
+      <main className='px-5 pb-6 flex flex-col gap-5 relative'>
         {!hasWebGPU && (
           <Alert
             variant={AlertVariant.ERROR}
@@ -99,15 +97,13 @@ const Popup: React.FC = () => {
           </Alert>
         )}
 
-        <div className='bg-white/70 dark:bg-slate-800/40 backdrop-blur-sm border border-slate-200/60 dark:border-slate-700/50 p-4 rounded-2xl shadow-sm space-y-3'>
+        <div className='bg-white/70 dark:bg-slate-800/40 backdrop-blur-sm border border-slate-200/60 dark:border-slate-700/50 p-4 rounded-2xl shadow-sm flex flex-col gap-3'>
           <div className='flex items-start gap-3'>
-            <div className='w-8 h-8 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center shrink-0 mt-0.5'>
+            <div className='w-8 h-8 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center shrink-0'>
               <ShieldCheck className='w-4.5 h-4.5 text-blue-600 dark:text-blue-400' />
             </div>
-            <div>
-              <h3 className='text-[12px] font-bold text-slate-800 dark:text-slate-200 mb-0.5'>
-                {t('popup.privacy_title')}
-              </h3>
+            <div className='flex flex-col gap-0.5'>
+              <h3 className='text-[12px] font-bold text-slate-800 dark:text-slate-200'>{t('popup.privacy_title')}</h3>
               <p className='text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed'>
                 {t('popup.privacy_description')}
               </p>
@@ -117,13 +113,11 @@ const Popup: React.FC = () => {
           <div className='h-px bg-slate-200/50 dark:bg-slate-700/30' />
 
           <div className='flex items-start gap-3'>
-            <div className='w-8 h-8 bg-amber-50 dark:bg-amber-900/20 rounded-xl flex items-center justify-center shrink-0 mt-0.5'>
+            <div className='w-8 h-8 bg-amber-50 dark:bg-amber-900/20 rounded-xl flex items-center justify-center shrink-0'>
               <Zap className='w-4.5 h-4.5 text-amber-600 dark:text-amber-400' />
             </div>
-            <div>
-              <h3 className='text-[12px] font-bold text-slate-800 dark:text-slate-200 mb-0.5'>
-                {t('popup.speed_title')}
-              </h3>
+            <div className='flex flex-col gap-0.5'>
+              <h3 className='text-[12px] font-bold text-slate-800 dark:text-slate-200'>{t('popup.speed_title')}</h3>
               <p className='text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed'>
                 {t('popup.speed_description')}
               </p>

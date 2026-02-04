@@ -103,11 +103,11 @@ export const ImageUpload: React.FC<ImageUploadProps> = React.memo(
                 <Upload className='w-6 h-6 text-slate-500 dark:text-slate-400' />
               </div>
               <div>
-                <p className='text-sm font-medium text-slate-700 dark:text-slate-300 mb-1'>{t('ocr.upload_image')}</p>
-                <p className='text-sm text-slate-400 dark:text-slate-500'>
-                  <span className='block mt-1'>{t('ocr.upload_placeholder')}</span>
-                  <span className='block mt-1'>{t('ocr.supported_formats')}</span>
-                </p>
+                <p className='text-sm font-medium text-slate-700 dark:text-slate-300'>{t('ocr.upload_image')}</p>
+                <div className='text-xs text-slate-500 dark:text-slate-400 flex flex-col gap-1'>
+                  <span>{t('ocr.upload_placeholder')}</span>
+                  <span>{t('ocr.supported_formats')}</span>
+                </div>
               </div>
             </div>
           </div>

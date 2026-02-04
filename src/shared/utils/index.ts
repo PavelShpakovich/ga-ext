@@ -11,6 +11,7 @@ export {
   copyToClipboard,
   capitalize,
   detectDominantLanguage,
+  isNonEmpty,
 } from './helpers';
 export type { OCRProgress } from './helpers';
 

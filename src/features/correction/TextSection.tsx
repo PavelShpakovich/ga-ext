@@ -179,7 +179,7 @@ export const TextSection: React.FC<TextSectionProps> = ({
           </div>
         </div>
       ) : (
-        <div className='space-y-4'>
+        <div className='flex flex-col gap-4'>
           <ImageUpload onImageSelect={handleImageSelect} disabled={isBusy || isProcessing} />
 
           {isProcessing && progress && (

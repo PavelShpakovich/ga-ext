@@ -28,7 +28,7 @@ export const StyleSelector: React.FC<StyleSelectorProps> = ({ selected, onChange
   ];
 
   return (
-    <div className='space-y-3'>
+    <div className='flex flex-col gap-3'>
       <div className='flex items-center justify-between'>
         <h3 className='text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider'>
           {t('settings.correction_style')}

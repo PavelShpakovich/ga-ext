@@ -382,7 +382,7 @@ const SidePanelContent: React.FC = () => {
     <div className='h-screen flex flex-col bg-[#F8FAFC] dark:bg-[#0F172A] text-slate-900 dark:text-slate-50 font-sans selection:bg-blue-100 dark:selection:bg-blue-900/40'>
       <SidebarHeader title={t('ui.title')} subtitle={t('ui.subtitle')} isBusy={isBusy} />
 
-      <main className='flex-1 min-h-0 overflow-y-auto p-4 space-y-4 scroll-smooth'>
+      <main className='flex-1 min-h-0 overflow-y-auto p-4 flex flex-col gap-4 scroll-smooth'>
         <ModelSection
           title={t('ui.model_section')}
           selectedModel={selectedModel}
@@ -422,7 +422,7 @@ const SidePanelContent: React.FC = () => {
         />
 
         {mismatchDetected && (
-          <Alert variant={AlertVariant.WARNING} className='mx-0 mt-0 mb-4'>
+          <Alert variant={AlertVariant.WARNING}>
             <div className='flex flex-col gap-3'>
               <div className='text-sm leading-relaxed'>
                 <span className='font-medium'>{t('messages.language_mismatch_detected')}</span>{' '}

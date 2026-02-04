@@ -42,7 +42,7 @@ export const Alert: React.FC<AlertProps> = ({ variant = AlertVariant.INFO, child
 
   return (
     <div className={`flex items-start gap-3 p-4 rounded-2xl border ${config.className} ${className}`}>
-      <div className='shrink-0 mt-0.5'>{config.icon}</div>
+      <div className='shrink-0'>{config.icon}</div>
       <div className='flex-1 text-[13px] font-medium leading-relaxed'>{children}</div>
     </div>
   );

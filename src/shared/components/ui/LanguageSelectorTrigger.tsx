@@ -47,7 +47,7 @@ export const LanguageSelectorTrigger: React.FC<LanguageSelectorTriggerProps> = (
           <Languages size={18} />
         </div>
         <div className='flex flex-col items-start min-w-0'>
-          <span className='text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none mb-1'>
+          <span className='text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none'>
             Language Settings
           </span>
           <div className='flex items-center gap-1.5 truncate'>

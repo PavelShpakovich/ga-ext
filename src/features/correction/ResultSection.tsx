@@ -10,6 +10,7 @@ import { StatusIndicator } from '@/features/models/StatusIndicator';
 import { useTranslation } from 'react-i18next';
 import { useDiff } from '@/shared/hooks/useDiff';
 import { IconButton, IconButtonVariant, IconButtonSize } from '@/shared/components/ui';
+import { isNonEmpty } from '@/shared/utils/helpers';
 
 // Shared styling constants for better maintainability
 const CONTENT_BOX_STYLES = {
@@ -69,7 +70,7 @@ const PartialResult: React.FC<{ content: string }> = ({ content }) => (
 
 // Sub-component for parse error display
 const ParseErrorDisplay: React.FC<{ originalText: string; t: (key: string) => string }> = ({ originalText, t }) => (
-  <div className='space-y-4'>
+  <div className='flex flex-col gap-4'>
     <Alert
       variant={AlertVariant.ERROR}
       className='bg-rose-50/50 dark:bg-rose-500/5 border-rose-100/50 dark:border-rose-500/20'
@@ -111,15 +112,15 @@ const ExplanationSection: React.FC<{
   explanation: string | string[];
   reasoningLabel: string;
 }> = ({ explanation, reasoningLabel }) => (
-  <div className='bg-slate-50/50 dark:bg-slate-900/30 rounded-xl p-4 border border-slate-100 dark:border-slate-800/50'>
-    <div className='flex items-center gap-2 mb-2'>
+  <div className='bg-slate-50/50 dark:bg-slate-900/30 rounded-xl p-4 border border-slate-100 dark:border-slate-800/50 flex flex-col gap-2'>
+    <div className='flex items-center gap-2'>
       <Info className='w-3 h-3 text-blue-500' />
       <span className='text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest'>
         {reasoningLabel}
       </span>
     </div>
     {Array.isArray(explanation) ? (
-      <ul className='text-[13px] text-slate-600 dark:text-slate-400 leading-relaxed list-disc pl-5 space-y-1'>
+      <ul className='text-[13px] text-slate-600 dark:text-slate-400 leading-relaxed list-disc pl-5 flex flex-col gap-1'>
         {explanation.map((line, idx) => (
           <li key={idx} className='indent-0.5'>
             {line}
@@ -138,7 +139,7 @@ const DebugTrace: React.FC<{
   parseError?: string;
   t: (key: string) => string;
 }> = ({ rawOutput, parseError, t }) => (
-  <div className='bg-slate-900 rounded-xl p-4 text-[10px] text-slate-400 font-mono space-y-3 overflow-hidden animate-in zoom-in-95 duration-200 border border-slate-800 shadow-2xl'>
+  <div className='bg-slate-900 rounded-xl p-4 text-[10px] text-slate-400 font-mono flex flex-col gap-3 overflow-hidden animate-in zoom-in-95 duration-200 border border-slate-800 shadow-2xl'>
     <div className='flex flex-col gap-1.5'>
       <span className='text-blue-400/80 font-bold uppercase text-[9px] tracking-widest'>{t('ui.engine_trace')}</span>
       <pre className='whitespace-pre-wrap wrap-break-word leading-relaxed bg-black/30 p-3 rounded-lg border border-white/5 max-h-75 overflow-y-auto custom-scrollbar'>
@@ -175,6 +176,8 @@ export const ResultSection: React.FC<ResultSectionProps> = ({
   const hasResult = !!result;
   const parseError = result?.parseError;
   const explanation = result?.explanation;
+  
+  const hasExplanation = !parseError && isNonEmpty(explanation);
 
   // Render content based on current state
   const renderContent = () => {
@@ -190,7 +193,7 @@ export const ResultSection: React.FC<ResultSectionProps> = ({
   };
 
   return (
-    <div className='space-y-4'>
+    <div className='flex flex-col gap-4'>
       <StatusIndicator step={step} isBusy={isBusy} />
 
       {error && <Alert variant={AlertVariant.ERROR}>{error}</Alert>}
@@ -217,11 +220,11 @@ export const ResultSection: React.FC<ResultSectionProps> = ({
             />
           }
         >
-          <div className='space-y-6'>
+          <div className='flex flex-col gap-6'>
             {renderContent()}
 
-            {explanation && !parseError && (
-              <ExplanationSection explanation={explanation} reasoningLabel={reasoningLabel} />
+            {hasExplanation && (
+              <ExplanationSection explanation={explanation!} reasoningLabel={reasoningLabel} />
             )}
 
             <div className='pb-2'>

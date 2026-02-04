@@ -201,7 +201,7 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
       defaultCollapsed={true}
       badge={badge}
     >
-      <div className='space-y-4'>
+      <div className='flex flex-col gap-4'>
         <Select
           value={selectedModel}
           onChange={onModelChange}
@@ -211,7 +211,7 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
         />
 
         {modelInfo && (
-          <div className='space-y-3'>
+          <div className='flex flex-col gap-3'>
             <ModelInfoCard model={modelInfo} />
             <div className='flex items-center justify-between px-1'>
               <span className='text-xs font-semibold text-slate-600 dark:text-slate-400'>
@@ -244,14 +244,14 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
 
         {downloadProgress && (
           <div
-            className='bg-blue-50/40 dark:bg-blue-950/20 border border-blue-100/50 dark:border-blue-900/30 rounded-2xl p-4 space-y-3 animate-in slide-in-from-top-2 duration-300 shadow-sm'
+            className='bg-blue-50/40 dark:bg-blue-950/20 border border-blue-100/50 dark:border-blue-900/30 rounded-2xl p-4 flex flex-col gap-3 animate-in slide-in-from-top-2 duration-300 shadow-sm'
             role='status'
             aria-live='polite'
           >
-            <div className='space-y-2.5'>
+            <div className='flex flex-col gap-2.5'>
               <div className='flex items-start justify-between gap-3'>
                 <div className='flex items-start gap-2 min-w-0'>
-                  <div className='w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse shrink-0 mt-1.5' />
+                  <div className='w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse shrink-0' />
                   <span className='text-[10px] font-bold text-blue-700 dark:text-blue-400 tracking-wider leading-relaxed wrap-break-word flex-1'>
                     {downloadProgress.text}
                   </span>

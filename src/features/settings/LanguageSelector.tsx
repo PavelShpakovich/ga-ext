@@ -100,9 +100,9 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
               : LanguageSelectorPopoverVariant.COMPACT
           }
         >
-          <div className='space-y-6'>
+          <div className='flex flex-col gap-6'>
             <div>
-              <div className='flex items-center gap-2 mb-3 px-1'>
+              <div className='flex items-center gap-2 px-1'>
                 <Globe size={13} className='text-blue-500' />
                 <span className='text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tight'>
                   {t('settings.ui_language')}
@@ -120,7 +120,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
             <div className='h-px bg-slate-100 dark:bg-slate-800' />
 
             <div>
-              <div className='flex items-center gap-2 mb-3 px-1'>
+              <div className='flex items-center gap-2 px-1'>
                 <Languages size={13} className='text-indigo-500' />
                 <span className='text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tight'>
                   {t('settings.correction_language')}

@@ -65,7 +65,7 @@ export const Modal: React.FC<ModalProps> = ({
               />
             </div>
             <div className='flex-1 min-w-0 pt-1'>
-              <h3 className='text-base font-bold text-slate-900 dark:text-white mb-1.5 leading-tight'>{title}</h3>
+              <h3 className='text-base font-bold text-slate-900 dark:text-white leading-tight'>{title}</h3>
               <p className='text-sm text-slate-600 dark:text-slate-400 leading-relaxed'>{message}</p>
             </div>
           </div>

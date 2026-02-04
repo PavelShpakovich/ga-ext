@@ -116,3 +116,18 @@ export const detectDominantLanguage = (text: string): Language | null => {
 
   return null;
 };
+
+/**
+ * Checks if a value is non-empty (has actual content).
+ * Handles arrays, strings, objects, Maps, and Sets.
+ * @param value - The value to check
+ * @returns True if value has content: non-empty array, non-whitespace string, object with keys, non-empty Map/Set
+ */
+export const isNonEmpty = (value: unknown): boolean => {
+  if (value == null) return false;
+  if (Array.isArray(value)) return value.length > 0;
+  if (typeof value === 'string') return value.trim().length > 0;
+  if (value instanceof Map || value instanceof Set) return value.size > 0;
+  if (typeof value === 'object') return Object.keys(value).length > 0;
+  return false;
+};
